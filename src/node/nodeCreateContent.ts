@@ -9,7 +9,7 @@ interface NodeCreateContentMethods {
 // 创建文本元素
 function createTextElem (this: Node): TextData {
   const g = new G()
-  const textElem = new Text().text(this.nodeData.text as string).font({ size: 16, family: 'Helvetica' })
+  const textElem = new Text().text(this.nodeData?.data.text as string).font({ size: 16, family: 'Helvetica' }).y(0)
   const { width, height } = textElem.bbox()
   g.add(textElem)
   return {
