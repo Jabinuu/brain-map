@@ -1,6 +1,6 @@
+import { type G, SVG, type Svg } from '@svgdotjs/svg.js'
 import type Node from './src/node/Node'
 import Render from './src/render/Render'
-import { SVG, type G, type Svg } from '@svgdotjs/svg.js'
 
 interface BrainMapOption {
   [prop: string]: any
@@ -17,6 +17,7 @@ interface BrainMapOption {
 }
 
 interface DataSourceItem {
+  [prop: string]: any
   text?: string // 文本数据
   image?: string // 图片url
   icon?: [] // 图标列表
@@ -24,9 +25,14 @@ interface DataSourceItem {
   expand?: boolean // 节点是否展开
   richText?: boolean // 该节点是否是富文本模式
   hyperLink?: string // 超链接url
-  paddingX?: number // 节点x轴内边距
-  paddingY?: number // 节点y轴内边距
-  // ...其他样式字段
+  paddingX: number // 节点x轴内边距
+  paddingY: number // 节点y轴内边距
+  // ...其他样式字段,参考主题属性
+}
+
+export enum EnumDataSource {
+  PADDINGX = 'paddingX',
+  PADDINGY = 'paddingY'
 }
 
 export interface DataSource {

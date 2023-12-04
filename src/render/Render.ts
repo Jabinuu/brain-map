@@ -1,5 +1,6 @@
 import type BrainMap from '../..'
 import Node from '../node/Node'
+
 // import Node from '@/node/Node'
 // import { type G as GType, SVG, Rect, G, Matrix } from '@svgdotjs/svg.js'
 interface RenderOption {
@@ -21,9 +22,8 @@ class Render {
       data: this.brainMap.dataSource,
       brainMap: this.brainMap
     })
-    if (newNode.isRoot) {
-      this.brainMap.root = newNode
-    }
+    if (newNode.isRoot) { this.brainMap.root = newNode }
+
     this.brainMap.root?.render()
   }
 }

@@ -1,6 +1,8 @@
 import { G, Text } from '@svgdotjs/svg.js'
 import type Node from './Node'
-import { type TextData } from './Node'
+import type { TextData } from './Node'
+import { EnumDataSource } from '../../index'
+
 interface NodeCreateContentMethods {
   [props: string]: any
   createTextElem: () => TextData
@@ -11,7 +13,7 @@ function createTextElem (this: Node): TextData {
   const g = new G()
   const textElem = new Text().text(this.nodeData?.data.text as string).font({ size: 16, family: 'Helvetica' }).y(0)
   const { width, height } = textElem.bbox()
-  g.add(textElem)
+  g.add(textElem).translate(this.getData(EnumDataSource.PADDINGX), this.getData(EnumDataSource.PADDINGY))
   return {
     element: g,
     width,

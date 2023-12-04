@@ -1,11 +1,12 @@
+import { Matrix, type G as GType, type Path } from '@svgdotjs/svg.js'
 import type BrainMap from '../..'
-import { type DataSource } from '../..'
-import type Shape from './Shape'
+import type { DataSource } from '../..'
+import Shape from './Shape'
 import nodeCreateContentMethods from './nodeCreateContent'
-import { type G as GType } from '@svgdotjs/svg.js'
+import { EnumDataSource } from '../../index'
 
 interface NodeCreateOption {
-  data?: DataSource
+  data: DataSource
   width?: number
   height?: number
   left?: number
@@ -30,13 +31,19 @@ class Node {
   height: number
   left: number
   top: number
-  nodeData: DataSource | undefined
+  nodeData: DataSource
   textData: TextData | null
   parent: Node | null
   children: Node[]
   isRoot: boolean
   group: GType | null
   shape: Shape | null
+  shapeElem: Path | null
+  shapePadding: {
+    paddingX: number
+    paddingY: number
+  }
+
   brainMap: BrainMap
   nodeDrawing: GType | null
   lineDrawing: GType | null
@@ -61,8 +68,17 @@ class Node {
     this.isRoot = opt.isRoot ?? false
     // 节点容器(包括形状和内容)
     this.group = null
-    // 节点形状元素
+    // Shape实例
     this.shape = null
+    // 节点形状元素
+    this.shapeElem = null
+    // 节点形状所需的额外内边距
+    this.shapePadding = {
+      paddingX: 0,
+      paddingY: 0
+    }
+    // 节点内边距
+    this.paddingX = opt
     // 思维导图实例
     this.brainMap = opt.brainMap
     // 思维导图所有节点容器
@@ -88,28 +104,38 @@ class Node {
 
   // 获得节点总宽高
   getSize (): { width: number, height: number } {
-    let width = 20 * 2; let height = 10 * 2
+    // todo: 获取节点中所有类型元素的size，当前只有文本节点
+    let _width: number = 0; let _height: number = 0
     this.generateContentElem()
-    if (this.textData != null) {
-      width += this.textData.width
-      height += this.textData.height
+    if (this.textData !== null) {
+      _width = this.textData.width
+      _height = this.textData.height
     }
-    this.width = width
-    this.height = height
+
+    this.width = _width + 2 * this.getData(EnumDataSource.PADDINGX) + 2 * this.shapePadding.paddingX
+    this.height = _height + 2 * this.getData(EnumDataSource.PADDINGY) + 2 * this.shapePadding.paddingY
 
     return {
-      width,
-      height
+      width: this.width,
+      height: this.height
     }
+  }
+
+  getData (key: string | undefined): any {
+    return (key != null) ? this.nodeData.data[key] : this.nodeData.data
   }
 
   // 根据数据源渲染出节点
   render (): void {
     if (this.nodeDrawing !== null) {
       this.group = this.nodeDrawing.group()
-      if (this.textData !== null) {
-        this.group.add(this.textData.element)
-      }
+      this.group.translate(200, 200)
+
+      if (this.textData !== null) { this.group.add(this.textData.element) }
+
+      this.shape = new Shape(this)
+      this.shapeElem = this.shape.createRect()
+      this.group.add(this.shapeElem)
     }
   }
 }

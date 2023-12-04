@@ -30,9 +30,22 @@ class Shape {
 
   }
 
-  // 创建矩形
+  // 创建圆角矩形
   createRect (): Path {
-    return new Path()
+    const { height, width } = this.node
+    const borderRadius = 5
+    return new Path().plot([
+      ['M', borderRadius, 0],
+      ['H', width - borderRadius],
+      ['Q', width, 0, width, borderRadius],
+      ['V', height - borderRadius],
+      ['Q', width, height, width - borderRadius, height],
+      ['H', borderRadius],
+      ['Q', 0, height, 0, height - borderRadius],
+      ['V', borderRadius],
+      ['Q', 0, 0, borderRadius, 0]
+    ])
+      .fill('none').stroke({ width: 4, color: '#f06', linecap: 'round', linejoin: 'round' })
   }
 
   // 创建胶囊形状
