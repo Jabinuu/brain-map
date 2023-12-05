@@ -1,29 +1,36 @@
 import type BrainMap from '../..'
-import Node from '../node/Node'
-
-// import Node from '@/node/Node'
-// import { type G as GType, SVG, Rect, G, Matrix } from '@svgdotjs/svg.js'
+import LogicalStructure from '../layouts/logicalStructure'
+import { CONSTANT } from '../constant/constant'
 interface RenderOption {
   brainMap: BrainMap
+}
+
+type Layout = LogicalStructure
+
+const layouts = {
+  [CONSTANT.LAYOUTS.LOGICAL_STRUCTURE]: LogicalStructure
 }
 
 // 渲染类，负责渲染相关
 class Render {
   brainMap: BrainMap
+  layout: Layout | null
+
   constructor (opt: RenderOption) {
     this.brainMap = opt.brainMap
+    this.layout = null
+
+    // 设置布局
+    this.setLayout()
+  }
+
+  setLayout (): void {
+    this.layout = new (layouts[this.brainMap.layout] ?? layouts[CONSTANT.LAYOUTS.LOGICAL_STRUCTURE])(this)
   }
 
   // 渲染器
   render (): void {
-    // 遍历渲染树，创建节点实例，并进行连接，后续封装为函数
-    const newNode = new Node({
-      isRoot: true,
-      data: this.brainMap.dataSource,
-      brainMap: this.brainMap
-    })
-    if (newNode.isRoot) { this.brainMap.root = newNode }
-
+    this.layout?.doLayout()
     this.brainMap.root?.render()
   }
 }

@@ -1,12 +1,12 @@
-import { Matrix, type G as GType, type Path } from '@svgdotjs/svg.js'
+import { G, type G as GType, type Path } from '@svgdotjs/svg.js'
 import type BrainMap from '../..'
 import type { DataSource } from '../..'
 import Shape from './Shape'
 import nodeCreateContentMethods from './nodeCreateContent'
-import { EnumDataSource } from '../../index'
+import { EnumDataSource } from '../constant/constant'
 
 interface NodeCreateOption {
-  data: DataSource
+  data: DataSource | null
   width?: number
   height?: number
   left?: number
@@ -31,7 +31,7 @@ class Node {
   height: number
   left: number
   top: number
-  nodeData: DataSource
+  nodeData: DataSource | null
   textData: TextData | null
   parent: Node | null
   children: Node[]
@@ -44,6 +44,7 @@ class Node {
     paddingY: number
   }
 
+  childrenAreaHeight: number
   brainMap: BrainMap
   nodeDrawing: GType | null
   lineDrawing: GType | null
@@ -57,9 +58,9 @@ class Node {
     // 节点高度
     this.height = opt.width ?? 0
     // 节点相对于画布left
-    this.left = opt.top ?? 0
+    this.left = opt.top ?? 600
     // 节点相对于画布top
-    this.top = opt.top ?? 0
+    this.top = opt.top ?? 200
     // 双亲节点
     this.parent = opt.parent ?? null
     // 孩子节点列表
@@ -77,6 +78,8 @@ class Node {
       paddingX: 0,
       paddingY: 0
     }
+    // 所有后代节点所占的总高度
+    this.childrenAreaHeight = 0
     // 节点内边距
     this.paddingX = opt
     // 思维导图实例
@@ -112,8 +115,8 @@ class Node {
       _height = this.textData.height
     }
 
-    this.width = _width + 2 * this.getData(EnumDataSource.PADDINGX) + 2 * this.shapePadding.paddingX
-    this.height = _height + 2 * this.getData(EnumDataSource.PADDINGY) + 2 * this.shapePadding.paddingY
+    this.width = _width + 2 * (this.getData(EnumDataSource.PADDINGX) as number) + 2 * this.shapePadding.paddingX
+    this.height = _height + 2 * (this.getData(EnumDataSource.PADDINGY) as number) + 2 * this.shapePadding.paddingY
 
     return {
       width: this.width,
@@ -121,22 +124,26 @@ class Node {
     }
   }
 
-  getData (key: string | undefined): any {
-    return (key != null) ? this.nodeData.data[key] : this.nodeData.data
+  getData (key: string | undefined): unknown {
+    if (this.nodeData !== null) {
+      return (key != null) ? this.nodeData.data[key] : this.nodeData.data
+    }
   }
 
   // 根据数据源渲染出节点
   render (): void {
+    this.group = new G()
+    this.group.translate(this.left, this.top)
+    if (this.textData !== null) { this.group.add(this.textData.element) }
+    this.shape = new Shape(this)
+    this.shapeElem = this.shape.createRect()
+    this.group.add(this.shapeElem)
     if (this.nodeDrawing !== null) {
-      this.group = this.nodeDrawing.group()
-      this.group.translate(200, 200)
-
-      if (this.textData !== null) { this.group.add(this.textData.element) }
-
-      this.shape = new Shape(this)
-      this.shapeElem = this.shape.createRect()
-      this.group.add(this.shapeElem)
+      this.group.addTo(this.nodeDrawing)
     }
+    this.children.forEach((item) => {
+      item.render()
+    })
   }
 }
 
