@@ -2,6 +2,7 @@ import type BrainMap from '../../index'
 import { type DataSource } from '../../index'
 import type Render from '../render/Render'
 import Node from '../node/Node'
+import { createUid } from '../utils'
 
 class Base {
   brainMap: BrainMap
@@ -14,10 +15,12 @@ class Base {
 
   // 创建节点实例
   createNode (data: DataSource, parent: DataSource | null, isRoot: boolean): Node {
+    const uid = createUid()
     const newNode = new Node({
       data,
       brainMap: this.brainMap,
-      isRoot
+      isRoot,
+      uid
     })
     // 将节点实例挂载到数据源下
     data.node = newNode
@@ -37,7 +40,7 @@ class Base {
   }
 
   getMarginY (): number {
-    return 80
+    return 50
   }
 }
 

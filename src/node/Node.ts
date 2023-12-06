@@ -16,6 +16,7 @@ interface NodeCreateOption {
   children?: Node[]
   isRoot?: boolean
   brainMap: BrainMap
+  uid: string
 }
 
 export interface TextData {
@@ -27,6 +28,7 @@ export interface TextData {
 // 思维导图节点类
 class Node {
   [prop: string]: any
+  uid: string
   width: number
   height: number
   left: number
@@ -44,6 +46,8 @@ class Node {
     paddingY: number
   }
 
+  paddingX:number
+  paddingY:number
   childrenAreaHeight: number
   brainMap: BrainMap
   nodeDrawing: GType | null
@@ -51,6 +55,8 @@ class Node {
 
   // 构造函数
   constructor (opt: NodeCreateOption) {
+    // 节点唯一id
+    this.uid = opt.uid || ''
     // 节点数据
     this.nodeData = opt.data
     // 节点宽度
@@ -81,7 +87,8 @@ class Node {
     // 所有后代节点所占的总高度
     this.childrenAreaHeight = 0
     // 节点内边距
-    this.paddingX = opt
+    this.paddingX = 0
+    this.paddingY = 0
     // 思维导图实例
     this.brainMap = opt.brainMap
     // 思维导图所有节点容器
@@ -97,7 +104,15 @@ class Node {
       this[item] = (nodeCreateContentMethods)[item].bind(this)
     })
 
+    this.handleOpt(opt)
     this.getSize()
+  }
+
+  handleOpt(opt:NodeCreateOption){
+    if(opt.data){
+      this.paddingX = opt.data.data.paddingX
+      this.paddingY = opt.data.data.paddingY
+    }
   }
 
   // 生成该节点下的所有内容元素

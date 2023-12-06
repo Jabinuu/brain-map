@@ -45,7 +45,7 @@ class Shape {
       ['V', borderRadius],
       ['Q', 0, 0, borderRadius, 0]
     ])
-      .fill('none').stroke({ width: 4, color: '#f06', linecap: 'round', linejoin: 'round' })
+      .fill('none').stroke({ width: 2, color: '#f06', linecap: 'round', linejoin: 'round' })
   }
 
   // 创建胶囊形状
