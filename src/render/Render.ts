@@ -30,7 +30,9 @@ class Render {
 
   // 渲染器
   render (): void {
+    // 布局的过程中已经创建了所有Node实例并计算好了定位属性值
     this.layout?.doLayout()
+    // 将所有Node实例渲染到画布上
     this.brainMap.root?.render()
   }
 }

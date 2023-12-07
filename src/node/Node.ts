@@ -1,9 +1,10 @@
-import { G, type G as GType, type Path } from '@svgdotjs/svg.js'
+import { G, type Polyline, type G as GType, type Path } from '@svgdotjs/svg.js'
 import type BrainMap from '../..'
 import type { DataSource } from '../..'
 import Shape from './Shape'
 import nodeCreateContentMethods from './nodeCreateContent'
-import { EnumDataSource } from '../constant/constant'
+import { EnumDataSource, EnumLineShape } from '../constant/constant'
+import type Render from '../render/Render'
 
 interface NodeCreateOption {
   data: DataSource | null
@@ -35,6 +36,7 @@ class Node {
   top: number
   nodeData: DataSource | null
   textData: TextData | null
+  lines: Array<Path | Polyline>
   parent: Node | null
   children: Node[]
   isRoot: boolean
@@ -46,10 +48,11 @@ class Node {
     paddingY: number
   }
 
-  paddingX:number
-  paddingY:number
+  paddingX: number
+  paddingY: number
   childrenAreaHeight: number
   brainMap: BrainMap
+  renderer: Render
   nodeDrawing: GType | null
   lineDrawing: GType | null
 
@@ -91,10 +94,14 @@ class Node {
     this.paddingY = 0
     // 思维导图实例
     this.brainMap = opt.brainMap
+    // 渲染器实例
+    this.renderer = opt.brainMap.renderer
     // 思维导图所有节点容器
     this.nodeDrawing = this.brainMap.nodeDrawing
     // 思维导图所有连线节点容器
     this.lineDrawing = this.brainMap.lineDrawing
+    // 连线元素
+    this.lines = []
     /* 该节点的内容元素 */
     // 文本元素
     this.textData = null
@@ -108,8 +115,8 @@ class Node {
     this.getSize()
   }
 
-  handleOpt(opt:NodeCreateOption){
-    if(opt.data){
+  handleOpt (opt: NodeCreateOption): void {
+    if (opt.data) {
       this.paddingX = opt.data.data.paddingX
       this.paddingY = opt.data.data.paddingY
     }
@@ -147,18 +154,35 @@ class Node {
 
   // 根据数据源渲染出节点
   render (): void {
-    this.group = new G()
-    this.group.translate(this.left, this.top)
-    if (this.textData !== null) { this.group.add(this.textData.element) }
+    this.group = new G().translate(this.left, this.top)
     this.shape = new Shape(this)
     this.shapeElem = this.shape.createRect()
     this.group.add(this.shapeElem)
+    // 根节点填充色
+    if (this.isRoot) this.shapeElem.fill('#F0F0F0')
+    // todo: 将所有类型的内容元素在节点内布局
+    if (this.textData !== null) { this.group.add(this.textData.element) }
     if (this.nodeDrawing !== null) {
       this.group.addTo(this.nodeDrawing)
     }
+    // 渲染节点连线
+    this.renderLine(this)
+    // 递归渲染子节点
     this.children.forEach((item) => {
       item.render()
     })
+  }
+
+  // 渲染连线
+  renderLine (node: Node): void {
+    if (this.renderer.layout) {
+      this.renderer.layout.renderLine(node, EnumLineShape.CURVE)
+      node.lines.forEach((item) => {
+        if (this.lineDrawing != null) {
+          item.addTo(this.lineDrawing)
+        }
+      })
+    }
   }
 }
 

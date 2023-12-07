@@ -3,6 +3,8 @@ import { type DataSource } from '../../index'
 import type Render from '../render/Render'
 import Node from '../node/Node'
 import { createUid } from '../utils'
+import { PathArray } from '@svgdotjs/svg.js'
+import { type PositionPair } from './LogicalStructure'
 
 class Base {
   brainMap: BrainMap
@@ -31,7 +33,6 @@ class Base {
       parent?.node?.children.push(newNode)
       newNode.parent = parent?.node ?? null
     }
-
     return newNode
   }
 
@@ -41,6 +42,16 @@ class Base {
 
   getMarginY (): number {
     return 50
+  }
+
+  // 三次贝塞尔曲线
+  cubicBezierPath (start: PositionPair, end: PositionPair): PathArray {
+    const ctrl1 = [start[0] + (end[0] - start[0]) / 2, start[1]]
+    const ctrl2 = [ctrl1[0], end[1]]
+    return new PathArray([
+      ['M', start[0], start[1]],
+      ['C', ctrl1[0], ctrl1[1], ctrl2[0], ctrl2[1], end[0], end[1]]
+    ])
   }
 }
 
