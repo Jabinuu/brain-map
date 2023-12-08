@@ -37,7 +37,7 @@ class Base {
   }
 
   getMarginX (): number {
-    return 80
+    return 50
   }
 
   getMarginY (): number {

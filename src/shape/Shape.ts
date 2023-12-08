@@ -1,5 +1,5 @@
 import { Path, Polygon } from '@svgdotjs/svg.js'
-import type Node from './Node'
+import type Node from '../node/Node'
 
 // 节点形状类
 class Shape {

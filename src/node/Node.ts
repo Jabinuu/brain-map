@@ -1,7 +1,7 @@
 import { G, type Polyline, type G as GType, type Path } from '@svgdotjs/svg.js'
 import type BrainMap from '../..'
 import type { DataSource } from '../..'
-import Shape from './Shape'
+import Shape from '../shape/Shape'
 import nodeCreateContentMethods from './nodeCreateContent'
 import { EnumDataSource, EnumLineShape } from '../constant/constant'
 import type Render from '../render/Render'
