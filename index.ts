@@ -2,6 +2,7 @@ import { type G, SVG, type Svg } from '@svgdotjs/svg.js'
 import Render from './src/render/Render'
 import type Node from './src/node/Node'
 import View from './src/view/View'
+import Event from './src/event/Event'
 
 interface BrainMapOption {
   [prop: string]: any
@@ -43,6 +44,7 @@ class BrainMap {
   el: HTMLElement | null
   renderer: Render
   view: View
+  event: Event
   layout: string
   svg: Svg | null // 画布
   drawing: G | null // 思维导图容器
@@ -81,6 +83,12 @@ class BrainMap {
     // 视图类实例化
     this.view = new View({
       brainMap: this
+    })
+
+    // 事件类示例话
+    this.event = new Event({
+      brainMap: this,
+      view: this.view
     })
 
     // 初次渲染
