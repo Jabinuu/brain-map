@@ -30,7 +30,7 @@ export default defineConfig({
     {
       file: `dist/${libName}.cjs.js`,
       // commonjs格式
-      format: 'cjs',
+      format: 'cjs'
       // globals: {
       //   lodash: "_",
       // },
@@ -38,7 +38,7 @@ export default defineConfig({
     {
       file: `dist/${libName}.es.js`,
       // es module
-      format: 'es',
+      format: 'es'
       // globals: {
       //   lodash: "_",
       // },
@@ -52,23 +52,23 @@ export default defineConfig({
       //   lodash: "_",
       // },
       // 注意如果是umd格式的bundle的话name属性是必须的，这时可以在script标签引入后window下会挂载该属性的变量来使用你的类库方法
-      name: libName,
+      name: libName
     },
     {
       file: `dist/${libName}.min.js`,
       format: 'iife',
       name: libName,
       extend: true,
-      plugins: [terser()],
-    },
+      plugins: [terser()]
+    }
   ],
   plugins: [
     babel({ babelHelpers: 'bundled' }), // 默认参数也是这个，这里显式调用是为了消除命令行窗口提示文字
     typescript(),
     nodeResolve(),
     commonjs(),
-    json(),
-  ],
+    json()
+  ]
   // 保持某些库的外部引用状态，将第三方库通过导入语句进行导入，而不是直接将其代码打包进模块中
   // external: ["lodash"],
 })

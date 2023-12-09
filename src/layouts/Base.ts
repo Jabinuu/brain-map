@@ -24,6 +24,7 @@ class Base {
       isRoot,
       uid
     })
+
     // 将节点实例挂载到数据源下
     data.node = newNode
     if (isRoot) {

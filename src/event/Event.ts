@@ -1,27 +1,39 @@
 import type BrainMap from '../../index'
+import type Render from '../render/Render'
 import type View from '../view/View'
 
 interface EventOption {
   brainMap: BrainMap
+  renderer: Render
   view: View
 }
 
 class Event {
   brainMap: BrainMap
   view: View
+  renderer: Render
+
   constructor (opt: EventOption) {
     this.brainMap = opt.brainMap
     this.view = opt.view
+    this.renderer = opt.renderer
 
     this.bind()
   }
 
   // 绑定事件
   bind (): void {
+    this.brainMap.el?.addEventListener('click', this.onClick.bind(this))
     this.brainMap.el?.addEventListener('mousedown', this.onMousedown.bind(this))
     window.addEventListener('mousemove', this.onMousemove.bind(this))
     window.addEventListener('mouseup', this.onMouseup.bind(this))
     this.brainMap.el?.addEventListener('wheel', this.onMousewheel.bind(this))
+  }
+
+  onClick (e: MouseEvent): void {
+    if (Array.prototype.includes.call((e.target as HTMLElement).classList, 'bm-svg-container')) {
+      this.renderer.clearActiveNodesList()
+    }
   }
 
   onMousedown (e: MouseEvent): void {

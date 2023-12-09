@@ -1,4 +1,4 @@
-import { G, type Polyline, type G as GType, type Path } from '@svgdotjs/svg.js'
+import { G, type Polyline, type G as GType, type Path, Rect } from '@svgdotjs/svg.js'
 import type BrainMap from '../..'
 import type { DataSource } from '../..'
 import Shape from '../shape/Shape'
@@ -18,6 +18,7 @@ interface NodeCreateOption {
   isRoot?: boolean
   brainMap: BrainMap
   uid: string
+  isActive?: boolean
 }
 
 export interface TextData {
@@ -34,6 +35,7 @@ class Node {
   height: number
   left: number
   top: number
+  isActive: boolean
   nodeData: DataSource | null
   textData: TextData | null
   lines: Array<Path | Polyline>
@@ -70,6 +72,8 @@ class Node {
     this.left = opt.top ?? 600
     // 节点相对于画布top
     this.top = opt.top ?? 200
+    // 节点是否激活状态
+    this.isActive = opt.isActive ?? false
     // 双亲节点
     this.parent = opt.parent ?? null
     // 孩子节点列表
@@ -136,9 +140,11 @@ class Node {
       _width = this.textData.width
       _height = this.textData.height
     }
+    // 节点形状的边框线宽度
+    const borderWidth = 2
 
-    this.width = _width + 2 * (this.getData(EnumDataSource.PADDINGX) as number) + 2 * this.shapePadding.paddingX
-    this.height = _height + 2 * (this.getData(EnumDataSource.PADDINGY) as number) + 2 * this.shapePadding.paddingY
+    this.width = _width + 2 * (this.getData(EnumDataSource.PADDINGX) as number) + 2 * this.shapePadding.paddingX + borderWidth
+    this.height = _height + 2 * (this.getData(EnumDataSource.PADDINGY) as number) + 2 * this.shapePadding.paddingY + borderWidth
 
     return {
       width: this.width,
@@ -158,10 +164,28 @@ class Node {
     this.shape = new Shape(this)
     this.shapeElem = this.shape.createRect()
     this.group.add(this.shapeElem)
+    this.group.addClass('bm-node')
+    this.group.css({
+      cursor: 'default'
+    })
     // 根节点填充色
     if (this.isRoot) this.shapeElem.fill('#F0F0F0')
     // todo: 将所有类型的内容元素在节点内布局
-    if (this.textData !== null) { this.group.add(this.textData.element) }
+    if (this.textData !== null) {
+      this.group.add(this.textData.element)
+    }
+    // 激活边框
+    const wrapRect = new Rect().size(this.width + (2 + 1) * 2, this.height + (2 + 1) * 2)
+      .fill('none').stroke({ color: '#00FF00' }).radius(4).move(-3, -3)
+    wrapRect.addClass('bm-hover-node')
+    wrapRect.addTo(this.group)
+
+    // 节点激活
+    if (this.isActive) {
+      this.group.addClass('active')
+    }
+    // 绑定节点事件
+    this.bindNodeEvent()
     if (this.nodeDrawing !== null) {
       this.group.addTo(this.nodeDrawing)
     }
@@ -183,6 +207,17 @@ class Node {
         }
       })
     }
+  }
+
+  // 绑定节点事件
+  bindNodeEvent (): void {
+    // 单击事件
+    this.group?.on('click', (e) => {
+      e.stopPropagation()
+      this.isActive = true
+      this.renderer.clearActiveNodesList()
+      this.renderer.addActiveNodeList(this)
+    })
   }
 }
 

@@ -3,6 +3,7 @@ import Render from './src/render/Render'
 import type Node from './src/node/Node'
 import View from './src/view/View'
 import Event from './src/event/Event'
+import { cssConstant } from './src/constant/constant'
 
 interface BrainMapOption {
   [prop: string]: any
@@ -46,28 +47,41 @@ class BrainMap {
   view: View
   event: Event
   layout: string
-  svg: Svg | null // 画布
-  drawing: G | null // 思维导图容器
-  lineDrawing: G | null // 所有连线的容器
-  nodeDrawing: G | null // 所有节点的容器
+  svg: Svg | null
+  drawing: G | null
+  lineDrawing: G | null
+  nodeDrawing: G | null
   root: Node | null
-  width: number // 画布宽
-  height: number // 画布高
-  elRect: DOMRect | null // 画布的尺寸位置信息
+  width: number
+  height: number
+  elRect: DOMRect | null
   dataSource: DataSource | null
+  cssEl: HTMLStyleElement | null
 
   constructor (opt: BrainMapOption) {
+    // 画布容器
     this.el = null
+    // 画布
     this.svg = null
+    // 思维导图容器
     this.drawing = null
+    // 所有连线的容器
     this.lineDrawing = null
+    // 所有节点的容器
     this.nodeDrawing = null
+    // 根节点
     this.root = null
+    // 画布宽
     this.width = 0
+    // 画布高
     this.height = 0
+    // 画布的尺寸位置信息
     this.elRect = null
     this.dataSource = null
+    // 思维导图布局模式
     this.layout = ''
+    // 样式容器
+    this.cssEl = null
 
     // 注入选项数据
     this.handleOpt(opt)
@@ -75,6 +89,9 @@ class BrainMap {
     this.initContainerSize()
     // 初始化容器
     this.initContainer()
+    // 添加基础常量样式
+    this.addCss()
+
     // 渲染类实例化
     this.renderer = new Render({
       brainMap: this
@@ -85,10 +102,11 @@ class BrainMap {
       brainMap: this
     })
 
-    // 事件类示例话
+    // 事件类实例化
     this.event = new Event({
       brainMap: this,
-      view: this.view
+      view: this.view,
+      renderer: this.renderer
     })
 
     // 初次渲染
@@ -118,6 +136,7 @@ class BrainMap {
   initContainer (): void {
     if (this.el !== null) {
       this.svg = SVG().addTo(this.el).size(this.width, this.height)
+      this.svg.addClass('bm-svg-container')
       this.drawing = this.svg.group()
       this.drawing.addClass('bm-drawing')
       this.lineDrawing = this.drawing.group()
@@ -125,6 +144,13 @@ class BrainMap {
       this.nodeDrawing = this.drawing.group()
       this.nodeDrawing.addClass('bm-node-drawing')
     }
+  }
+
+  // 添加基础常量样式
+  addCss (): void {
+    this.cssEl = document.createElement('style')
+    this.cssEl.innerHTML = cssConstant
+    document.body.appendChild(this.cssEl)
   }
 }
 
