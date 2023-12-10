@@ -91,7 +91,11 @@ class Render {
         children: []
       })
     })
+    this.clearActiveNodesList()
+    // this.addActiveNodeList()
     // todo：更新节点渲染
+    this.brainMap.nodeDrawing?.children().forEach((item) => item.remove())
+    this.brainMap.lineDrawing?.children().forEach((item) => item.remove())
     this.render()
   }
 
@@ -107,7 +111,11 @@ class Render {
         children: []
       })
     })
-    // todo：更新节点渲染
+    this.clearActiveNodesList()
+    // todo：更新节点渲染,清除所有节点
+    this.brainMap.nodeDrawing?.children().forEach((item) => item.remove())
+    this.brainMap.lineDrawing?.children().forEach((item) => item.remove())
+
     this.render()
   }
 }
