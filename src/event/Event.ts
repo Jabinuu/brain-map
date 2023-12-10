@@ -1,22 +1,26 @@
 import type BrainMap from '../../index'
 import type Render from '../render/Render'
+import type Shortcut from '../shortcut/ShortCut'
 import type View from '../view/View'
 
 interface EventOption {
   brainMap: BrainMap
   renderer: Render
   view: View
+  shortcut: Shortcut
 }
 
 class Event {
   brainMap: BrainMap
   view: View
   renderer: Render
+  shortcut: Shortcut
 
   constructor (opt: EventOption) {
     this.brainMap = opt.brainMap
     this.view = opt.view
     this.renderer = opt.renderer
+    this.shortcut = opt.shortcut
 
     this.bind()
   }
@@ -28,6 +32,11 @@ class Event {
     window.addEventListener('mousemove', this.onMousemove.bind(this))
     window.addEventListener('mouseup', this.onMouseup.bind(this))
     this.brainMap.el?.addEventListener('wheel', this.onMousewheel.bind(this))
+    window.addEventListener('keydown', this.onKeyDown.bind(this))
+  }
+
+  onKeyDown (e: KeyboardEvent): void {
+    this.shortcut.bindShortcutevent(e)
   }
 
   onClick (e: MouseEvent): void {

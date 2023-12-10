@@ -4,6 +4,8 @@ import type Node from './src/node/Node'
 import View from './src/view/View'
 import Event from './src/event/Event'
 import { cssConstant } from './src/constant/constant'
+import Shortcut from './src/shortcut/ShortCut'
+import Command from './src/command/Command'
 
 interface BrainMapOption {
   [prop: string]: any
@@ -46,6 +48,8 @@ class BrainMap {
   renderer: Render
   view: View
   event: Event
+  shortcut: Shortcut
+  command: Command
   layout: string
   svg: Svg | null
   drawing: G | null
@@ -92,13 +96,23 @@ class BrainMap {
     // 添加基础常量样式
     this.addCss()
 
-    // 渲染类实例化
-    this.renderer = new Render({
+    // 视图类实例化
+    this.view = new View({
       brainMap: this
     })
 
-    // 视图类实例化
-    this.view = new View({
+    // 快捷键类实例化
+    this.shortcut = new Shortcut({
+      brainMap: this
+    })
+
+    // 命令类实例化
+    this.command = new Command({
+      brainMap: this
+    })
+
+    // 渲染类实例化
+    this.renderer = new Render({
       brainMap: this
     })
 
@@ -106,7 +120,8 @@ class BrainMap {
     this.event = new Event({
       brainMap: this,
       view: this.view,
-      renderer: this.renderer
+      renderer: this.renderer,
+      shortcut: this.shortcut
     })
 
     // 初次渲染
@@ -151,6 +166,21 @@ class BrainMap {
     this.cssEl = document.createElement('style')
     this.cssEl.innerHTML = cssConstant
     document.body.appendChild(this.cssEl)
+  }
+
+  // 注册快捷键
+  registerShortcut (key: string, cb: () => void): void {
+    this.shortcut.addShortcut(key, cb)
+  }
+
+  // 注册命令
+  registerCommand (cmdName: string, task: () => void): void {
+    this.command.addCommand(cmdName, task)
+  }
+
+  // 执行命令
+  execCommand (cmdName: string): void {
+    this.command.exec(cmdName)
   }
 }
 

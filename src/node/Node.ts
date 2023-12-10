@@ -176,7 +176,7 @@ class Node {
     }
     // 激活边框
     const wrapRect = new Rect().size(this.width + (2 + 1) * 2, this.height + (2 + 1) * 2)
-      .fill('none').stroke({ color: '#00FF00' }).radius(4).move(-3, -3)
+      .fill('none').stroke({ color: '#FF8C00' }).radius(4).move(-3, -3)
     wrapRect.addClass('bm-hover-node')
     wrapRect.addTo(this.group)
 
