@@ -10,6 +10,11 @@ interface RenderOption {
 
 type Layout = LogicalStructure
 
+// export type SET_NODE_DATA = Array<Node | { [prop in keyof DataSourceItem]?: DataSourceItem[prop] }> 等价于下面
+// export type SET_NODE_DATA = Node | Partial<DataSourceItem>
+
+// export type SET_NODE_EXPAND = [Node, boolean ]
+
 const layouts = {
   [CONSTANT.LAYOUTS.LOGICAL_STRUCTURE]: LogicalStructure
 }
@@ -42,8 +47,8 @@ class Render {
   registerCommand (): void {
     this.brainMap.registerCommand(EnumCommandName.INSERT_CHILD_NODE, this.appendChildNode.bind(this))
     this.brainMap.registerCommand(EnumCommandName.INSERT_SIBLING_NODE, this.appendSibingNode.bind(this))
-    this.brainMap.registerCommand(EnumCommandName.SET_NODE_DATA, this.setNodeData.bind(this))
-    this.brainMap.registerCommand(EnumCommandName.SET_NODE_EXPAND, this.setNodeExpand.bind(this))
+    this.brainMap.registerCommand<Node, Partial<DataSourceItem>>(EnumCommandName.SET_NODE_DATA, this.setNodeData.bind(this))
+    this.brainMap.registerCommand<Node, boolean>(EnumCommandName.SET_NODE_EXPAND, this.setNodeExpand.bind(this))
   }
 
   // 绑定快捷键
@@ -73,7 +78,7 @@ class Render {
   // 清空激活节点列表
   clearActiveNodesList (): void {
     this.activeNodes.forEach((item: Node) => {
-      this.brainMap.execCommand(EnumCommandName.SET_NODE_DATA, item, {
+      this.brainMap.execCommand<Node, Partial<DataSourceItem>>(EnumCommandName.SET_NODE_DATA, item, {
         isActive: false
       })
       item.group?.removeClass('active')
@@ -127,17 +132,19 @@ class Render {
   }
 
   // 设置节点数据源数据
-  setNodeData (node: Node, data: DataSourceItem): void {
-    Object.keys(data).forEach((key) => {
-      if (node.nodeData) {
-        node.nodeData.data[key] = data[key]
-      }
-    })
+  setNodeData (node?: Node, data?: Partial<DataSourceItem>): void {
+    if (data) {
+      Object.keys(data).forEach((key) => {
+        if (node?.nodeData) {
+          node.nodeData.data[key] = data[key]
+        }
+      })
+    }
   }
 
   // 改变节点展开状态
-  setNodeExpand (node: Node, isExpand: boolean): void {
-    this.brainMap.execCommand(EnumCommandName.SET_NODE_DATA, node, {
+  setNodeExpand (node?: Node, isExpand?: boolean): void {
+    this.brainMap.execCommand<Node, Partial<DataSourceItem>>(EnumCommandName.SET_NODE_DATA, node, {
       isExpand
     })
 

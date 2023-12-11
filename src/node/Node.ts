@@ -158,7 +158,7 @@ class Node {
     this.group?.on('click', (e) => {
       e.stopPropagation()
       if (!Array.prototype.includes.call((e.target as HTMLElement).classList, 'bm-expand-btn')) {
-        this.brainMap.execCommand(EnumCommandName.SET_NODE_DATA, this, {
+        this.brainMap.execCommand<Node, Partial<DataSourceItem>>(EnumCommandName.SET_NODE_DATA, this, {
           isActive: true
         })
         this.renderer.clearActiveNodesList()
@@ -265,8 +265,7 @@ class Node {
       })
     })
     g.on('click', () => {
-      // todo: 重新渲染节点
-      this.brainMap.execCommand(EnumCommandName.SET_NODE_EXPAND, this, !isExpand)
+      this.brainMap.execCommand<Node, boolean>(EnumCommandName.SET_NODE_EXPAND, this, !isExpand)
     })
     return g
   }

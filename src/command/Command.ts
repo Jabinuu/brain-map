@@ -1,4 +1,5 @@
 import type BrainMap from '../../index'
+import { type Pair } from '../../index'
 interface CommandOption {
   brainMap: BrainMap
 }
@@ -19,9 +20,9 @@ class Command {
   }
 
   // 执行命令
-  exec (cmdName: string, ...arg: any): void {
+  exec <T1, T2>(cmdName: string, ...arg: Pair<T1, T2>): void {
     if (this.commandMap[cmdName]) {
-      this.commandMap[cmdName].forEach((task: (...arg: any) => void) => {
+      this.commandMap[cmdName].forEach((task: (...arg: Pair<T1, T2>) => void) => {
         task(...arg)
       })
     }

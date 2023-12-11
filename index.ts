@@ -7,6 +7,8 @@ import { cssConstant } from './src/constant/constant'
 import Shortcut from './src/shortcut/Shortcut'
 import Command from './src/command/Command'
 
+export type Pair<T1, T2> = [T1?, T2?]
+
 interface BrainMapOption {
   [prop: string]: any
   el: HTMLElement // 思维导图容器元素
@@ -175,13 +177,13 @@ class BrainMap {
   }
 
   // 注册命令
-  registerCommand (cmdName: string, task: (...arg: any) => void): void {
+  registerCommand <T1, T2>(cmdName: string, task: (...arg: Pair<T1, T2>) => void): void {
     this.command.addCommand(cmdName, task)
   }
 
   // 执行命令
-  execCommand (cmdName: string, ...arg: any): void {
-    this.command.exec(cmdName, ...arg)
+  execCommand <T1, T2>(cmdName: string, ...arg: Pair<T1, T2>): void {
+    this.command.exec<T1, T2>(cmdName, ...arg)
   }
 }
 
