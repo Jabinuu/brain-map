@@ -166,7 +166,6 @@ class LogicalStructure extends Base {
 
       node.lines.push(line)
     })
-    console.log(node)
   }
 }
 

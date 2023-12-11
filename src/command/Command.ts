@@ -19,16 +19,16 @@ class Command {
   }
 
   // 执行命令
-  exec (cmdName: string): void {
+  exec (cmdName: string, ...arg: any): void {
     if (this.commandMap[cmdName]) {
-      this.commandMap[cmdName].forEach((task: () => void) => {
-        task()
+      this.commandMap[cmdName].forEach((task: (...arg: any) => void) => {
+        task(...arg)
       })
     }
   }
 
   // 注册命令
-  addCommand (cmdName: string, task: () => void): void {
+  addCommand (cmdName: string, task: (...arg: any) => void): void {
     if (this.commandMap[cmdName]) {
       this.commandMap[cmdName].push(task)
     } else {

@@ -1,6 +1,6 @@
 import type BrainMap from '../../index'
 import type Render from '../render/Render'
-import type Shortcut from '../shortcut/ShortCut'
+import type Shortcut from '../shortcut/Shortcut'
 import type View from '../view/View'
 
 interface EventOption {
@@ -36,7 +36,7 @@ class Event {
   }
 
   onKeyDown (e: KeyboardEvent): void {
-    this.shortcut.bindShortcutevent(e)
+    this.shortcut.onShortcutKeyDown(e)
   }
 
   onClick (e: MouseEvent): void {

@@ -1,7 +1,8 @@
-import type BrainMap from '../..'
+import type BrainMap from '../../index'
 import LogicalStructure from '../layouts/LogicalStructure'
 import { CONSTANT, EnumCommandName, EnumShortcutName } from '../constant/constant'
 import type Node from '../node/Node'
+import { type DataSourceItem } from '../../index'
 
 interface RenderOption {
   brainMap: BrainMap
@@ -41,6 +42,8 @@ class Render {
   registerCommand (): void {
     this.brainMap.registerCommand(EnumCommandName.INSERT_CHILD_NODE, this.appendChildNode.bind(this))
     this.brainMap.registerCommand(EnumCommandName.INSERT_SIBLING_NODE, this.appendSibingNode.bind(this))
+    this.brainMap.registerCommand(EnumCommandName.SET_NODE_DATA, this.setNodeData.bind(this))
+    this.brainMap.registerCommand(EnumCommandName.SET_NODE_EXPAND, this.setNodeExpand.bind(this))
   }
 
   // 绑定快捷键
@@ -56,8 +59,11 @@ class Render {
 
   // 渲染器
   render (): void {
-    // 布局的过程中已经创建了所有Node实例并计算好了定位属性值
+    // 先清空所有节点和连线容器
+    this.brainMap.nodeDrawing?.children().forEach((item) => item.remove())
+    this.brainMap.lineDrawing?.children().forEach((item) => item.remove())
 
+    // 布局的过程中已经创建了所有Node实例并计算好了定位属性值
     this.layout?.doLayout()
 
     // 将所有Node实例渲染到画布上
@@ -67,7 +73,9 @@ class Render {
   // 清空激活节点列表
   clearActiveNodesList (): void {
     this.activeNodes.forEach((item: Node) => {
-      item.isActive = false
+      this.brainMap.execCommand(EnumCommandName.SET_NODE_DATA, item, {
+        isActive: false
+      })
       item.group?.removeClass('active')
     })
     this.activeNodes.length = 0
@@ -86,14 +94,14 @@ class Render {
         data: {
           text: '新增子节点',
           paddingX: 25,
-          paddingY: 5
+          paddingY: 5,
+          isActive: false,
+          isExpand: true
         },
         children: []
       })
     })
     this.clearActiveNodesList()
-    // this.addActiveNodeList()
-    // todo：更新节点渲染
     this.brainMap.nodeDrawing?.children().forEach((item) => item.remove())
     this.brainMap.lineDrawing?.children().forEach((item) => item.remove())
     this.render()
@@ -106,15 +114,32 @@ class Render {
         data: {
           text: '新增同级节点',
           paddingX: 25,
-          paddingY: 5
+          paddingY: 5,
+          isExpand: true,
+          isActive: false
         },
         children: []
       })
     })
     this.clearActiveNodesList()
-    // todo：更新节点渲染,清除所有节点
-    this.brainMap.nodeDrawing?.children().forEach((item) => item.remove())
-    this.brainMap.lineDrawing?.children().forEach((item) => item.remove())
+
+    this.render()
+  }
+
+  // 设置节点数据源数据
+  setNodeData (node: Node, data: DataSourceItem): void {
+    Object.keys(data).forEach((key) => {
+      if (node.nodeData) {
+        node.nodeData.data[key] = data[key]
+      }
+    })
+  }
+
+  // 改变节点展开状态
+  setNodeExpand (node: Node, isExpand: boolean): void {
+    this.brainMap.execCommand(EnumCommandName.SET_NODE_DATA, node, {
+      isExpand
+    })
 
     this.render()
   }

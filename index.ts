@@ -4,7 +4,7 @@ import type Node from './src/node/Node'
 import View from './src/view/View'
 import Event from './src/event/Event'
 import { cssConstant } from './src/constant/constant'
-import Shortcut from './src/shortcut/ShortCut'
+import Shortcut from './src/shortcut/Shortcut'
 import Command from './src/command/Command'
 
 interface BrainMapOption {
@@ -24,11 +24,12 @@ interface BrainMapOption {
 
 export interface DataSourceItem {
   [prop: string]: any
-  text?: string // 文本数据
+  text: string // 文本数据
   image?: string // 图片url
-  icon?: [] // 图标列表
-  tag?: [] // 标签列表
-  expand?: boolean // 节点是否展开
+  icon?: string[] // 图标列表
+  tag?: string[] // 标签列表
+  isExpand: boolean // 节点是否展开
+  isActive: boolean // 节点激活状态
   richText?: boolean // 该节点是否是富文本模式
   hyperLink?: string // 超链接url
   paddingX: number // 节点x轴内边距
@@ -169,18 +170,18 @@ class BrainMap {
   }
 
   // 注册快捷键
-  registerShortcut (key: string, cb: () => void): void {
+  registerShortcut (key: string, cb: (...arg: any) => void): void {
     this.shortcut.addShortcut(key, cb)
   }
 
   // 注册命令
-  registerCommand (cmdName: string, task: () => void): void {
+  registerCommand (cmdName: string, task: (...arg: any) => void): void {
     this.command.addCommand(cmdName, task)
   }
 
   // 执行命令
-  execCommand (cmdName: string): void {
-    this.command.exec(cmdName)
+  execCommand (cmdName: string, ...arg: any): void {
+    this.command.exec(cmdName, ...arg)
   }
 }
 

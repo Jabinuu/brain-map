@@ -1,11 +1,11 @@
-import { G, type Polyline, type G as GType, type Path, Rect } from '@svgdotjs/svg.js'
+import { G, type Polyline, type G as GType, type Path, Rect, SVG } from '@svgdotjs/svg.js'
 import type BrainMap from '../..'
-import type { DataSource } from '../..'
+import type { DataSource, DataSourceItem } from '../..'
 import Shape from '../shape/Shape'
 import nodeCreateContentMethods from './nodeCreateContent'
-import { EnumDataSource, EnumLineShape } from '../constant/constant'
+import { EnumCommandName, EnumDataSource, EnumLineShape } from '../constant/constant'
 import type Render from '../render/Render'
-
+import { open as openBtn, close as closeBtn } from '../svg/btns'
 interface NodeCreateOption {
   data: DataSource | null
   width?: number
@@ -18,7 +18,6 @@ interface NodeCreateOption {
   isRoot?: boolean
   brainMap: BrainMap
   uid: string
-  isActive?: boolean
 }
 
 export interface TextData {
@@ -35,7 +34,6 @@ class Node {
   height: number
   left: number
   top: number
-  isActive: boolean
   nodeData: DataSource | null
   textData: TextData | null
   lines: Array<Path | Polyline>
@@ -45,6 +43,7 @@ class Node {
   group: GType | null
   shape: Shape | null
   shapeElem: Path | null
+  expandBtnElem: GType | null
   shapePadding: {
     paddingX: number
     paddingY: number
@@ -72,8 +71,7 @@ class Node {
     this.left = opt.top ?? 600
     // 节点相对于画布top
     this.top = opt.top ?? 200
-    // 节点是否激活状态
-    this.isActive = opt.isActive ?? false
+
     // 双亲节点
     this.parent = opt.parent ?? null
     // 孩子节点列表
@@ -86,6 +84,8 @@ class Node {
     this.shape = null
     // 节点形状元素
     this.shapeElem = null
+    // 展开收起按钮元素
+    this.expandBtnElem = null
     // 节点形状所需的额外内边距
     this.shapePadding = {
       paddingX: 0,
@@ -152,7 +152,32 @@ class Node {
     }
   }
 
-  getData (key: string | undefined): unknown {
+  // 绑定节点事件
+  bindNodeEvent (): void {
+    // 单击事件
+    this.group?.on('click', (e) => {
+      e.stopPropagation()
+      if (!Array.prototype.includes.call((e.target as HTMLElement).classList, 'bm-expand-btn')) {
+        this.brainMap.execCommand(EnumCommandName.SET_NODE_DATA, this, {
+          isActive: true
+        })
+        this.renderer.clearActiveNodesList()
+        this.renderer.addActiveNodeList(this)
+      }
+    })
+
+    // 鼠标移入事件,mouseenter事件默认不冒泡
+    this.group?.on('mouseenter', (e) => {
+      this.showExpandBtn()
+    })
+    // 鼠标移出事件
+    this.group?.on('mouseleave', () => {
+      this.hideExpandBtn()
+    })
+  }
+
+  // 获取Node实例对应的数据源
+  getData (key?: string): unknown {
     if (this.nodeData !== null) {
       return (key != null) ? this.nodeData.data[key] : this.nodeData.data
     }
@@ -180,10 +205,13 @@ class Node {
     wrapRect.addClass('bm-hover-node')
     wrapRect.addTo(this.group)
 
+    const { isActive } = this.getData() as DataSourceItem
     // 节点激活
-    if (this.isActive) {
+    if (isActive) {
       this.group.addClass('active')
     }
+    // 渲染节点展开按钮
+    this.renderExpandBtn()
     // 绑定节点事件
     this.bindNodeEvent()
     if (this.nodeDrawing !== null) {
@@ -191,10 +219,14 @@ class Node {
     }
     // 渲染节点连线
     this.renderLine(this)
-    // 递归渲染子节点
-    this.children.forEach((item) => {
-      item.render()
-    })
+
+    // 根据节点是否展开来决定是否渲染子节点
+    if (this.getData('isExpand')) {
+      // 递归渲染子节点
+      this.children.forEach((item) => {
+        item.render()
+      })
+    }
   }
 
   // 渲染连线
@@ -209,15 +241,58 @@ class Node {
     }
   }
 
-  // 绑定节点事件
-  bindNodeEvent (): void {
-    // 单击事件
-    this.group?.on('click', (e) => {
-      e.stopPropagation()
-      this.isActive = true
-      this.renderer.clearActiveNodesList()
-      this.renderer.addActiveNodeList(this)
+  // 创建展开收起按钮
+  renderExpandBtn (): GType | undefined {
+    if (this.isRoot || !this.children || this.children.length <= 0) {
+      return
+    }
+    const g = new G()
+    g.addClass('bm-expand-btn')
+    let svgString = closeBtn
+    const { isExpand } = this.getData() as DataSourceItem
+    if (!isExpand) {
+      svgString = openBtn
+    }
+
+    const btnRadius = 18
+    g.circle(btnRadius - 1).fill('#f06')
+    SVG(svgString).size(btnRadius, btnRadius).addTo(g)
+    g.translate(this.width, (this.height - btnRadius) / 2)
+    // 绑定事件
+    g.on('mouseenter', () => {
+      g.css({
+        cursor: 'pointer'
+      })
     })
+    g.on('click', () => {
+      // todo: 重新渲染节点
+      this.brainMap.execCommand(EnumCommandName.SET_NODE_EXPAND, this, !isExpand)
+    })
+    return g
+  }
+
+  // 显示展开收起按钮
+  showExpandBtn (): void {
+    if (this.expandBtnElem) {
+      this.expandBtnElem.css({
+        display: 'block'
+      })
+    } else {
+      const btn = this.renderExpandBtn()
+      if (btn) {
+        this.expandBtnElem = btn
+        this.group?.add(btn)
+      }
+    }
+  }
+
+  // 隐藏展开收起按钮
+  hideExpandBtn (): void {
+    if (this.expandBtnElem) {
+      this.expandBtnElem.css({
+        display: 'none'
+      })
+    }
   }
 }
 

@@ -20,7 +20,7 @@ class Shortcut {
   }
 
   // 绑定快捷键事件
-  bindShortcutevent (e: KeyboardEvent): void {
+  onShortcutKeyDown (e: KeyboardEvent): void {
     e.preventDefault()
     if (this.shortcutMap[e.key]) {
       this.shortcutMap[e.key].forEach((fn: () => void) => {

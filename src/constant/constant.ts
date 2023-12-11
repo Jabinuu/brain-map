@@ -97,7 +97,9 @@ export enum EnumShortcutName {
 
 export enum EnumCommandName {
   INSERT_CHILD_NODE = 'INSERT_CHILD_NODE',
-  INSERT_SIBLING_NODE = 'INSERT_SIBLING_NODE'
+  INSERT_SIBLING_NODE = 'INSERT_SIBLING_NODE',
+  SET_NODE_EXPAND = 'SET_NODE_EXPAND',
+  SET_NODE_DATA = 'SET_NODE_DATA'
 }
 
 export const cssConstant = `
