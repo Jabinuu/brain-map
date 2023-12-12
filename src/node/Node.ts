@@ -161,13 +161,7 @@ class Node {
     // 单击事件
     this.group?.on('click', (e: Event) => {
       e.stopPropagation()
-      if (!this.isClickInGenericExpandArea((e as MouseEvent).clientX, (e as MouseEvent).clientY)) {
-        this.renderer.clearActiveNodesList()
-        this.brainMap.execCommand<Node, Partial<DataSourceItem>>(EnumCommandName.SET_NODE_DATA, this, {
-          isActive: true
-        })
-        this.renderer.addActiveNodeList(this)
-      }
+      this.active()
     })
 
     // 鼠标移入事件,mouseenter事件默认不冒泡
@@ -176,7 +170,9 @@ class Node {
     })
     // 鼠标移出事件
     this.group?.on('mouseleave', () => {
-      this.hideExpandBtn()
+      if (!this.getData('isActive')) {
+        this.hideExpandBtn()
+      }
     })
   }
 
@@ -249,6 +245,13 @@ class Node {
     }
   }
 
+  // 激活节点
+  active (): void {
+    this.renderer.clearActiveNodesList()
+    this.brainMap.execCommand<Node, boolean>(EnumCommandName.SET_NODE_ACTIVE, this, true)
+    this.renderer.addActiveNodeList(this)
+  }
+
   // 创建展开收起按钮
   renderExpandBtn (): GType | undefined {
     if (this.isRoot || !this.children || this.children.length <= 0) {
@@ -273,7 +276,8 @@ class Node {
       })
     })
 
-    g.on('click', () => {
+    g.on('click', (e) => {
+      e.stopPropagation()
       this.brainMap.execCommand<Node, boolean>(EnumCommandName.SET_NODE_EXPAND, this, !isExpand)
     })
     return g
@@ -310,20 +314,6 @@ class Node {
     rect.translate(this.width, 0).fill('transparent')
     this.genericExpandArea = rect
     this.group?.add(rect)
-  }
-
-  // 判断点击时鼠标是否在泛扩展按钮区域
-  isClickInGenericExpandArea (x: number, y: number): boolean {
-    if (this.genericExpandArea) {
-      const areaLeft = this.width + this.left
-      const areaTop = this.top
-      const areaRight = this.width + this.left + this.genericExpandArea.bbox().width
-      const areaBottom = this.top + this.genericExpandArea.bbox().height
-      if (x > areaLeft && x < areaRight && y > areaTop && y < areaBottom) {
-        return true
-      }
-    }
-    return false
   }
 }
 

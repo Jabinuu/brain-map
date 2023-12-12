@@ -49,6 +49,7 @@ class Render {
     this.brainMap.registerCommand(EnumCommandName.INSERT_SIBLING_NODE, this.appendSibingNode.bind(this))
     this.brainMap.registerCommand<Node, Partial<DataSourceItem>>(EnumCommandName.SET_NODE_DATA, this.setNodeData.bind(this))
     this.brainMap.registerCommand<Node, boolean>(EnumCommandName.SET_NODE_EXPAND, this.setNodeExpand.bind(this))
+    this.brainMap.registerCommand<Node, boolean>(EnumCommandName.SET_NODE_ACTIVE, this.setNodeActive.bind(this))
   }
 
   // 绑定快捷键
@@ -78,9 +79,7 @@ class Render {
   // 清空激活节点列表
   clearActiveNodesList (): void {
     this.activeNodes.forEach((item: Node) => {
-      this.brainMap.execCommand<Node, Partial<DataSourceItem>>(EnumCommandName.SET_NODE_DATA, item, {
-        isActive: false
-      })
+      this.brainMap.execCommand<Node, boolean>(EnumCommandName.SET_NODE_ACTIVE, item, false)
       item.group?.removeClass('active')
     })
     this.activeNodes.length = 0
@@ -89,6 +88,7 @@ class Render {
   // 添加激活节点
   addActiveNodeList (node: Node): void {
     node.group?.addClass('active')
+    this.brainMap.execCommand<Node, boolean>(EnumCommandName.SET_NODE_ACTIVE, node, true)
     this.activeNodes.push(node)
   }
 
@@ -142,6 +142,18 @@ class Render {
     }
     // 修改过数据就重新渲染
     this.render()
+  }
+
+  // 改变节点激活状态
+  setNodeActive (node?: Node, isActive?: boolean): void {
+    this.brainMap.execCommand<Node, Partial<DataSourceItem>>(EnumCommandName.SET_NODE_DATA, node, {
+      isActive
+    })
+    if (isActive) {
+      node?.showExpandBtn()
+    } else {
+      node?.hideExpandBtn()
+    }
   }
 
   // 改变节点展开状态
