@@ -29,7 +29,7 @@ class Command {
   }
 
   // 注册命令
-  addCommand (cmdName: string, task: (...arg: any) => void): void {
+  addCommand <T1, T2>(cmdName: string, task: (...arg: Pair<T1, T2>) => void): void {
     if (this.commandMap[cmdName]) {
       this.commandMap[cmdName].push(task)
     } else {
