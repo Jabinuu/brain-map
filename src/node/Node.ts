@@ -6,6 +6,7 @@ import nodeCreateContentMethods from './nodeCreateContent'
 import { EnumCommandName, EnumDataSource, EnumLineShape } from '../constant/constant'
 import type Render from '../render/Render'
 import { open as openBtn, close as closeBtn } from '../svg/btns'
+
 interface NodeCreateOption {
   data: DataSource | null
   width?: number
@@ -43,6 +44,7 @@ class Node {
   group: GType | null
   shape: Shape | null
   shapeElem: Path | null
+  genericExpandArea: Rect | null
   expandBtnElem: GType | null
   shapePadding: {
     paddingX: number
@@ -86,6 +88,8 @@ class Node {
     this.shapeElem = null
     // 展开收起按钮元素
     this.expandBtnElem = null
+    // 泛展开按钮区域元素
+    this.genericExpandArea = null
     // 节点形状所需的额外内边距
     this.shapePadding = {
       paddingX: 0,
@@ -155,13 +159,13 @@ class Node {
   // 绑定节点事件
   bindNodeEvent (): void {
     // 单击事件
-    this.group?.on('click', (e) => {
+    this.group?.on('click', (e: Event) => {
       e.stopPropagation()
-      if (!Array.prototype.includes.call((e.target as HTMLElement).classList, 'bm-expand-btn')) {
+      if (!this.isClickInGenericExpandArea((e as MouseEvent).clientX, (e as MouseEvent).clientY)) {
+        this.renderer.clearActiveNodesList()
         this.brainMap.execCommand<Node, Partial<DataSourceItem>>(EnumCommandName.SET_NODE_DATA, this, {
           isActive: true
         })
-        this.renderer.clearActiveNodesList()
         this.renderer.addActiveNodeList(this)
       }
     })
@@ -212,6 +216,10 @@ class Node {
     }
     // 渲染节点展开按钮
     this.renderExpandBtn()
+    if (!this.isRoot && this.children && this.children.length > 0) {
+      // 创建泛扩展按钮区域
+      this.renderGenericExpandArea()
+    }
     // 绑定节点事件
     this.bindNodeEvent()
     if (this.nodeDrawing !== null) {
@@ -253,17 +261,18 @@ class Node {
     if (!isExpand) {
       svgString = openBtn
     }
-
     const btnRadius = 18
     g.circle(btnRadius - 1).fill('#f06')
     SVG(svgString).size(btnRadius, btnRadius).addTo(g)
     g.translate(this.width, (this.height - btnRadius) / 2)
+
     // 绑定事件
     g.on('mouseenter', () => {
       g.css({
         cursor: 'pointer'
       })
     })
+
     g.on('click', () => {
       this.brainMap.execCommand<Node, boolean>(EnumCommandName.SET_NODE_EXPAND, this, !isExpand)
     })
@@ -292,6 +301,29 @@ class Node {
         display: 'none'
       })
     }
+  }
+
+  // 创建泛扩展按钮区域
+  renderGenericExpandArea (): void {
+    const btnRadius = 18
+    const rect = new Rect().size(btnRadius + 8, this.height)
+    rect.translate(this.width, 0).fill('transparent')
+    this.genericExpandArea = rect
+    this.group?.add(rect)
+  }
+
+  // 判断点击时鼠标是否在泛扩展按钮区域
+  isClickInGenericExpandArea (x: number, y: number): boolean {
+    if (this.genericExpandArea) {
+      const areaLeft = this.width + this.left
+      const areaTop = this.top
+      const areaRight = this.width + this.left + this.genericExpandArea.bbox().width
+      const areaBottom = this.top + this.genericExpandArea.bbox().height
+      if (x > areaLeft && x < areaRight && y > areaTop && y < areaBottom) {
+        return true
+      }
+    }
+    return false
   }
 }
 

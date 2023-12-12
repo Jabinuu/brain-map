@@ -45,7 +45,9 @@ class Shape {
       ['V', borderRadius],
       ['Q', 0, 0, borderRadius, 0]
     ])
-      .fill('transparent').stroke({ width: 2, color: '#f06', linecap: 'round', linejoin: 'round' })
+      .fill('transparent')
+      .stroke({ width: 2, color: '#f06', linecap: 'round', linejoin: 'round' })
+      .addClass('bm-node-shape')
   }
 
   // 创建胶囊形状

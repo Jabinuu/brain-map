@@ -3,7 +3,7 @@ import LogicalStructure from '../layouts/LogicalStructure'
 import { CONSTANT, EnumCommandName, EnumShortcutName } from '../constant/constant'
 import type Node from '../node/Node'
 import { type DataSourceItem } from '../../index'
-
+import { traversal } from '../utils'
 interface RenderOption {
   brainMap: BrainMap
 }
@@ -140,15 +140,34 @@ class Render {
         }
       })
     }
+    // 修改过数据就重新渲染
+    this.render()
   }
 
   // 改变节点展开状态
   setNodeExpand (node?: Node, isExpand?: boolean): void {
+    if (!isExpand && node) {
+      this.cancelAllChildrenActive(node)
+    }
     this.brainMap.execCommand<Node, Partial<DataSourceItem>>(EnumCommandName.SET_NODE_DATA, node, {
       isExpand
     })
+  }
 
-    this.render()
+  // 节点收缩时取消所有后代节点的激活状态
+  cancelAllChildrenActive (node: Node): void {
+    if (node.nodeData) {
+      traversal(node.nodeData, node.isRoot, null, (node) => {
+        node.children.forEach((child) => {
+          if (child.node?.getData('isActive')) {
+            this.brainMap.execCommand<Node, Partial<DataSourceItem>>(EnumCommandName.SET_NODE_DATA, child.node, {
+              isActive: false
+            })
+            this.activeNodes = this.activeNodes.filter((item) => item !== child.node)
+          }
+        })
+      })
+    }
   }
 }
 
