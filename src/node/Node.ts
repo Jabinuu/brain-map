@@ -165,12 +165,16 @@ class Node {
     })
 
     // 鼠标移入事件,mouseenter事件默认不冒泡
-    this.group?.on('mouseenter', (e) => {
-      this.showExpandBtn()
+    this.group?.on('mouseenter', () => {
+      // 设置个异步 防止鼠标光标样式跳为default
+      setTimeout(() => {
+        this.showExpandBtn()
+      }, 0)
     })
+
     // 鼠标移出事件
     this.group?.on('mouseleave', () => {
-      if (!this.getData('isActive')) {
+      if (!this.getData('isActive') && this.getData('isExpand')) {
         this.hideExpandBtn()
       }
     })
@@ -205,19 +209,18 @@ class Node {
     wrapRect.addClass('bm-hover-node')
     wrapRect.addTo(this.group)
 
-    const { isActive } = this.getData() as DataSourceItem
+    const { isActive, isExpand } = this.getData() as DataSourceItem
     // 节点激活
     if (isActive) {
       this.group.addClass('active')
     }
-    // 渲染节点展开按钮
-    this.renderExpandBtn()
     if (!this.isRoot && this.children && this.children.length > 0) {
       // 创建泛扩展按钮区域
       this.renderGenericExpandArea()
     }
     // 绑定节点事件
     this.bindNodeEvent()
+
     if (this.nodeDrawing !== null) {
       this.group.addTo(this.nodeDrawing)
     }
@@ -225,11 +228,14 @@ class Node {
     this.renderLine(this)
 
     // 根据节点是否展开来决定是否渲染子节点
-    if (this.getData('isExpand')) {
+    if (isExpand) {
       // 递归渲染子节点
       this.children.forEach((item) => {
         item.render()
       })
+    } else {
+      // 显示扩展按钮
+      this.showExpandBtn()
     }
   }
 
@@ -258,29 +264,32 @@ class Node {
       return
     }
     const g = new G()
-    g.addClass('bm-expand-btn')
+    g.addClass('bm-expand-btn').css({
+      cursor: 'pointer'
+    })
     let svgString = closeBtn
     const { isExpand } = this.getData() as DataSourceItem
+
     if (!isExpand) {
       svgString = openBtn
     }
     const btnRadius = 18
     g.circle(btnRadius - 1).fill('#f06')
-    SVG(svgString).size(btnRadius, btnRadius).addTo(g)
     g.translate(this.width, (this.height - btnRadius) / 2)
+    SVG(svgString).size(btnRadius, btnRadius).addTo(g)
 
     // 绑定事件
-    g.on('mouseenter', () => {
-      g.css({
-        cursor: 'pointer'
-      })
-    })
+    this.bindExpandBtnEvent(g, isExpand)
 
+    return g
+  }
+
+  // 绑定展开收缩节点事件
+  bindExpandBtnEvent (g: GType, isExpand: boolean): void {
     g.on('click', (e) => {
       e.stopPropagation()
       this.brainMap.execCommand<Node, boolean>(EnumCommandName.SET_NODE_EXPAND, this, !isExpand)
     })
-    return g
   }
 
   // 显示展开收起按钮
@@ -291,6 +300,7 @@ class Node {
       })
     } else {
       const btn = this.renderExpandBtn()
+      // 能有事件响应的btn是这里创建的
       if (btn) {
         this.expandBtnElem = btn
         this.group?.add(btn)

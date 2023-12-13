@@ -107,8 +107,8 @@ class Render {
       })
     })
     this.clearActiveNodesList()
-    this.brainMap.nodeDrawing?.children().forEach((item) => item.remove())
-    this.brainMap.lineDrawing?.children().forEach((item) => item.remove())
+    // this.brainMap.nodeDrawing?.children().forEach((item) => item.remove())
+    // this.brainMap.lineDrawing?.children().forEach((item) => item.remove())
     this.render()
   }
 
@@ -151,8 +151,6 @@ class Render {
     })
     if (isActive) {
       node?.showExpandBtn()
-    } else {
-      node?.hideExpandBtn()
     }
   }
 
