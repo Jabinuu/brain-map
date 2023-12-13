@@ -17,14 +17,6 @@ class Shape {
     }
   }
 
-  // 获得节点减去边框宽度后的宽高
-  getNodeSize (): { width: number, height: number } {
-    return {
-      width: this.node.width,
-      height: this.node.height
-    }
-  }
-
   // 创建节点形状
   createNodeShape (): void {
 
@@ -32,7 +24,7 @@ class Shape {
 
   // 创建圆角矩形
   createRect (): Path {
-    const { height, width } = this.node
+    const { height, width } = this.node.getSizeWithoutBorderWidth()
     const borderRadius = 5
     return new Path().plot([
       ['M', borderRadius, 0],

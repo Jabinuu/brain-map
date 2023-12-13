@@ -33,7 +33,8 @@ export function getNodeIndexOfChildrenList (node: Node, childrenList: Node[]): n
 
 // 获得连线的起点坐标
 export function getStartPointOfLine (root: Node): PositionPair {
+  const { height, width } = root.getSizeWithoutBorderWidth()
   return root.isRoot
-    ? [root.width / 2 + root.left, root.height / 2 + root.top]
-    : [root.width + root.left, root.height / 2 + root.top]
+    ? [width / 2 + root.left, height / 2 + root.top]
+    : [width + root.left, height / 2 + root.top]
 }

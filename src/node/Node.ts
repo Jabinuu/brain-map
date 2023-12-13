@@ -5,7 +5,8 @@ import Shape from '../shape/Shape'
 import nodeCreateContentMethods from './nodeCreateContent'
 import { EnumCommandName, EnumDataSource, EnumLineShape } from '../constant/constant'
 import type Render from '../render/Render'
-import { open as openBtn, close as closeBtn } from '../svg/btns'
+import { close as closeBtn } from '../svg/btns'
+import { traversal } from '../utils'
 
 interface NodeCreateOption {
   data: DataSource | null
@@ -156,6 +157,17 @@ class Node {
     }
   }
 
+  // 获取去除边框宽度的节点总宽高
+  getSizeWithoutBorderWidth (): { width: number, height: number } {
+    const borderWidth = 2
+    const width = this.width - borderWidth
+    const height = this.height - borderWidth
+    return {
+      width,
+      height
+    }
+  }
+
   // 绑定节点事件
   bindNodeEvent (): void {
     // 单击事件
@@ -204,7 +216,9 @@ class Node {
       this.group.add(this.textData.element)
     }
     // 激活边框
-    const wrapRect = new Rect().size(this.width + (2 + 1) * 2, this.height + (2 + 1) * 2)
+    const borderWidth = 2 // 激活边框宽度
+    const { width, height } = this.getSizeWithoutBorderWidth()
+    const wrapRect = new Rect().size(width + (borderWidth + 1) * 2, height + (borderWidth + 1) * 2)
       .fill('none').stroke({ color: '#FF8C00' }).radius(4).move(-3, -3)
     wrapRect.addClass('bm-hover-node')
     wrapRect.addTo(this.group)
@@ -263,23 +277,37 @@ class Node {
     if (this.isRoot || !this.children || this.children.length <= 0) {
       return
     }
+    const { isExpand } = this.getData() as DataSourceItem
+    // 创建按钮节点
+    const g = this.createExpandBtnContent(isExpand)
+    // 绑定事件
+    this.bindExpandBtnEvent(g, isExpand)
+
+    return g
+  }
+
+  // 创建展开收缩按钮节点内容
+  createExpandBtnContent (isExpand: boolean): GType {
+    let { width, height } = this.getSizeWithoutBorderWidth()
+    const borderWidth = 2
+    width += (borderWidth / 2)
+    height += (borderWidth / 2)
     const g = new G()
     g.addClass('bm-expand-btn').css({
       cursor: 'pointer'
     })
-    let svgString = closeBtn
-    const { isExpand } = this.getData() as DataSourceItem
-
-    if (!isExpand) {
-      svgString = openBtn
-    }
     const btnRadius = 18
     g.circle(btnRadius - 1).fill('#f06')
-    g.translate(this.width, (this.height - btnRadius) / 2)
-    SVG(svgString).size(btnRadius, btnRadius).addTo(g)
-
-    // 绑定事件
-    this.bindExpandBtnEvent(g, isExpand)
+    if (isExpand) {
+      SVG(closeBtn).size(btnRadius, btnRadius).addTo(g)
+    } else {
+      const num = this.getNumberOfAllChildren()
+      g.text(num.toString()).x(btnRadius / 2 - 6).y(-2).font({
+        size: 14
+      })
+      g.circle(btnRadius - 1).stroke({ width: 1, color: '#000' }).fill('transparent')
+    }
+    g.translate(width, (height - btnRadius) / 2)
 
     return g
   }
@@ -319,11 +347,25 @@ class Node {
 
   // 创建泛扩展按钮区域
   renderGenericExpandArea (): void {
+    let { width, height } = this.getSizeWithoutBorderWidth()
+    const borderWidth = 2
+    width += (borderWidth / 2)
     const btnRadius = 18
-    const rect = new Rect().size(btnRadius + 8, this.height)
-    rect.translate(this.width, 0).fill('transparent')
+    const rect = new Rect().size(btnRadius + 8, height + borderWidth)
+    rect.translate(width, -borderWidth / 2).fill('transparent')
     this.genericExpandArea = rect
     this.group?.add(rect)
+  }
+
+  // 获取后代节点个数
+  getNumberOfAllChildren (): number {
+    let cnt = -1
+    if (this.nodeData) {
+      traversal(this.nodeData, false, null, () => {
+        cnt++
+      })
+    }
+    return cnt
   }
 }
 

@@ -137,7 +137,8 @@ class LogicalStructure extends Base {
   createCurveLine (node: Node): void {
     const start = getStartPointOfLine(node)
     node.children.forEach((child) => {
-      const end: PositionPair = [child.left, child.top + child.height / 2]
+      const { height } = child.getSizeWithoutBorderWidth()
+      const end: PositionPair = [child.left, child.top + (height - 0) / 2]
       const pathArray = this.cubicBezierPath(start, end)
       const line = new Path().plot(pathArray)
         .fill('none').stroke({ width: 2, color: '#f06' })
@@ -149,10 +150,11 @@ class LogicalStructure extends Base {
   createStraightLine (node: Node): void {
     const start: PositionPair = [node.width + node.left, node.height / 2 + node.top]
     node.children.forEach((child) => {
+      const { height } = child.getSizeWithoutBorderWidth()
       const line = new Polyline()
-      const end: PositionPair = [child.left, child.top + child.height / 2]
+      const end: PositionPair = [child.left, child.top + height / 2]
       const mid1: PositionPair = [(start[0] + end[0]) / 2, end[1]]
-      const mid2: PositionPair = [mid1[0], mid1[1] - ((node.height - child.height) / 2 + child.top - node.top)]
+      const mid2: PositionPair = [mid1[0], mid1[1] - ((node.height - height) / 2 + child.top - node.top)]
       line.plot([start, mid2, mid1, end]).stroke({ width: 2, color: '#f06' }).fill('none')
       node.lines.push(line)
     })
@@ -162,8 +164,9 @@ class LogicalStructure extends Base {
   createDirectLine (node: Node): void {
     const start = getStartPointOfLine(node)
     node.children.forEach((child) => {
+      const { height } = child.getSizeWithoutBorderWidth()
       const line = new Polyline()
-      const end: PositionPair = [child.left, child.top + child.height / 2]
+      const end: PositionPair = [child.left, child.top + height / 2]
       line.plot([start, end]).stroke({ width: 2, color: '#f06' })
 
       node.lines.push(line)
