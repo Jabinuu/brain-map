@@ -41,14 +41,17 @@ class LogicalStructure extends Base {
               newNode.left = parent.node.left + this.getMarginX() + parent.node.width
             }
           }
+          if (cur.node?.getData('isExpand')) {
+            return false
+          } else {
+            return true
+          }
         },
         (cur, parent, isRoot) => {
-          if (parent.getData('isExpand')) {
-            const len = parent.children.length
-            parent.childrenAreaHeight = parent.children.reduce((preVal: number, node: Node) => {
-              return preVal + node.height
-            }, 0) + (len - 1) * this.getMarginY()
-          }
+          const len = parent.children.length
+          parent.childrenAreaHeight = parent.children.reduce((preVal: number, node: Node) => {
+            return preVal + node.height
+          }, 0) + (len - 1) * this.getMarginY()
         }
       )
     }
@@ -63,7 +66,7 @@ class LogicalStructure extends Base {
         null,
         (cur) => {
           const curNode = cur.node
-          if (curNode != null) {
+          if (curNode) {
             const start = curNode.top + curNode.height / 2 - curNode.childrenAreaHeight / 2
             let tempTop = 0
             curNode.children.forEach((child: Node) => {
@@ -71,6 +74,7 @@ class LogicalStructure extends Base {
               tempTop += child.height + this.getMarginY()
             })
           }
+          return false
         })
     }
   }
@@ -85,11 +89,13 @@ class LogicalStructure extends Base {
         (cur) => {
           if (cur.node != null) {
             const diffierence = cur.node.childrenAreaHeight - cur.node.height
+
             if (diffierence > 0) {
               // 调整兄弟节点
               this.updateBrothersTop(cur.node, diffierence / 2)
             }
           }
+          return false
         })
     }
   }

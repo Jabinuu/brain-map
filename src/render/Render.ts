@@ -176,6 +176,7 @@ class Render {
             this.activeNodes = this.activeNodes.filter((item) => item !== child.node)
           }
         })
+        return false
       })
     }
   }

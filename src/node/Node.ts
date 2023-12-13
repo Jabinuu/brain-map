@@ -274,7 +274,9 @@ class Node {
 
   // 创建展开收起按钮
   renderExpandBtn (): GType | undefined {
-    if (this.isRoot || !this.children || this.children.length <= 0) {
+    if (this.isRoot ||
+      !this.nodeData?.children ||
+      this.nodeData.children.length <= 0) {
       return
     }
     const { isExpand } = this.getData() as DataSourceItem
@@ -328,7 +330,6 @@ class Node {
       })
     } else {
       const btn = this.renderExpandBtn()
-      // 能有事件响应的btn是这里创建的
       if (btn) {
         this.expandBtnElem = btn
         this.group?.add(btn)
@@ -363,6 +364,7 @@ class Node {
     if (this.nodeData) {
       traversal(this.nodeData, false, null, () => {
         cnt++
+        return false
       })
     }
     return cnt
