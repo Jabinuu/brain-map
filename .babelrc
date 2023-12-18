@@ -13,5 +13,6 @@
       "@babel/preset-typescript"
     ]
   ],
+  "plugins": ["enhance-log-output"],
   "exclude": "node_modules/**"
 }

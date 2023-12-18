@@ -21,7 +21,8 @@ class Shortcut {
 
   // 绑定快捷键事件
   onShortcutKeyDown (e: KeyboardEvent): void {
-    e.preventDefault()
+    // e.preventDefault()
+
     if (this.shortcutMap[e.key]) {
       this.shortcutMap[e.key].forEach((fn: () => void) => {
         fn()

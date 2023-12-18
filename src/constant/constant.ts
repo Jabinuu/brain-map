@@ -125,5 +125,14 @@ export const cssConstant = `
     stroke-width: 2;
   }
 
-
+  .bm-text-editer{
+    position:fixed;
+    box-sizing: border-box;
+    background-color:#fff;
+    box-shadow: 0 0 20px rgba(0,0,0,.5);
+    padding: 3px 5px;
+    margin-left: -5px;
+    margin-top: -3px;
+    outline: none;
+  }
 `

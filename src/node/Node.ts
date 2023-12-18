@@ -26,6 +26,7 @@ export interface TextData {
   width: number
   height: number
   element: GType
+  div: HTMLElement
 }
 
 // 思维导图节点类
@@ -172,8 +173,8 @@ class Node {
   bindNodeEvent (): void {
     // 单击事件
     this.group?.on('click', (e: Event) => {
-      e.stopPropagation()
-      this.active()
+      // e.stopPropagation()
+      // this.active()
     })
 
     // 鼠标移入事件,mouseenter事件默认不冒泡
@@ -189,6 +190,11 @@ class Node {
       if (!this.getData('isActive') && this.getData('isExpand')) {
         this.hideExpandBtn()
       }
+    })
+
+    // 鼠标双击事件
+    this.group?.on('dblclick', () => {
+      this.textData?.div.setAttribute('contenteditable', 'true')
     })
   }
 
