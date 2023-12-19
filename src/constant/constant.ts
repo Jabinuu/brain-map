@@ -100,7 +100,8 @@ export enum EnumCommandName {
   INSERT_SIBLING_NODE = 'INSERT_SIBLING_NODE',
   SET_NODE_EXPAND = 'SET_NODE_EXPAND',
   SET_NODE_ACTIVE = 'SET_NODE_ACTIVE',
-  SET_NODE_DATA = 'SET_NODE_DATA'
+  SET_NODE_DATA = 'SET_NODE_DATA',
+  SET_NODE_EDIT = 'SET_NODE_EDIT'
 }
 
 export const cssConstant = `
@@ -126,13 +127,12 @@ export const cssConstant = `
   }
 
   .bm-text-editer{
-    position:fixed;
-    box-sizing: border-box;
-    background-color:#fff;
-    box-shadow: 0 0 20px rgba(0,0,0,.5);
-    padding: 3px 5px;
-    margin-left: -5px;
-    margin-top: -3px;
-    outline: none;
+    font-size:20px;
+    font-family:Helvetica;
+    line-height:1.74;
+    outline:none;
+  }
+  .bm-text-editer::selection{
+    background-color: #ADD8E6;
   }
 `

@@ -42,6 +42,7 @@ class Event {
   onClick (e: MouseEvent): void {
     if (Array.prototype.includes.call((e.target as HTMLElement).classList, 'bm-svg-container')) {
       this.renderer.clearActiveNodesList()
+      this.renderer.clearEditStatus()
     }
   }
 

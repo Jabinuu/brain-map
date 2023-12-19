@@ -24,12 +24,15 @@ class Render {
   brainMap: BrainMap
   layout: Layout | null
   activeNodes: Node[]
+  editNode: Node | null
 
   constructor (opt: RenderOption) {
     this.brainMap = opt.brainMap
     this.layout = null
     // 当前激活的节点列表
     this.activeNodes = []
+    // 当前正在编辑的节点
+    this.editNode = null
     // 设置布局
     this.setLayout()
     // 注册渲染相关命令
@@ -50,6 +53,7 @@ class Render {
     this.brainMap.registerCommand<Node, Partial<DataSourceItem>>(EnumCommandName.SET_NODE_DATA, this.setNodeData.bind(this))
     this.brainMap.registerCommand<Node, boolean>(EnumCommandName.SET_NODE_EXPAND, this.setNodeExpand.bind(this))
     this.brainMap.registerCommand<Node, boolean>(EnumCommandName.SET_NODE_ACTIVE, this.setNodeActive.bind(this))
+    this.brainMap.registerCommand<Node, boolean>(EnumCommandName.SET_NODE_EDIT, this.setNodeEdit.bind(this))
   }
 
   // 绑定快捷键
@@ -100,6 +104,7 @@ class Render {
           text: '新增子节点',
           paddingX: 25,
           paddingY: 5,
+          isEdit: false,
           isActive: false,
           isExpand: true
         },
@@ -120,6 +125,7 @@ class Render {
           text: '新增同级节点',
           paddingX: 25,
           paddingY: 5,
+          isEdit: false,
           isExpand: true,
           isActive: false
         },
@@ -135,9 +141,7 @@ class Render {
   setNodeData (node?: Node, data?: Partial<DataSourceItem>): void {
     if (data) {
       Object.keys(data).forEach((key) => {
-        if (node?.nodeData) {
-          node.nodeData.data[key] = data[key]
-        }
+        node?.setData(key, data[key])
       })
     }
     // 修改过数据就重新渲染
@@ -164,6 +168,16 @@ class Render {
     })
   }
 
+  // 改变节点编辑状态
+  setNodeEdit (node?: Node, isEdit?: boolean): void {
+    if (node) {
+      this.editNode = isEdit ? node : null
+      this.brainMap.execCommand<Node, Partial<DataSourceItem>>(EnumCommandName.SET_NODE_DATA, node, {
+        isEdit
+      })
+    }
+  }
+
   // 节点收缩时取消所有后代节点的激活状态
   cancelAllChildrenActive (node: Node): void {
     if (node.nodeData) {
@@ -179,6 +193,18 @@ class Render {
         return false
       })
     }
+  }
+
+  // 清除编辑状态
+  clearEditStatus (): void {
+    if (this.editNode) {
+      this.brainMap.execCommand<Node, boolean>(EnumCommandName.SET_NODE_EDIT, this.editNode, false)
+    }
+  }
+
+  // 输入文本时的回调
+  onEditInput (): void {
+    this.render()
   }
 }
 

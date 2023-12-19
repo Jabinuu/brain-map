@@ -32,6 +32,7 @@ export interface DataSourceItem {
   tag?: string[] // 标签列表
   isExpand: boolean // 节点是否展开
   isActive: boolean // 节点激活状态
+  isEdit: boolean // 该节点是否处于编辑状态
   richText?: boolean // 该节点是否是富文本模式
   hyperLink?: string // 超链接url
   paddingX: number // 节点x轴内边距

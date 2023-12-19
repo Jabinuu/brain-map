@@ -6,7 +6,7 @@ import nodeCreateContentMethods from './nodeCreateContent'
 import { EnumCommandName, EnumDataSource, EnumLineShape } from '../constant/constant'
 import type Render from '../render/Render'
 import { close as closeBtn } from '../svg/btns'
-import { traversal } from '../utils'
+import { selectAllText, traversal } from '../utils'
 
 interface NodeCreateOption {
   data: DataSource | null
@@ -82,6 +82,7 @@ class Node {
     this.children = opt.children ?? []
     // 该节点是否是根节点
     this.isRoot = opt.isRoot ?? false
+
     // 节点容器(包括形状和内容)
     this.group = null
     // Shape实例
@@ -172,9 +173,10 @@ class Node {
   // 绑定节点事件
   bindNodeEvent (): void {
     // 单击事件
-    this.group?.on('click', (e: Event) => {
-      // e.stopPropagation()
-      // this.active()
+    this.group?.on('click', () => {
+      if (!this.getData('isEdit')) {
+        this.active()
+      }
     })
 
     // 鼠标移入事件,mouseenter事件默认不冒泡
@@ -194,7 +196,17 @@ class Node {
 
     // 鼠标双击事件
     this.group?.on('dblclick', () => {
-      this.textData?.div.setAttribute('contenteditable', 'true')
+      // todo: 清除节点的编辑状态
+      this.brainMap.execCommand<Node, boolean>(EnumCommandName.SET_NODE_EDIT, this, true)
+      // selectAllText(this.textData?.div)
+    })
+
+    // 编辑节点文本事件
+    this.textData?.div.addEventListener('input', (e: InputEventInit) => {
+      // const preText = this.getData('text') as string
+      // this.brainMap.execCommand<Node, Partial<DataSourceItem>>(EnumCommandName.SET_NODE_DATA, this, {
+      //   text: preText + e.data
+      // })
     })
   }
 
@@ -202,6 +214,13 @@ class Node {
   getData (key?: string): unknown {
     if (this.nodeData !== null) {
       return (key != null) ? this.nodeData.data[key] : this.nodeData.data
+    }
+  }
+
+  // 修改Node对应的数据源
+  setData<T>(key: string, val: T): void {
+    if (this.nodeData) {
+      this.nodeData.data[key] = val
     }
   }
 
@@ -252,6 +271,7 @@ class Node {
       // 递归渲染子节点
       this.children.forEach((item) => {
         item.render()
+        selectAllText(this.textData?.div)
       })
     } else {
       // 显示扩展按钮

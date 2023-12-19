@@ -43,3 +43,15 @@ export function getStartPointOfLine (root: Node): PositionPair {
     ? [width / 2 + root.left, height / 2 + root.top]
     : [width + root.left, height / 2 + root.top]
 }
+
+export function selectAllText (div: HTMLElement | undefined): void {
+  // 全选内容
+
+  if (div) {
+    const range = document.createRange()
+    range.selectNodeContents(div)
+    const selection = window.getSelection()
+    selection?.removeAllRanges()
+    selection?.addRange(range)
+  }
+}

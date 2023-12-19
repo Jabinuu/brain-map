@@ -8,21 +8,41 @@ export interface NodeCreateContentMethods {
   createTextElem: (arg0: Node) => TextData
 }
 
+function getEditAreaSize (div: HTMLElement): { height: number, width: number } {
+  div.style.display = 'inline-block'
+  document.body.appendChild(div)
+  const width = div.clientWidth
+  const height = div.clientHeight
+  div.style.removeProperty('display')
+  return {
+    height,
+    width
+  }
+}
+
 // 创建文本元素
 function createTextElem (this: Node): TextData {
   const g = new G()
+  const text = document.createTextNode(`${this.nodeData?.data.text as string}`)
   const div = document.createElement('div')
-  div.setAttribute('xmlns', 'http://www.w3.org/1999/xhtml')
-  div.innerHTML = `${this.nodeData?.data.text as string}`
-  div.style.cssText = `
-      font-size: 20px;
-      font-family: "Helvetica";
-  `
-  const foreigObject = g.foreignObject(200, 200)
+  if (this.getData('isEdit')) {
+    div.setAttribute('contenteditable', 'true')
+    div.style.cursor = 'text'
+  } else {
+    div.removeAttribute('contenteditable')
+  }
+
+  div.appendChild(text)
+  div.classList.add('bm-text-editer')
+
+  const { width: initWidth, height: initHeight } = getEditAreaSize(div)
+
+  const foreigObject = g.foreignObject(initWidth, initHeight)
   foreigObject.add(SVG(div))
   g.add(foreigObject)
   g.translate(this.getData(EnumDataSource.PADDINGX) as number, this.getData(EnumDataSource.PADDINGY) as number)
   const { width, height } = g.bbox()
+
   return {
     element: g,
     div,
@@ -32,7 +52,6 @@ function createTextElem (this: Node): TextData {
 }
 const nodeCreateContentMethods: NodeCreateContentMethods = {
   createTextElem
-
 }
 
 export default nodeCreateContentMethods
