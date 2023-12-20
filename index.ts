@@ -26,6 +26,7 @@ interface BrainMapOption {
 
 export interface DataSourceItem {
   [prop: string]: any
+  uid?: string
   text: string // 文本数据
   image?: string // 图片url
   icon?: string[] // 图标列表

@@ -9,6 +9,7 @@ interface RenderOption {
 }
 
 type Layout = LogicalStructure
+ type RenderNodeCache = Record<string, Node>
 
 // export type SET_NODE_DATA = Array<Node | { [prop in keyof DataSourceItem]?: DataSourceItem[prop] }> 等价于下面
 // export type SET_NODE_DATA = Node | Partial<DataSourceItem>
@@ -25,6 +26,8 @@ class Render {
   layout: Layout | null
   activeNodes: Node[]
   editNode: Node | null
+  renderCache: RenderNodeCache
+  lastRenderCache: RenderNodeCache
 
   constructor (opt: RenderOption) {
     this.brainMap = opt.brainMap
@@ -33,6 +36,11 @@ class Render {
     this.activeNodes = []
     // 当前正在编辑的节点
     this.editNode = null
+    // 此次渲染的节点缓存
+    this.renderCache = {}
+    // 上次渲染的节点缓存
+    this.lastRenderCache = {}
+
     // 设置布局
     this.setLayout()
     // 注册渲染相关命令
@@ -70,14 +78,24 @@ class Render {
   // 渲染器
   render (): void {
     // 先清空所有节点和连线容器
-    this.brainMap.nodeDrawing?.children().forEach((item) => item.remove())
-    this.brainMap.lineDrawing?.children().forEach((item) => item.remove())
+    // this.brainMap.nodeDrawing?.children().forEach((item) => item.remove())
+    // this.brainMap.lineDrawing?.children().forEach((item) => item.remove())
+
+    this.lastRenderCache = this.renderCache
+    this.renderCache = {}
 
     // 布局的过程中已经创建了所有Node实例并计算好了定位属性值
     this.layout?.doLayout()
 
+    // 销毁此次不需要渲染的节点
+    Object.keys(this.lastRenderCache).forEach((uid) => {
+      if (!this.renderCache[uid]) {
+        this.lastRenderCache[uid].destroy()
+      }
+    })
     // 将所有Node实例渲染到画布上
     this.brainMap.root?.render()
+    console.log(this.brainMap.dataSource)
   }
 
   // 清空激活节点列表
@@ -85,6 +103,7 @@ class Render {
     this.activeNodes.forEach((item: Node) => {
       this.brainMap.execCommand<Node, boolean>(EnumCommandName.SET_NODE_ACTIVE, item, false)
       item.group?.removeClass('active')
+      item.hideExpandBtn()
     })
     this.activeNodes.length = 0
   }
@@ -112,8 +131,7 @@ class Render {
       })
     })
     this.clearActiveNodesList()
-    // this.brainMap.nodeDrawing?.children().forEach((item) => item.remove())
-    // this.brainMap.lineDrawing?.children().forEach((item) => item.remove())
+
     this.render()
   }
 
@@ -144,8 +162,15 @@ class Render {
         node?.setData(key, data[key])
       })
     }
-    // 修改过数据就重新渲染
-    this.render()
+  }
+
+  // 设置节点数据源 并判断是否需要渲染
+  setNodeDataRender (node?: Node, data?: Partial<DataSourceItem>): void {
+    this.brainMap.execCommand(EnumCommandName.SET_NODE_DATA, node, data)
+    // 判断是否要渲染
+    if (node?.reRender()) {
+      this.render()
+    }
   }
 
   // 改变节点激活状态
@@ -166,6 +191,7 @@ class Render {
     this.brainMap.execCommand<Node, Partial<DataSourceItem>>(EnumCommandName.SET_NODE_DATA, node, {
       isExpand
     })
+    this.render()
   }
 
   // 改变节点编辑状态
@@ -175,6 +201,7 @@ class Render {
       this.brainMap.execCommand<Node, Partial<DataSourceItem>>(EnumCommandName.SET_NODE_DATA, node, {
         isEdit
       })
+      this.render()
     }
   }
 
@@ -187,6 +214,7 @@ class Render {
             this.brainMap.execCommand<Node, Partial<DataSourceItem>>(EnumCommandName.SET_NODE_DATA, child.node, {
               isActive: false
             })
+            this.render()
             this.activeNodes = this.activeNodes.filter((item) => item !== child.node)
           }
         })

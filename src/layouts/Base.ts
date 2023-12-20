@@ -5,35 +5,66 @@ import Node from '../node/Node'
 import { createUid } from '../utils'
 import { PathArray } from '@svgdotjs/svg.js'
 import { type PositionPair } from './LogicalStructure'
+import LruCache from '../utils/LruCache'
 
 class Base {
   brainMap: BrainMap
   renderer: Render
+  lruCache: LruCache
 
   constructor (renderer: Render) {
     this.renderer = renderer
     this.brainMap = renderer.brainMap
+    this.lruCache = new LruCache(1000)
   }
 
   // 创建节点实例
   createNode (data: DataSource, parent: DataSource | null, isRoot: boolean): Node {
-    const uid = createUid()
-    const newNode = new Node({
-      data,
-      brainMap: this.brainMap,
-      isRoot,
-      uid
-    })
+    let newNode: Node
 
-    // 将节点实例挂载到数据源下
-    data.node = newNode
+    if (data.node) {
+      // 如果数据源上已有节点实例的引用，则直接拿来复用
+      newNode = data.node
+      newNode.reset()
+
+      if (data.data.uid) {
+        this.cacheNode(data.data.uid, newNode)
+      }
+    } else if (data.data.uid && this.lruCache.has(data.data.uid)) {
+      // 如果数据源上没有节点实例引用，但缓冲池中有该节点，则也可复用。主要是前进后退命令
+      newNode = this.lruCache.get(data.data.uid) as Node
+      newNode.reset()
+      if (data.data.uid) {
+        this.cacheNode(data.data.uid, newNode)
+      }
+    } else {
+      // 没有可复用的节点实例，则创建新的节点实例
+      const uid = data.data.uid ?? createUid()
+      newNode = new Node({
+        data,
+        brainMap: this.brainMap,
+        isRoot,
+        uid
+      })
+      // 将节点实例挂载到数据源下
+      data.node = newNode
+
+      data.data.uid = uid
+
+      if (data.data.uid) {
+        this.cacheNode(data.data.uid, newNode)
+      }
+    }
+
     if (isRoot) {
+      // newNode.isRoot = true
       this.brainMap.root = newNode
     } else {
       // 认亲大会
       parent?.node?.children.push(newNode)
       newNode.parent = parent?.node ?? null
     }
+
     return newNode
   }
 
@@ -43,6 +74,11 @@ class Base {
 
   getMarginY (): number {
     return 50
+  }
+
+  cacheNode (uid: string, node: Node): void {
+    this.renderer.renderCache[uid] = node
+    this.lruCache.add(uid, node)
   }
 
   // 三次贝塞尔曲线

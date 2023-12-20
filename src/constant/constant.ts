@@ -133,6 +133,6 @@ export const cssConstant = `
     outline:none;
   }
   .bm-text-editer::selection{
-    background-color: #ADD8E6;
+    background-color: rgba(148,0,211,0.3);
   }
 `

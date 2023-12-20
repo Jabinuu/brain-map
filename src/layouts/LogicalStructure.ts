@@ -148,7 +148,7 @@ class LogicalStructure extends Base {
       const pathArray = this.cubicBezierPath(start, end)
       const line = new Path().plot(pathArray)
         .fill('none').stroke({ width: 2, color: '#f06' })
-      child.lines.push(line)
+      node.lines.push(line)
     })
   }
 

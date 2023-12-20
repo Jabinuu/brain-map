@@ -46,11 +46,11 @@ export function getStartPointOfLine (root: Node): PositionPair {
 
 export function selectAllText (div: HTMLElement | undefined): void {
   // 全选内容
-
   if (div) {
     const range = document.createRange()
     range.selectNodeContents(div)
     const selection = window.getSelection()
+
     selection?.removeAllRanges()
     selection?.addRange(range)
   }

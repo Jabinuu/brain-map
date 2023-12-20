@@ -113,6 +113,7 @@ class Node {
     this.lineDrawing = this.brainMap.lineDrawing
     // 连线元素
     this.lines = []
+
     /* 该节点的内容元素 */
     // 文本元素
     this.textData = null
@@ -139,7 +140,7 @@ class Node {
   }
 
   // 获得节点总宽高
-  getSize (): { width: number, height: number } {
+  getSize (): boolean {
     // todo: 获取节点中所有类型元素的size，当前只有文本节点
     let _width: number = 0; let _height: number = 0
     this.generateContentElem()
@@ -149,14 +150,13 @@ class Node {
     }
     // 节点形状的边框线宽度
     const borderWidth = 2
+    const width = _width + 2 * (this.getData(EnumDataSource.PADDINGX) as number) + 2 * this.shapePadding.paddingX + borderWidth
+    const height = _height + 2 * (this.getData(EnumDataSource.PADDINGY) as number) + 2 * this.shapePadding.paddingY + borderWidth
+    const isSizeChange = this.width !== width || this.height !== height
+    this.width = width
+    this.height = height
 
-    this.width = _width + 2 * (this.getData(EnumDataSource.PADDINGX) as number) + 2 * this.shapePadding.paddingX + borderWidth
-    this.height = _height + 2 * (this.getData(EnumDataSource.PADDINGY) as number) + 2 * this.shapePadding.paddingY + borderWidth
-
-    return {
-      width: this.width,
-      height: this.height
-    }
+    return isSizeChange
   }
 
   // 获取去除边框宽度的节点总宽高
@@ -198,15 +198,16 @@ class Node {
     this.group?.on('dblclick', () => {
       // todo: 清除节点的编辑状态
       this.brainMap.execCommand<Node, boolean>(EnumCommandName.SET_NODE_EDIT, this, true)
-      // selectAllText(this.textData?.div)
     })
 
     // 编辑节点文本事件
-    this.textData?.div.addEventListener('input', (e: InputEventInit) => {
-      // const preText = this.getData('text') as string
-      // this.brainMap.execCommand<Node, Partial<DataSourceItem>>(EnumCommandName.SET_NODE_DATA, this, {
-      //   text: preText + e.data
-      // })
+    this.textData?.div.addEventListener('input', (e: Event) => {
+      const curText = (e.target as HTMLElement).innerText
+      console.log(curText)
+
+      this.brainMap.execCommand<Node, Partial<DataSourceItem>>(EnumCommandName.SET_NODE_DATA, this, {
+        text: curText
+      })
     })
   }
 
@@ -226,57 +227,72 @@ class Node {
 
   // 根据数据源渲染出节点
   render (): void {
-    this.group = new G().translate(this.left, this.top)
-    this.shape = new Shape(this)
-    this.shapeElem = this.shape.createRect()
-    this.group.add(this.shapeElem)
-    this.group.addClass('bm-node')
-    this.group.css({
-      cursor: 'default'
-    })
-    // 根节点填充色
-    if (this.isRoot) this.shapeElem.fill('#F0F0F0')
-    // todo: 将所有类型的内容元素在节点内布局
-    if (this.textData !== null) {
-      this.group.add(this.textData.element)
-    }
-    // 激活边框
-    const borderWidth = 2 // 激活边框宽度
-    const { width, height } = this.getSizeWithoutBorderWidth()
-    const wrapRect = new Rect().size(width + (borderWidth + 1) * 2, height + (borderWidth + 1) * 2)
-      .fill('none').stroke({ color: '#FF8C00' }).radius(4).move(-3, -3)
-    wrapRect.addClass('bm-hover-node')
-    wrapRect.addTo(this.group)
+    const { isActive, isExpand, isEdit } = this.getData() as DataSourceItem
 
-    const { isActive, isExpand } = this.getData() as DataSourceItem
-    // 节点激活
-    if (isActive) {
-      this.group.addClass('active')
-    }
-    if (!this.isRoot && this.children && this.children.length > 0) {
-      // 创建泛扩展按钮区域
-      this.renderGenericExpandArea()
-    }
-    // 绑定节点事件
-    this.bindNodeEvent()
-
-    if (this.nodeDrawing !== null) {
-      this.group.addTo(this.nodeDrawing)
-    }
     // 渲染节点连线
     this.renderLine(this)
+
+    if (!this.group) {
+      this.group = new G().translate(this.left, this.top)
+      this.shape = new Shape(this)
+      this.shapeElem = this.shape.createRect()
+      this.group.add(this.shapeElem)
+      this.group.addClass('bm-node')
+      this.group.css({
+        cursor: 'default'
+      })
+      // 根节点填充色
+      if (this.isRoot) this.shapeElem.fill('#F0F0F0')
+      // todo: 将所有类型的内容元素在节点内布局
+      if (this.textData !== null) {
+        this.group.add(this.textData.element)
+      }
+      // 激活边框
+      const borderWidth = 2 // 激活边框宽度
+      const { width, height } = this.getSizeWithoutBorderWidth()
+      const wrapRect = new Rect().size(width + (borderWidth + 1) * 2, height + (borderWidth + 1) * 2)
+        .fill('none').stroke({ color: '#FF8C00' }).radius(4).move(-3, -3)
+      wrapRect.addClass('bm-hover-node')
+      wrapRect.addTo(this.group)
+
+      // 节点激活
+      if (isActive) {
+        this.group.addClass('active')
+      }
+      if (!this.isRoot && this.children && this.children.length > 0) {
+        // 创建泛扩展按钮区域
+        this.renderGenericExpandArea()
+      }
+      // 绑定节点事件
+      this.bindNodeEvent()
+      if (this.nodeDrawing !== null) {
+        this.group.addTo(this.nodeDrawing)
+      }
+    } else {
+      if (this.nodeDrawing !== null) {
+        this.group.addTo(this.nodeDrawing)
+      }
+    }
 
     // 根据节点是否展开来决定是否渲染子节点
     if (isExpand) {
       // 递归渲染子节点
       this.children.forEach((item) => {
         item.render()
-        selectAllText(this.textData?.div)
       })
     } else {
       // 显示扩展按钮
       this.showExpandBtn()
     }
+    // 若节点处于编辑状态则全选文本
+    if (isEdit) {
+      selectAllText(this.textData?.div)
+    }
+  }
+
+  reRender (): boolean {
+    const isSizeChange = this.getSize()
+    return isSizeChange
   }
 
   // 渲染连线
@@ -352,7 +368,8 @@ class Node {
   showExpandBtn (): void {
     if (this.expandBtnElem) {
       this.expandBtnElem.css({
-        display: 'block'
+        // display: 'block'
+        visibility: 'visible'
       })
     } else {
       const btn = this.renderExpandBtn()
@@ -367,7 +384,8 @@ class Node {
   hideExpandBtn (): void {
     if (this.expandBtnElem) {
       this.expandBtnElem.css({
-        display: 'none'
+        // display: 'none'
+        visibility: 'hidden'
       })
     }
   }
@@ -394,6 +412,31 @@ class Node {
       })
     }
     return cnt
+  }
+
+  // 重置复用节点
+  reset (): void {
+    this.children = []
+    this.parent = null
+    // this.isRoot = false
+    this.top = 0
+    this.left = 0
+  }
+
+  // 销毁节点
+  destroy (): void {
+    this.group?.remove()
+    this.group = null
+    this.removeLine()
+    this.parent?.removeLine()
+  }
+
+  // 移除节点上的连线
+  removeLine (): void {
+    this.lines.forEach((line) => {
+      line.remove()
+    })
+    this.lines = []
   }
 }
 
