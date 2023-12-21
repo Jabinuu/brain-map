@@ -41,18 +41,17 @@ class LogicalStructure extends Base {
               newNode.left = parent.node.left + this.getMarginX() + parent.node.width
             }
           }
-          if (cur.node?.getData('isExpand')) {
-            return false
-          } else {
-            return true
-          }
+          return !cur.node?.getData('isExpand')
         },
         (cur) => {
           if (cur.node) {
-            const len = cur.node.children.length
-            cur.node.childrenAreaHeight = cur.node.children.reduce((preVal: number, node: Node) => {
-              return preVal + node.height
-            }, 0) + (len - 1) * this.getMarginY()
+            cur.node.childrenAreaHeight = 0
+            if (cur.data.isExpand && cur.children.length > 0) {
+              const len = cur.node.children.length
+              cur.node.childrenAreaHeight = cur.node.children.reduce((preVal: number, node: Node) => {
+                return preVal + node.height
+              }, 0) + (len - 1) * this.getMarginY()
+            }
           }
         }
       )
@@ -68,7 +67,7 @@ class LogicalStructure extends Base {
         null,
         (cur) => {
           const curNode = cur.node
-          if (curNode) {
+          if (curNode?.getData('isExpand')) {
             const start = curNode.top + curNode.height / 2 - curNode.childrenAreaHeight / 2
             let tempTop = 0
             curNode.children.forEach((child: Node) => {
@@ -76,7 +75,7 @@ class LogicalStructure extends Base {
               tempTop += child.height + this.getMarginY()
             })
           }
-          return false
+          return !cur.node?.getData('isExpand')
         })
     }
   }
@@ -89,7 +88,10 @@ class LogicalStructure extends Base {
         true,
         null,
         (cur) => {
-          if (cur.node != null) {
+          if (cur.node) {
+            if (!cur.node.getData('isExpand')) {
+              return true
+            }
             const diffierence = cur.node.childrenAreaHeight - cur.node.height
 
             if (diffierence > 0) {

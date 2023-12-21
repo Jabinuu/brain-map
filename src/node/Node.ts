@@ -412,7 +412,7 @@ class Node {
     return cnt
   }
 
-  // 重置复用节点
+  // 重置复用节点布局相关数据
   reset (): void {
     this.children = []
     this.parent = null
