@@ -3,7 +3,7 @@ import LogicalStructure from '../layouts/LogicalStructure'
 import { CONSTANT, EnumCommandName, EnumShortcutName } from '../constant/constant'
 import type Node from '../node/Node'
 import { type DataSourceItem } from '../../index'
-import { traversal } from '../utils'
+import { selectAllText, setCursorToEnd, traversal } from '../utils'
 interface RenderOption {
   brainMap: BrainMap
 }
@@ -62,6 +62,7 @@ class Render {
     this.brainMap.registerCommand<Node, boolean>(EnumCommandName.SET_NODE_EXPAND, this.setNodeExpand.bind(this))
     this.brainMap.registerCommand<Node, boolean>(EnumCommandName.SET_NODE_ACTIVE, this.setNodeActive.bind(this))
     this.brainMap.registerCommand<Node, boolean>(EnumCommandName.SET_NODE_EDIT, this.setNodeEdit.bind(this))
+    this.brainMap.registerCommand < Node, string >(EnumCommandName.SET_NODE_TEXT, this.setNodeText.bind(this))
   }
 
   // 绑定快捷键
@@ -91,7 +92,6 @@ class Render {
     })
     // 将所有Node实例渲染到画布上
     this.brainMap.root?.render()
-    console.log(this.brainMap.dataSource)
   }
 
   // 清空激活节点列表
@@ -129,7 +129,6 @@ class Render {
 
     this.clearActiveNodesList()
     this.render()
-    console.log(this.activeNodes)
   }
 
   // 添加同级节点
@@ -162,10 +161,12 @@ class Render {
   }
 
   // 设置节点数据源 并判断是否需要渲染
-  setNodeDataRender (node?: Node, data?: Partial<DataSourceItem>): void {
+  setNodeDataRender (node: Node, data: Partial<DataSourceItem>): void {
     this.brainMap.execCommand(EnumCommandName.SET_NODE_DATA, node, data)
     // 判断是否要渲染
-    if (node?.reRender()) {
+    const changed = node.reRender()
+
+    if (changed) {
       this.render()
     }
   }
@@ -199,8 +200,28 @@ class Render {
       this.brainMap.execCommand<Node, Partial<DataSourceItem>>(EnumCommandName.SET_NODE_DATA, node, {
         isEdit
       })
-      this.render()
+
+      // 打开编辑模式
+      if (node.textData) {
+        if (isEdit) {
+          node.textData.div.setAttribute('contenteditable', 'true')
+          node.textData.div.style.cursor = 'text'
+          selectAllText(node.textData.div)
+        } else {
+          node.textData.div.removeAttribute('contenteditable')
+          node.textData.div.style.cursor = 'default'
+        }
+      }
     }
+  }
+
+  // 修改节点文本
+  setNodeText (node?: Node, text?: string): void {
+    node?.renderer.setNodeDataRender(node, {
+      text
+    })
+    node?.textData?.div.focus()
+    setCursorToEnd(node?.textData?.div)
   }
 
   // 取消所有后代节点的激活状态
@@ -217,7 +238,6 @@ class Render {
         })
         return false
       })
-      // this.render()
     }
   }
 

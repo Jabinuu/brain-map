@@ -6,7 +6,7 @@ import nodeCreateContentMethods from './nodeCreateContent'
 import { EnumCommandName, EnumDataSource, EnumLineShape } from '../constant/constant'
 import type Render from '../render/Render'
 import { close as closeBtn } from '../svg/btns'
-import { selectAllText, traversal } from '../utils'
+import { traversal } from '../utils'
 
 interface NodeCreateOption {
   data: DataSource | null
@@ -44,7 +44,7 @@ class Node {
   children: Node[]
   isRoot: boolean
   group: GType | null
-  shape: Shape | null
+  shape: Shape
   shapeElem: Path | null
   genericExpandArea: Rect | null
   expandBtnElem: GType | null
@@ -86,7 +86,7 @@ class Node {
     // 节点容器(包括形状和内容)
     this.group = null
     // Shape实例
-    this.shape = null
+    this.shape = new Shape(this)
     // 节点形状元素
     this.shapeElem = null
     // 展开收起按钮元素
@@ -197,17 +197,9 @@ class Node {
     // 鼠标双击事件
     this.group?.on('dblclick', () => {
       // todo: 清除节点的编辑状态
-      this.brainMap.execCommand<Node, boolean>(EnumCommandName.SET_NODE_EDIT, this, true)
-    })
-
-    // 编辑节点文本事件
-    this.textData?.div.addEventListener('input', (e: Event) => {
-      const curText = (e.target as HTMLElement).innerText
-      console.log(curText)
-
-      this.brainMap.execCommand<Node, Partial<DataSourceItem>>(EnumCommandName.SET_NODE_DATA, this, {
-        text: curText
-      })
+      if (!this.getData('isEdit')) {
+        this.brainMap.execCommand<Node, boolean>(EnumCommandName.SET_NODE_EDIT, this, true)
+      }
     })
   }
 
@@ -225,66 +217,69 @@ class Node {
     }
   }
 
+  layout (): void {
+    const { isActive } = this.getData() as DataSourceItem
+    // 节点形状
+    this.shapeElem = this.shape.createRect()
+    this.group?.add(this.shapeElem)
+    // 根节点填充色
+    if (this.isRoot) this.shapeElem.fill('#F0F0F0')
+    // todo: 将所有类型的内容元素在节点内布局
+    if (this.textData !== null) {
+      this.group?.add(this.textData.element)
+    }
+    // 激活边框
+    const borderWidth = 2 // 激活边框宽度
+    const { width, height } = this.getSizeWithoutBorderWidth()
+    const wrapRect = new Rect().size(width + (borderWidth + 1) * 2, height + (borderWidth + 1) * 2)
+      .fill('none').stroke({ color: '#FF8C00' }).radius(4).move(-3, -3)
+    wrapRect.addClass('bm-hover-node')
+    this.group?.add(wrapRect)
+    // 创建泛扩展按钮区域
+    if (!this.isRoot && this.nodeData?.children && this.nodeData.children.length > 0) {
+      this.renderGenericExpandArea()
+    }
+
+    // 节点激活
+    if (isActive) {
+      this.active()
+    }
+  }
+
   // 根据数据源渲染出节点
   render (): void {
-    const { isActive, isExpand, isEdit } = this.getData() as DataSourceItem
-
+    const { isExpand } = this.getData() as DataSourceItem
     // 渲染节点连线
     this.renderLine(this)
 
     if (!this.group) {
       this.group = new G().translate(this.left, this.top)
-      this.shape = new Shape(this)
-      this.shapeElem = this.shape.createRect()
-      this.group.add(this.shapeElem)
       this.group.addClass('bm-node')
       this.group.css({
         cursor: 'default'
       })
-      // 根节点填充色
-      if (this.isRoot) this.shapeElem.fill('#F0F0F0')
-      // todo: 将所有类型的内容元素在节点内布局
-      if (this.textData !== null) {
-        this.group.add(this.textData.element)
-      }
-      // 激活边框
-      const borderWidth = 2 // 激活边框宽度
-      const { width, height } = this.getSizeWithoutBorderWidth()
-      const wrapRect = new Rect().size(width + (borderWidth + 1) * 2, height + (borderWidth + 1) * 2)
-        .fill('none').stroke({ color: '#FF8C00' }).radius(4).move(-3, -3)
-      wrapRect.addClass('bm-hover-node')
-      wrapRect.addTo(this.group)
-
-      // 节点激活
-      if (isActive) {
-        this.active()
-      }
-
       // 绑定节点事件
       this.bindNodeEvent()
       if (this.nodeDrawing !== null) {
         this.group.addTo(this.nodeDrawing)
       }
+      this.layout()
     } else {
-      if (this.nodeDrawing !== null) {
-        const lastTransform = this.group.transform()
-        if (lastTransform.translateX && lastTransform.translateY) {
-          // 节点位置若发生变化则移动
-          if (lastTransform.translateX !== this.left || lastTransform.translateY !== this.top) {
-            this.group.translate(this.left - lastTransform.translateX, this.top - lastTransform.translateY)
-          }
+      this.group.clear()
+      this.layout()
+      const lastTransform = this.group.transform()
+      if (lastTransform.translateX && lastTransform.translateY) {
+        // 节点位置若发生变化则移动
+        if (lastTransform.translateX !== this.left || lastTransform.translateY !== this.top) {
+          this.group.translate(this.left - lastTransform.translateX, this.top - lastTransform.translateY)
         }
-        // this.group.addTo(this.nodeDrawing)
       }
+      // this.group.addTo(this.nodeDrawing)
     }
 
     // 每次渲染重置收缩扩展节点状态
     this.expandBtnElem?.remove()
     this.expandBtnElem = null
-    if (!this.isRoot && this.nodeData?.children && this.nodeData.children.length > 0) {
-      // 创建泛扩展按钮区域
-      this.renderGenericExpandArea()
-    }
 
     // 根据节点是否展开来决定是否渲染子节点
     if (isExpand) {
@@ -296,14 +291,11 @@ class Node {
       // 显示扩展按钮
       this.showExpandBtn()
     }
-    // 若节点处于编辑状态则全选文本
-    if (isEdit) {
-      selectAllText(this.textData?.div)
-    }
   }
 
   reRender (): boolean {
     const isSizeChange = this.getSize()
+
     return isSizeChange
   }
 

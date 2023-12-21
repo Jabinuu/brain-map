@@ -1,7 +1,7 @@
 import { G, SVG } from '@svgdotjs/svg.js'
 import type Node from './Node'
 import type { TextData } from './Node'
-import { EnumDataSource } from '../constant/constant'
+import { EnumCommandName, EnumDataSource } from '../constant/constant'
 
 export interface NodeCreateContentMethods {
   [prop: string]: any
@@ -42,6 +42,22 @@ function createTextElem (this: Node): TextData {
   g.add(foreigObject)
   g.translate(this.getData(EnumDataSource.PADDINGX) as number, this.getData(EnumDataSource.PADDINGY) as number)
   const { width, height } = g.bbox()
+
+  // 编辑节点文本事件
+  div.addEventListener('input', (e: Event) => {
+    if ((e.target as HTMLElement).getAttribute('data-isComposing') !== 'true') {
+      const text = (e.target as HTMLElement).innerText
+      this.brainMap.execCommand<Node, string>(EnumCommandName.SET_NODE_TEXT, this, text)
+    }
+  })
+
+  div.addEventListener('compositionstart', (e: Event) => {
+    (e.target as HTMLElement).setAttribute('data-isComposing', 'true')
+  })
+
+  div.addEventListener('compositionend', (e: Event) => {
+    (e.target as HTMLElement).setAttribute('data-isComposing', 'false')
+  })
 
   return {
     element: g,

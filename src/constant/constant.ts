@@ -101,7 +101,8 @@ export enum EnumCommandName {
   SET_NODE_EXPAND = 'SET_NODE_EXPAND',
   SET_NODE_ACTIVE = 'SET_NODE_ACTIVE',
   SET_NODE_DATA = 'SET_NODE_DATA',
-  SET_NODE_EDIT = 'SET_NODE_EDIT'
+  SET_NODE_EDIT = 'SET_NODE_EDIT',
+  SET_NODE_TEXT = 'SET_NODE_TEXT'
 }
 
 export const cssConstant = `
