@@ -47,11 +47,13 @@ class LogicalStructure extends Base {
             return true
           }
         },
-        (cur, parent, isRoot) => {
-          const len = parent.children.length
-          parent.childrenAreaHeight = parent.children.reduce((preVal: number, node: Node) => {
-            return preVal + node.height
-          }, 0) + (len - 1) * this.getMarginY()
+        (cur) => {
+          if (cur.node) {
+            const len = cur.node.children.length
+            cur.node.childrenAreaHeight = cur.node.children.reduce((preVal: number, node: Node) => {
+              return preVal + node.height
+            }, 0) + (len - 1) * this.getMarginY()
+          }
         }
       )
     }

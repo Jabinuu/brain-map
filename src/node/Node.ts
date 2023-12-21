@@ -368,7 +368,6 @@ class Node {
   showExpandBtn (): void {
     if (this.expandBtnElem) {
       this.expandBtnElem.css({
-        // display: 'block'
         visibility: 'visible'
       })
     } else {
@@ -384,7 +383,6 @@ class Node {
   hideExpandBtn (): void {
     if (this.expandBtnElem) {
       this.expandBtnElem.css({
-        // display: 'none'
         visibility: 'hidden'
       })
     }
@@ -418,7 +416,6 @@ class Node {
   reset (): void {
     this.children = []
     this.parent = null
-    // this.isRoot = false
     this.top = 0
     this.left = 0
   }

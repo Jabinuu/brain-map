@@ -34,9 +34,7 @@ class Base {
       // 如果数据源上没有节点实例引用，但缓冲池中有该节点，则也可复用。主要是前进后退命令
       newNode = this.lruCache.get(data.data.uid) as Node
       newNode.reset()
-      if (data.data.uid) {
-        this.cacheNode(data.data.uid, newNode)
-      }
+      this.cacheNode(data.data.uid, newNode)
     } else {
       // 没有可复用的节点实例，则创建新的节点实例
       const uid = data.data.uid ?? createUid()
@@ -50,14 +48,10 @@ class Base {
       data.node = newNode
 
       data.data.uid = uid
-
-      if (data.data.uid) {
-        this.cacheNode(data.data.uid, newNode)
-      }
+      this.cacheNode(data.data.uid, newNode)
     }
 
     if (isRoot) {
-      // newNode.isRoot = true
       this.brainMap.root = newNode
     } else {
       // 认亲大会

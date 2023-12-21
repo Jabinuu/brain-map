@@ -186,6 +186,7 @@ class Render {
   // 改变节点展开状态
   setNodeExpand (node?: Node, isExpand?: boolean): void {
     if (!isExpand && node) {
+      // 节点收缩时取消所有后代节点的激活状态
       this.cancelAllChildrenActive(node)
     }
     this.brainMap.execCommand<Node, Partial<DataSourceItem>>(EnumCommandName.SET_NODE_DATA, node, {
@@ -205,7 +206,7 @@ class Render {
     }
   }
 
-  // 节点收缩时取消所有后代节点的激活状态
+  // 取消所有后代节点的激活状态
   cancelAllChildrenActive (node: Node): void {
     if (node.nodeData) {
       traversal(node.nodeData, node.isRoot, null, (node) => {
@@ -214,12 +215,12 @@ class Render {
             this.brainMap.execCommand<Node, Partial<DataSourceItem>>(EnumCommandName.SET_NODE_DATA, child.node, {
               isActive: false
             })
-            this.render()
             this.activeNodes = this.activeNodes.filter((item) => item !== child.node)
           }
         })
         return false
       })
+      // this.render()
     }
   }
 

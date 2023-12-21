@@ -3,7 +3,7 @@ import { type PositionPair } from '../layouts/LogicalStructure'
 import type Node from '../node/Node'
 import { v4 as uuidv4 } from 'uuid'
 type PreCallback = ((cur: DataSource, parent: DataSource | null, isRoot: boolean) => boolean)
-type PostCallback = ((cur: Node, parent: Node, isRoot: boolean) => void)
+type PostCallback = ((cur: DataSource, parent: DataSource | null, isRoot: boolean) => void)
 
 // dfs遍历数据源（渲染树）
 export function traversal (root: DataSource, isRoot: boolean, parent: DataSource | null, preCallback?: PreCallback, postCallback?: PostCallback): void {
@@ -20,9 +20,7 @@ export function traversal (root: DataSource, isRoot: boolean, parent: DataSource
 
   if (postCallback) {
     // 后序遍历收集子树总高度
-    if (root.node != null && parent?.node != null) {
-      postCallback(root.node, parent.node, isRoot)
-    }
+    postCallback(root, parent, isRoot)
   }
 }
 
