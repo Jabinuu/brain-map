@@ -77,10 +77,6 @@ class Render {
 
   // 渲染器
   render (): void {
-    // 先清空所有节点和连线容器
-    // this.brainMap.nodeDrawing?.children().forEach((item) => item.remove())
-    // this.brainMap.lineDrawing?.children().forEach((item) => item.remove())
-
     this.lastRenderCache = this.renderCache
     this.renderCache = {}
 

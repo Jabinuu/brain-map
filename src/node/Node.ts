@@ -270,9 +270,20 @@ class Node {
       }
     } else {
       if (this.nodeDrawing !== null) {
-        this.group.addTo(this.nodeDrawing)
+        const lastTransform = this.group.transform()
+        if (lastTransform.translateX && lastTransform.translateY) {
+          // 节点位置若发生变化则移动
+          if (lastTransform.translateX !== this.left || lastTransform.translateY !== this.top) {
+            this.group.translate(this.left - lastTransform.translateX, this.top - lastTransform.translateY)
+          }
+        }
+        // this.group.addTo(this.nodeDrawing)
       }
     }
+
+    // 每次渲染重置收缩扩展节点状态
+    this.expandBtnElem?.remove()
+    this.expandBtnElem = null
 
     // 根据节点是否展开来决定是否渲染子节点
     if (isExpand) {
@@ -297,7 +308,13 @@ class Node {
 
   // 渲染连线
   renderLine (node: Node): void {
+    if (!node.getData('isExpand')) {
+      return
+    }
     if (this.renderer.layout) {
+      // 删除上次渲染的线
+      node.lines.forEach((line) => line.remove())
+      node.lines = []
       this.renderer.layout.renderLine(node, EnumLineShape.CURVE)
       node.lines.forEach((item) => {
         if (this.lineDrawing != null) {
@@ -381,7 +398,7 @@ class Node {
 
   // 隐藏展开收起按钮
   hideExpandBtn (): void {
-    if (this.expandBtnElem) {
+    if (this.expandBtnElem && this.getData('isExpand')) {
       this.expandBtnElem.css({
         visibility: 'hidden'
       })
