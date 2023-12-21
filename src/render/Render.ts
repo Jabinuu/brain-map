@@ -120,15 +120,16 @@ class Render {
           paddingX: 25,
           paddingY: 5,
           isEdit: false,
-          isActive: false,
+          isActive: true,
           isExpand: true
         },
         children: []
       })
     })
-    this.clearActiveNodesList()
 
+    this.clearActiveNodesList()
     this.render()
+    console.log(this.activeNodes)
   }
 
   // 添加同级节点
@@ -141,7 +142,7 @@ class Render {
           paddingY: 5,
           isEdit: false,
           isExpand: true,
-          isActive: false
+          isActive: true
         },
         children: []
       })

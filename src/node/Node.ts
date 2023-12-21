@@ -257,12 +257,9 @@ class Node {
 
       // 节点激活
       if (isActive) {
-        this.group.addClass('active')
+        this.active()
       }
-      if (!this.isRoot && this.children && this.children.length > 0) {
-        // 创建泛扩展按钮区域
-        this.renderGenericExpandArea()
-      }
+
       // 绑定节点事件
       this.bindNodeEvent()
       if (this.nodeDrawing !== null) {
@@ -284,6 +281,10 @@ class Node {
     // 每次渲染重置收缩扩展节点状态
     this.expandBtnElem?.remove()
     this.expandBtnElem = null
+    if (!this.isRoot && this.nodeData?.children && this.nodeData.children.length > 0) {
+      // 创建泛扩展按钮区域
+      this.renderGenericExpandArea()
+    }
 
     // 根据节点是否展开来决定是否渲染子节点
     if (isExpand) {
