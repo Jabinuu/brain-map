@@ -6,7 +6,7 @@ import nodeCreateContentMethods from './nodeCreateContent'
 import { EnumCommandName, EnumDataSource, EnumLineShape } from '../constant/constant'
 import type Render from '../render/Render'
 import { close as closeBtn } from '../svg/btns'
-import { traversal } from '../utils'
+import { setCursorToEnd, traversal } from '../utils'
 
 interface NodeCreateOption {
   data: DataSource | null
@@ -264,8 +264,13 @@ class Node {
       this.group.css({
         cursor: 'default'
       })
-      this.nodeDrawing?.add(this.group)
+      this.group?.on('reRender', () => {
+        console.log(11)
+        this.textData?.div.focus()
+        setCursorToEnd(this.textData?.div)
+      })
 
+      this.nodeDrawing?.add(this.group)
       // 绑定节点事件
       this.bindNodeEvent()
       this.layout()
@@ -273,6 +278,7 @@ class Node {
       if (this.needLayout) {
         this.needLayout = false
         this.layout()
+        this.group?.fire('reRender')
       }
 
       const lastTransform = this.group.transform()

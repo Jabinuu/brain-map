@@ -3,7 +3,7 @@ import LogicalStructure from '../layouts/LogicalStructure'
 import { CONSTANT, EnumCommandName, EnumShortcutName } from '../constant/constant'
 import type Node from '../node/Node'
 import { type DataSourceItem } from '../../index'
-import { selectAllText, setCursorToEnd, traversal } from '../utils'
+import { selectAllText, traversal } from '../utils'
 interface RenderOption {
   brainMap: BrainMap
 }
@@ -220,8 +220,17 @@ class Render {
     node?.renderer.setNodeDataRender(node, {
       text
     })
-    node?.textData?.div.focus()
-    setCursorToEnd(node?.textData?.div)
+  }
+
+  // 编辑节点时的操作
+  onEditNodeText (e: Event, node: Node): void {
+    requestAnimationFrame(() => {
+      if ((e.target as HTMLElement).getAttribute('data-isComposing') !== 'true') {
+        node.needLayout = true
+        const text = (e.target as HTMLElement).innerText
+        this.brainMap.execCommand<Node, string>(EnumCommandName.SET_NODE_TEXT, node, text)
+      }
+    })
   }
 
   // 取消所有后代节点的激活状态

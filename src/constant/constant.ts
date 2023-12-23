@@ -128,6 +128,7 @@ export const cssConstant = `
   }
 
   .bm-text-editer{
+    white-space:nowrap;
     font-size:20px;
     font-family:Helvetica;
     line-height:1.74;
