@@ -46,6 +46,7 @@ function createTextElem (this: Node): TextData {
   // 编辑节点文本事件
   div.addEventListener('input', (e: Event) => {
     if ((e.target as HTMLElement).getAttribute('data-isComposing') !== 'true') {
+      this.needLayout = true
       const text = (e.target as HTMLElement).innerText
       this.brainMap.execCommand<Node, string>(EnumCommandName.SET_NODE_TEXT, this, text)
     }

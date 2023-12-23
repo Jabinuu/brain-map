@@ -53,6 +53,7 @@ class Node {
     paddingY: number
   }
 
+  needLayout: boolean
   paddingX: number
   paddingY: number
   childrenAreaHeight: number
@@ -100,6 +101,9 @@ class Node {
     }
     // 所有后代节点所占的总高度
     this.childrenAreaHeight = 0
+
+    // 是否需要在有节点内容组合的情况下重新布局内容
+    this.needLayout = false
     // 节点内边距
     this.paddingX = 0
     this.paddingY = 0
@@ -218,6 +222,7 @@ class Node {
   }
 
   layout (): void {
+    this.group?.clear()
     const { isActive } = this.getData() as DataSourceItem
     // 节点形状
     this.shapeElem = this.shape.createRect()
@@ -253,20 +258,23 @@ class Node {
     this.renderLine(this)
 
     if (!this.group) {
-      this.group = new G().translate(this.left, this.top)
+      this.group = new G()
+      this.group.translate(this.left, this.top)
       this.group.addClass('bm-node')
       this.group.css({
         cursor: 'default'
       })
+      this.nodeDrawing?.add(this.group)
+
       // 绑定节点事件
       this.bindNodeEvent()
-      if (this.nodeDrawing !== null) {
-        this.group.addTo(this.nodeDrawing)
-      }
       this.layout()
     } else {
-      this.group.clear()
-      this.layout()
+      if (this.needLayout) {
+        this.needLayout = false
+        this.layout()
+      }
+
       const lastTransform = this.group.transform()
       if (lastTransform.translateX && lastTransform.translateY) {
         // 节点位置若发生变化则移动
@@ -274,7 +282,6 @@ class Node {
           this.group.translate(this.left - lastTransform.translateX, this.top - lastTransform.translateY)
         }
       }
-      // this.group.addTo(this.nodeDrawing)
     }
 
     // 每次渲染重置收缩扩展节点状态
