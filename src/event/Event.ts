@@ -33,6 +33,7 @@ class Event {
     window.addEventListener('mouseup', this.onMouseup.bind(this))
     this.brainMap.el?.addEventListener('wheel', this.onMousewheel.bind(this))
     window.addEventListener('keydown', this.onKeyDown.bind(this))
+    window.addEventListener('contextmenu', this.onContextMenu.bind(this))
   }
 
   onKeyDown (e: KeyboardEvent): void {
@@ -50,19 +51,32 @@ class Event {
   }
 
   onMousedown (e: MouseEvent): void {
-    this.view.onDragDrawingMousedown(e)
+    if (Array.prototype.includes.call((e.target as HTMLElement).classList, 'bm-svg-container')) {
+      this.view.onDragDrawingMousedown(e)
+    }
   }
 
   onMousemove (e: MouseEvent): void {
     this.view.onDragDrawingMousemove(e)
   }
 
-  onMouseup (): void {
-    this.view.onDragDrawingMouseup()
+  onMouseup (e: MouseEvent): void {
+    this.view.onDragDrawingMouseup(e)
   }
 
   onMousewheel (e: WheelEvent): void {
     this.view.zoomDrawing(e)
+  }
+
+  onContextMenu (e: MouseEvent): void {
+    // e.preventDefault()
+    if (this.view.isDragging) {
+      e.preventDefault()
+    } else {
+      // 自定义上下文菜单
+    }
+    // mouseup事件在contextmenu之前
+    this.view.isDragging = false
   }
 }
 
