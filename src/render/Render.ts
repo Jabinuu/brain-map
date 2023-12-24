@@ -206,10 +206,12 @@ class Render {
         if (isEdit) {
           node.textData.div.setAttribute('contenteditable', 'true')
           node.textData.div.style.cursor = 'text'
+          node.textData.div.style.userSelect = 'text'
           selectAllText(node.textData.div)
         } else {
           node.textData.div.removeAttribute('contenteditable')
           node.textData.div.style.cursor = 'default'
+          node.textData.div.style.userSelect = 'none'
         }
       }
     }
@@ -224,13 +226,17 @@ class Render {
 
   // 编辑节点时的操作
   onEditNodeText (e: Event, node: Node): void {
-    requestAnimationFrame(() => {
-      if ((e.target as HTMLElement).getAttribute('data-isComposing') !== 'true') {
-        node.needLayout = true
-        const text = (e.target as HTMLElement).innerText
-        this.brainMap.execCommand<Node, string>(EnumCommandName.SET_NODE_TEXT, node, text)
-      }
-    })
+    // requestAnimationFrame(() => {
+    // if ((e.target as HTMLElement).getAttribute('data-isComposing') !== 'true') {
+    node.needLayout = true
+    const text = (e.target as HTMLElement).innerText
+    this.brainMap.execCommand<Node, string>(EnumCommandName.SET_NODE_TEXT, node, text)
+    // node.textData?.div.focus()
+    // setCursorToEnd(node.textData?.div)
+    // 将形状节点移动到图层底部，否则覆盖了文本编辑元素
+    this.editNode?.shapeElem?.back()
+    // }
+    // })
   }
 
   // 取消所有后代节点的激活状态
@@ -255,11 +261,6 @@ class Render {
     if (this.editNode) {
       this.brainMap.execCommand<Node, boolean>(EnumCommandName.SET_NODE_EDIT, this.editNode, false)
     }
-  }
-
-  // 输入文本时的回调
-  onEditInput (): void {
-    this.render()
   }
 }
 

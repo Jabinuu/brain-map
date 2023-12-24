@@ -6,7 +6,7 @@ import nodeCreateContentMethods from './nodeCreateContent'
 import { EnumCommandName, EnumDataSource, EnumLineShape } from '../constant/constant'
 import type Render from '../render/Render'
 import { close as closeBtn } from '../svg/btns'
-import { setCursorToEnd, traversal } from '../utils'
+import { traversal } from '../utils'
 
 interface NodeCreateOption {
   data: DataSource | null
@@ -140,7 +140,7 @@ class Node {
 
   // 生成该节点下的所有内容元素
   generateContentElem (): void {
-    this.textData = this.createTextElem()
+    this.createTextElem()
   }
 
   // 获得节点总宽高
@@ -222,7 +222,14 @@ class Node {
   }
 
   layout (): void {
-    this.group?.clear()
+    if (!this.getData('isEdit')) {
+      this.group?.clear()
+    } else {
+      this.group?.children().forEach((item) => {
+        if (item !== this.textData?.element) item.remove()
+      })
+    }
+
     const { isActive } = this.getData() as DataSourceItem
     // 节点形状
     this.shapeElem = this.shape.createRect()
@@ -230,7 +237,7 @@ class Node {
     // 根节点填充色
     if (this.isRoot) this.shapeElem.fill('#F0F0F0')
     // todo: 将所有类型的内容元素在节点内布局
-    if (this.textData !== null) {
+    if (this.textData !== null && !this.getData('isEdit')) {
       this.group?.add(this.textData.element)
     }
     // 激活边框
@@ -264,11 +271,6 @@ class Node {
       this.group.css({
         cursor: 'default'
       })
-      this.group?.on('reRender', () => {
-        console.log(11)
-        this.textData?.div.focus()
-        setCursorToEnd(this.textData?.div)
-      })
 
       this.nodeDrawing?.add(this.group)
       // 绑定节点事件
@@ -278,7 +280,6 @@ class Node {
       if (this.needLayout) {
         this.needLayout = false
         this.layout()
-        this.group?.fire('reRender')
       }
 
       const lastTransform = this.group.transform()
@@ -308,7 +309,6 @@ class Node {
 
   reRender (): boolean {
     const isSizeChange = this.getSize()
-
     return isSizeChange
   }
 
