@@ -11,11 +11,6 @@ interface RenderOption {
 type Layout = LogicalStructure
  type RenderNodeCache = Record<string, Node>
 
-// export type SET_NODE_DATA = Array<Node | { [prop in keyof DataSourceItem]?: DataSourceItem[prop] }> 等价于下面
-// export type SET_NODE_DATA = Node | Partial<DataSourceItem>
-
-// export type SET_NODE_EXPAND = [Node, boolean ]
-
 const layouts = {
   [CONSTANT.LAYOUTS.LOGICAL_STRUCTURE]: LogicalStructure
 }

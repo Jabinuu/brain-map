@@ -47,11 +47,6 @@ function createTextElem (this: Node): void {
     }
   } else {
     const g = new G()
-    // const text = document.createTextNode(`${this.nodeData?.data.text as string}`)
-    // const div = document.createElement('div')
-    // div.appendChild(text)
-    // div.classList.add('bm-text-editer')
-
     const { width: initWidth, height: initHeight, div } = getEditAreaSize(this)
     const foreigObject = g.foreignObject(initWidth, initHeight)
     foreigObject.add(SVG(div))
@@ -64,18 +59,6 @@ function createTextElem (this: Node): void {
       this.renderer.onEditNodeText(e, this)
     })
 
-    // div.addEventListener('compositionstart', (e: Event) => {
-    //   (e.target as HTMLElement).setAttribute('data-isComposing', 'true')
-    // })
-
-    // div.addEventListener('compositionupdate', (e: Event) => {
-
-    // })
-
-    // div.addEventListener('compositionend', (e: Event) => {
-    //   (e.target as HTMLElement).setAttribute('data-isComposing', 'false')
-    // })
-
     this.textData = {
       element: g,
       div,
@@ -83,20 +66,6 @@ function createTextElem (this: Node): void {
       height
     }
   }
-
-  // if (this.getData('isEdit')) {
-  //   div.setAttribute('contenteditable', 'true')
-  //   div.style.cursor = 'text'
-  // } else {
-  //   div.removeAttribute('contenteditable')
-  // }
-
-  // return {
-  //   element: g,
-  //   div,
-  //   width,
-  //   height
-  // }
 }
 const nodeCreateContentMethods: NodeCreateContentMethods = {
   createTextElem

@@ -65,21 +65,3 @@ export function setCursorToEnd (contentEditableElement: HTMLElement | undefined)
     selection?.addRange(range)
   }
 }
-
-// let savedSelection: Range
-// // 保存光标位置
-// export function saveSelection (): void {
-//   const selection = window.getSelection()
-//   if (selection && selection.rangeCount > 0) {
-//     savedSelection = selection.getRangeAt(0).cloneRange()
-//   }
-// }
-
-// // 恢复光标位置
-// export function restoreSelection (): void {
-//   if (savedSelection) {
-//     const selection = window.getSelection()
-//     selection?.removeAllRanges()
-//     selection?.addRange(savedSelection)
-//   }
-// }
