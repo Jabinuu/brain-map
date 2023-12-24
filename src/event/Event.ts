@@ -36,7 +36,7 @@ class Event {
   }
 
   onKeyDown (e: KeyboardEvent): void {
-    if (['Tab', 'Enter'].includes(e.code)) {
+    if (['Tab', 'Enter', 'Delete'].includes(e.code)) {
       e.preventDefault()
     }
     this.shortcut.onShortcutKeyDown(e)

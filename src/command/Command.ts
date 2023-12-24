@@ -8,6 +8,7 @@ interface CommandMap {
   [prop: string]: any
   INSERT_CHILD_NODE?: Array<() => void>
   INSERT_SIBLING_NODE?: Array<() => void>
+  DELETE_NODE?: Array<() => void>
 }
 
 class Command {

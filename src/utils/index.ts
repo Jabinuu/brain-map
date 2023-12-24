@@ -53,15 +53,3 @@ export function selectAllText (div: HTMLElement | undefined): void {
     selection?.addRange(range)
   }
 }
-
-// 设置光标位置到内容末尾
-export function setCursorToEnd (contentEditableElement: HTMLElement | undefined): void {
-  if (contentEditableElement) {
-    const range = document.createRange()
-    const selection = window.getSelection()
-    range.selectNodeContents(contentEditableElement)
-    range.collapse(false)
-    selection?.removeAllRanges()
-    selection?.addRange(range)
-  }
-}

@@ -230,7 +230,6 @@ class Node {
       })
     }
 
-    const { isActive } = this.getData() as DataSourceItem
     // 节点形状
     this.shapeElem = this.shape.createRect()
     this.group?.add(this.shapeElem)
@@ -251,16 +250,11 @@ class Node {
     if (!this.isRoot && this.nodeData?.children && this.nodeData.children.length > 0) {
       this.renderGenericExpandArea()
     }
-
-    // 节点激活
-    if (isActive) {
-      this.active()
-    }
   }
 
   // 根据数据源渲染出节点
   render (): void {
-    const { isExpand } = this.getData() as DataSourceItem
+    const { isExpand, isActive } = this.getData() as DataSourceItem
     // 渲染节点连线
     this.renderLine(this)
 
@@ -289,6 +283,11 @@ class Node {
           this.group.translate(this.left - lastTransform.translateX, this.top - lastTransform.translateY)
         }
       }
+    }
+
+    // 节点激活
+    if (isActive) {
+      this.active()
     }
 
     // 每次渲染重置收缩扩展节点状态

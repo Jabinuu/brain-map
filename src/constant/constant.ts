@@ -92,12 +92,15 @@ export enum EnumShortcutName {
   RIGHT = 'ArrowRight',
   DOWN = 'ArrowDown',
   INS = 'Insert',
-  DEL = 'Delete'
+  DEL = 'Delete',
+  DEL_SINGLE = 'Control|Delete'
 }
 
 export enum EnumCommandName {
   INSERT_CHILD_NODE = 'INSERT_CHILD_NODE',
   INSERT_SIBLING_NODE = 'INSERT_SIBLING_NODE',
+  DELETE_NODE = ' DELETE_NODE',
+  DELETE_SINGLE_NODE = 'DELETE_SINGLE_NODE',
   SET_NODE_EXPAND = 'SET_NODE_EXPAND',
   SET_NODE_ACTIVE = 'SET_NODE_ACTIVE',
   SET_NODE_DATA = 'SET_NODE_DATA',

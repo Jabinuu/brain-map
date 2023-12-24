@@ -53,11 +53,13 @@ class Render {
   registerCommand (): void {
     this.brainMap.registerCommand(EnumCommandName.INSERT_CHILD_NODE, this.appendChildNode.bind(this))
     this.brainMap.registerCommand(EnumCommandName.INSERT_SIBLING_NODE, this.appendSibingNode.bind(this))
+    this.brainMap.registerCommand(EnumCommandName.DELETE_NODE, this.deleteNode.bind(this))
+    this.brainMap.registerCommand(EnumCommandName.DELETE_SINGLE_NODE, this.deleteSingleNode.bind(this))
     this.brainMap.registerCommand<Node, Partial<DataSourceItem>>(EnumCommandName.SET_NODE_DATA, this.setNodeData.bind(this))
     this.brainMap.registerCommand<Node, boolean>(EnumCommandName.SET_NODE_EXPAND, this.setNodeExpand.bind(this))
     this.brainMap.registerCommand<Node, boolean>(EnumCommandName.SET_NODE_ACTIVE, this.setNodeActive.bind(this))
     this.brainMap.registerCommand<Node, boolean>(EnumCommandName.SET_NODE_EDIT, this.setNodeEdit.bind(this))
-    this.brainMap.registerCommand < Node, string >(EnumCommandName.SET_NODE_TEXT, this.setNodeText.bind(this))
+    this.brainMap.registerCommand<Node, string>(EnumCommandName.SET_NODE_TEXT, this.setNodeText.bind(this))
   }
 
   // 绑定快捷键
@@ -69,11 +71,20 @@ class Render {
     this.brainMap.registerShortcut(EnumShortcutName.ENTER, () => {
       this.brainMap.execCommand(EnumCommandName.INSERT_SIBLING_NODE)
     })
+
+    this.brainMap.registerShortcut(EnumShortcutName.DEL, () => {
+      this.brainMap.execCommand(EnumCommandName.DELETE_NODE)
+    })
+
+    this.brainMap.registerShortcut(EnumShortcutName.DEL_SINGLE, () => {
+      this.brainMap.execCommand(EnumCommandName.DELETE_SINGLE_NODE)
+    })
   }
 
   // 渲染器
   render (): void {
     this.lastRenderCache = this.renderCache
+
     this.renderCache = {}
 
     // 布局的过程中已经创建了所有Node实例并计算好了定位属性值
@@ -144,6 +155,41 @@ class Render {
     this.clearActiveNodesList()
 
     this.render()
+  }
+
+  // 删除节点
+  deleteNode (): void {
+    this.activeNodes.forEach((node) => {
+      if (node.parent?.nodeData) {
+        node.parent.nodeData.children = node.parent.nodeData.children.filter((child) => {
+          return child.data.uid !== node.getData('uid')
+        })
+      }
+    })
+
+    this.clearActiveNodesList()
+    this.render()
+  }
+
+  // 删除单个节点
+  deleteSingleNode (): void {
+    if (this.activeNodes.length === 1) {
+      const [activeNode] = this.activeNodes
+      const parent = activeNode.parent?.nodeData
+      if (parent) {
+        let index = parent?.children.findIndex((child) => {
+          return child.data.uid === activeNode.uid
+        })
+        parent.children.splice(index, 1)
+        activeNode.nodeData?.children.forEach((child) => {
+          parent.children.splice(index++, 0, child)
+        })
+      }
+
+      this.render()
+    } else {
+      throw new Error('没有激活节点或多个激活节点不支持删除单个节点')
+    }
   }
 
   // 设置节点数据源数据
@@ -221,17 +267,11 @@ class Render {
 
   // 编辑节点时的操作
   onEditNodeText (e: Event, node: Node): void {
-    // requestAnimationFrame(() => {
-    // if ((e.target as HTMLElement).getAttribute('data-isComposing') !== 'true') {
     node.needLayout = true
     const text = (e.target as HTMLElement).innerText
     this.brainMap.execCommand<Node, string>(EnumCommandName.SET_NODE_TEXT, node, text)
-    // node.textData?.div.focus()
-    // setCursorToEnd(node.textData?.div)
     // 将形状节点移动到图层底部，否则覆盖了文本编辑元素
     this.editNode?.shapeElem?.back()
-    // }
-    // })
   }
 
   // 取消所有后代节点的激活状态
