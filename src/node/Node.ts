@@ -255,6 +255,7 @@ class Node {
   // 根据数据源渲染出节点
   render (): void {
     const { isExpand, isActive } = this.getData() as DataSourceItem
+
     // 渲染节点连线
     this.renderLine(this)
 
@@ -321,6 +322,7 @@ class Node {
       node.lines.forEach((line) => line.remove())
       node.lines = []
       this.renderer.layout.renderLine(node, EnumLineShape.CURVE)
+
       node.lines.forEach((item) => {
         if (this.lineDrawing != null) {
           item.addTo(this.lineDrawing)

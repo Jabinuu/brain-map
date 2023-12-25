@@ -41,7 +41,7 @@ class LogicalStructure extends Base {
               newNode.left = parent.node.left + this.getMarginX() + parent.node.width
             }
           }
-          return !cur.node?.getData('isExpand')
+          return !cur.data.isExpand
         },
         (cur) => {
           if (cur.node) {

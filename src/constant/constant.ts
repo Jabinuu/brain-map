@@ -93,7 +93,9 @@ export enum EnumShortcutName {
   DOWN = 'ArrowDown',
   INS = 'Insert',
   DEL = 'Delete',
-  DEL_SINGLE = 'Control|Delete'
+  DEL_SINGLE = 'Control|Delete',
+  BACK = 'Control|z',
+  REDO = 'Control|y'
 }
 
 export enum EnumCommandName {
@@ -105,7 +107,9 @@ export enum EnumCommandName {
   SET_NODE_ACTIVE = 'SET_NODE_ACTIVE',
   SET_NODE_DATA = 'SET_NODE_DATA',
   SET_NODE_EDIT = 'SET_NODE_EDIT',
-  SET_NODE_TEXT = 'SET_NODE_TEXT'
+  SET_NODE_TEXT = 'SET_NODE_TEXT',
+  BACK = 'BACK',
+  REDO = 'REDO'
 }
 
 export const cssConstant = `

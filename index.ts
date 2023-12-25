@@ -42,6 +42,7 @@ export interface DataSourceItem {
 }
 
 export interface DataSource {
+  [prop: string | symbol]: any
   data: DataSourceItem // 仅该节点的数据
   children: DataSource[] // 该节点的所有子节点
   node?: Node
@@ -131,6 +132,7 @@ class BrainMap {
 
     // 初次渲染
     this.renderer.render()
+    this.command.addHistory()
   }
 
   // 将选项属性动态赋值给类属性

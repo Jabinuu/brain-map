@@ -2,6 +2,7 @@ import { type DataSource } from '../../index'
 import { type PositionPair } from '../layouts/LogicalStructure'
 import type Node from '../node/Node'
 import { v4 as uuidv4 } from 'uuid'
+
 type PreCallback = ((cur: DataSource, parent: DataSource | null, isRoot: boolean) => boolean)
 type PostCallback = ((cur: DataSource, parent: DataSource | null, isRoot: boolean) => void)
 
@@ -42,8 +43,8 @@ export function getStartPointOfLine (root: Node): PositionPair {
     : [width + root.left, height / 2 + root.top]
 }
 
+// 全选节点内文本
 export function selectAllText (div: HTMLElement | undefined): void {
-  // 全选内容
   if (div) {
     const range = document.createRange()
     range.selectNodeContents(div)
@@ -52,4 +53,28 @@ export function selectAllText (div: HTMLElement | undefined): void {
     selection?.removeAllRanges()
     selection?.addRange(range)
   }
+}
+
+// 判断是否是对象
+export function isObject (obj: unknown): boolean {
+  const _type = typeof obj
+  if ((obj !== null && _type === 'object') || _type === 'function') {
+    return true
+  }
+  return false
+}
+
+// 由于属性值均为普通类型，无函数，无循环引用，先用简陋的深拷贝
+export function simpleDeepClone (source: unknown): any {
+  return JSON.parse(JSON.stringify(source))
+}
+
+// 深拷贝数据源，注意仅拷贝data和children字段，node字段不拷贝！
+export function cloneDataSource (dataSource: DataSource, newDataSourece: any = {}): DataSource {
+  newDataSourece.data = simpleDeepClone(dataSource.data)
+  newDataSourece.children = []
+  dataSource.children.forEach((child, index) => {
+    newDataSourece.children[index] = cloneDataSource(child)
+  })
+  return newDataSourece
 }

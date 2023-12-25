@@ -7,6 +7,7 @@ import { PathArray } from '@svgdotjs/svg.js'
 import { type PositionPair } from './LogicalStructure'
 import LruCache from '../utils/LruCache'
 
+// 思维导图布局基类
 class Base {
   brainMap: BrainMap
   renderer: Render
@@ -34,6 +35,18 @@ class Base {
       // 如果数据源上没有节点实例引用，但缓冲池中有该节点，则也可复用。主要是前进后退命令
       newNode = this.lruCache.get(data.data.uid) as Node
       newNode.reset()
+      // 如果节点数据源有变化，要更新数据
+      const cacheNodeData = JSON.stringify(newNode.getData())
+      const curNodeData = JSON.stringify(data.data)
+      if (curNodeData !== cacheNodeData) {
+        if (newNode.nodeData) {
+          newNode.nodeData.data = data.data
+          newNode.getSize()
+          newNode.needLayout = true
+        }
+      }
+      // 将节点实例挂载到数据源下
+      data.node = newNode
       this.cacheNode(data.data.uid, newNode)
     } else {
       // 没有可复用的节点实例，则创建新的节点实例

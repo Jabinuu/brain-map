@@ -55,6 +55,8 @@ class Render {
     this.brainMap.registerCommand(EnumCommandName.INSERT_SIBLING_NODE, this.appendSibingNode.bind(this))
     this.brainMap.registerCommand(EnumCommandName.DELETE_NODE, this.deleteNode.bind(this))
     this.brainMap.registerCommand(EnumCommandName.DELETE_SINGLE_NODE, this.deleteSingleNode.bind(this))
+    this.brainMap.registerCommand(EnumCommandName.BACK, this.back.bind(this))
+    this.brainMap.registerCommand(EnumCommandName.REDO, this.redo.bind(this))
     this.brainMap.registerCommand<Node, Partial<DataSourceItem>>(EnumCommandName.SET_NODE_DATA, this.setNodeData.bind(this))
     this.brainMap.registerCommand<Node, boolean>(EnumCommandName.SET_NODE_EXPAND, this.setNodeExpand.bind(this))
     this.brainMap.registerCommand<Node, boolean>(EnumCommandName.SET_NODE_ACTIVE, this.setNodeActive.bind(this))
@@ -79,13 +81,22 @@ class Render {
     this.brainMap.registerShortcut(EnumShortcutName.DEL_SINGLE, () => {
       this.brainMap.execCommand(EnumCommandName.DELETE_SINGLE_NODE)
     })
+
+    this.brainMap.registerShortcut(EnumShortcutName.BACK, () => {
+      this.brainMap.execCommand(EnumCommandName.BACK)
+    })
+
+    this.brainMap.registerShortcut(EnumShortcutName.REDO, () => {
+      this.brainMap.execCommand(EnumCommandName.REDO)
+    })
   }
 
   // 渲染器
   render (): void {
     this.lastRenderCache = this.renderCache
-
     this.renderCache = {}
+    // bug：退回到最初的状态时，node实例下的数据更新了，但是数据院没更新
+    // console.log(this.brainMap.dataSource)
 
     // 布局的过程中已经创建了所有Node实例并计算好了定位属性值
     this.layout?.doLayout()
@@ -96,6 +107,7 @@ class Render {
         this.lastRenderCache[uid].destroy()
       }
     })
+
     // 将所有Node实例渲染到画布上
     this.brainMap.root?.render()
   }
@@ -201,7 +213,7 @@ class Render {
     }
   }
 
-  // 设置节点数据源 并判断是否需要渲染
+  // 修改节点数据源 并判断是否需要渲染
   setNodeDataRender (node: Node, data: Partial<DataSourceItem>): void {
     this.brainMap.execCommand(EnumCommandName.SET_NODE_DATA, node, data)
     // 判断是否要渲染
@@ -295,6 +307,29 @@ class Render {
   clearEditStatus (): void {
     if (this.editNode) {
       this.brainMap.execCommand<Node, boolean>(EnumCommandName.SET_NODE_EDIT, this.editNode, false)
+    }
+  }
+
+  // 回退
+  back (): void {
+    const data = this.brainMap.command.back()
+
+    if (data) {
+      this.brainMap.dataSource = data
+      console.log(this.brainMap.command.history, this.brainMap.command.activeHistoryIndex)
+
+      this.render()
+    }
+  }
+
+  // 重做
+  redo (): void {
+    console.log('redo')
+
+    const data = this.brainMap.command.redo()
+    if (data) {
+      this.brainMap.dataSource = data
+      this.render()
     }
   }
 }
