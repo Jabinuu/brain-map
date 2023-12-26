@@ -67,8 +67,8 @@ class Command {
   }
 
   // 添加操作历史记录
-  // manipulateNodeId应该在history中，跟dataSource同级
   addHistory (cmdName: string = '', node: Node | null = null): void {
+    if (cmdName === EnumCommandName.SET_NODE_EDIT && (node?.getData('isEdit') || !node?.textChange)) return
     if (!this.filterList.includes(cmdName) && this.brainMap.dataSource) {
       const manipulateNodeId = node ? node.uid : ''
       const clone = cloneDataSource(this.brainMap.dataSource)

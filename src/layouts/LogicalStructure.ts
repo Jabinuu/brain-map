@@ -33,6 +33,7 @@ class LogicalStructure extends Base {
         null,
         (cur: DataSource, parent: DataSource | null, isRoot: boolean) => {
           const newNode = this.createNode(cur, parent, isRoot)
+
           if (newNode.isRoot) {
             newNode.left = 300
             newNode.top = this.brainMap.height / 2

@@ -35,10 +35,18 @@ class Base {
       // 如果数据源上没有节点实例引用，但缓冲池中有该节点，则也可复用。主要是前进后退命令
       newNode = this.lruCache.get(data.data.uid) as Node
       newNode.reset()
+
       // 如果节点数据源有变化，要更新数据
       const cacheNodeData = JSON.stringify(newNode.getData())
       const curNodeData = JSON.stringify(data.data)
-      if (curNodeData !== cacheNodeData) {
+      const dataChanged = curNodeData !== cacheNodeData
+      const childrenChanged = newNode.nodeData?.children.length !== data.children.length
+
+      // fix: 复用缓存中的节点时，要根据数据源更新node.nodeData下的children
+      if (childrenChanged && newNode.nodeData) {
+        newNode.nodeData.children = data.children
+      }
+      if (dataChanged) {
         if (newNode.nodeData) {
           newNode.nodeData.data = data.data
           newNode.getSize()

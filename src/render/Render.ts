@@ -175,6 +175,10 @@ class Render {
         node.parent.nodeData.children = node.parent.nodeData.children.filter((child) => {
           return child.data.uid !== node.getData('uid')
         })
+        // nodeData.children和数据源的一致性保持
+        if (this.brainMap.root) {
+          this.brainMap.dataSource = this.brainMap.root.nodeData
+        }
       }
     })
 
@@ -215,6 +219,7 @@ class Render {
   // 修改节点数据源 并判断是否需要渲染
   setNodeDataRender (node: Node, data: Partial<DataSourceItem>): void {
     this.brainMap.execCommand(EnumCommandName.SET_NODE_DATA, node, data)
+
     // 判断是否要渲染
     const changed = node.reRender()
 
@@ -260,6 +265,7 @@ class Render {
           node.textData.div.style.cursor = 'text'
           node.textData.div.style.userSelect = 'text'
           selectAllText(node.textData.div)
+          node.lastText = node.getData('text') as string
         } else {
           node.textData.div.removeAttribute('contenteditable')
           node.textData.div.style.cursor = 'default'
@@ -280,6 +286,7 @@ class Render {
   onEditNodeText (e: Event, node: Node): void {
     node.needLayout = true
     const text = (e.target as HTMLElement).innerText
+    node.textChange = text !== node.lastText
     this.brainMap.execCommand<Node, string>(EnumCommandName.SET_NODE_TEXT, node, text)
     // 将形状节点移动到图层底部，否则覆盖了文本编辑元素
     this.editNode?.shapeElem?.back()
@@ -312,6 +319,7 @@ class Render {
   // 回退
   back (): void {
     const historyItem = this.brainMap.command.back()
+    // this.clearActiveNodesList()
     this.switchHistoryItem(historyItem)
   }
 

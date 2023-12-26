@@ -53,6 +53,8 @@ class Node {
     paddingY: number
   }
 
+  lastText: string
+  textChange: boolean
   needLayout: boolean
   paddingX: number
   paddingY: number
@@ -102,6 +104,9 @@ class Node {
     // 所有后代节点所占的总高度
     this.childrenAreaHeight = 0
 
+    this.lastText = opt.text ?? ''
+    // 节点文本是否发生变化
+    this.textChange = false
     // 是否需要在有节点内容组合的情况下重新布局内容
     this.needLayout = false
     // 节点内边距
@@ -218,6 +223,10 @@ class Node {
   setData<T>(key: string, val: T): void {
     if (this.nodeData) {
       this.nodeData.data[key] = val
+      if (this.brainMap.root) {
+        const dd = this === this.brainMap.root.nodeData?.children[0].node
+        console.log(dd)
+      }
       // fix: 需要显式更新数据源
       if (this.brainMap.root) {
         this.brainMap.dataSource = this.brainMap.root.nodeData
