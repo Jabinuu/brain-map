@@ -313,19 +313,14 @@ class Render {
   // 回退
   back (): void {
     const data = this.brainMap.command.back()
-
     if (data) {
       this.brainMap.dataSource = data
-      console.log(this.brainMap.command.history, this.brainMap.command.activeHistoryIndex)
-
       this.render()
     }
   }
 
   // 重做
   redo (): void {
-    console.log('redo')
-
     const data = this.brainMap.command.redo()
     if (data) {
       this.brainMap.dataSource = data

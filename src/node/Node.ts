@@ -218,6 +218,10 @@ class Node {
   setData<T>(key: string, val: T): void {
     if (this.nodeData) {
       this.nodeData.data[key] = val
+      // fix: 需要显式更新数据源
+      if (this.brainMap.root) {
+        this.brainMap.dataSource = this.brainMap.root.nodeData
+      }
     }
   }
 

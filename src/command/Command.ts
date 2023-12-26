@@ -67,12 +67,14 @@ class Command {
       // 需要保存拷贝的值
 
       const clone = cloneDataSource(this.brainMap.dataSource)
+      console.log(clone)
 
       if (clone && !Array.isArray(clone)) {
         this.history = this.history.slice(0, this.activeHistoryIndex + 1)
         this.history.push(clone)
         this.activeHistoryIndex = this.history.length - 1
       }
+      console.log(111)
     }
   }
 
@@ -80,7 +82,7 @@ class Command {
   back (): DataSource | undefined {
     if (this.activeHistoryIndex - 1 >= 0) {
       this.activeHistoryIndex--
-      const data = this.history[this.activeHistoryIndex]
+      const data = cloneDataSource(this.history[this.activeHistoryIndex])
       return data
     }
   }
@@ -89,7 +91,7 @@ class Command {
   redo (): DataSource | undefined {
     if (this.activeHistoryIndex + 1 < this.history.length) {
       this.activeHistoryIndex++
-      const data = this.history[this.activeHistoryIndex]
+      const data = cloneDataSource(this.history[this.activeHistoryIndex])
       return data
     }
   }
