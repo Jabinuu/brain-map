@@ -78,3 +78,13 @@ export function cloneDataSource (dataSource: DataSource, newDataSourece: any = {
   })
   return newDataSourece
 }
+
+// 根据uid修改数据源中对应节点的active
+export function setActiveById (dataSource: DataSource, id: string): void {
+  traversal(dataSource, true, null, (cur) => {
+    if (cur.data.uid === id) {
+      cur.data.isActive = true
+    }
+    return false
+  })
+}

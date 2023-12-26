@@ -3,7 +3,8 @@ import LogicalStructure from '../layouts/LogicalStructure'
 import { CONSTANT, EnumCommandName, EnumShortcutName } from '../constant/constant'
 import type Node from '../node/Node'
 import { type DataSourceItem } from '../../index'
-import { selectAllText, traversal } from '../utils'
+import { selectAllText, setActiveById, traversal } from '../utils'
+import { type HistoryItem } from '../command/Command'
 interface RenderOption {
   brainMap: BrainMap
 }
@@ -95,8 +96,6 @@ class Render {
   render (): void {
     this.lastRenderCache = this.renderCache
     this.renderCache = {}
-    // bug：退回到最初的状态时，node实例下的数据更新了，但是数据院没更新
-    // console.log(this.brainMap.dataSource)
 
     // 布局的过程中已经创建了所有Node实例并计算好了定位属性值
     this.layout?.doLayout()
@@ -312,19 +311,25 @@ class Render {
 
   // 回退
   back (): void {
-    const data = this.brainMap.command.back()
-    if (data) {
-      this.brainMap.dataSource = data
-      this.render()
-    }
+    const historyItem = this.brainMap.command.back()
+    this.switchHistoryItem(historyItem)
   }
 
   // 重做
   redo (): void {
-    const data = this.brainMap.command.redo()
-    if (data) {
-      this.brainMap.dataSource = data
+    const historyItem = this.brainMap.command.redo()
+    this.switchHistoryItem(historyItem)
+  }
+
+  // 切换为上一次操作的状态
+  switchHistoryItem (historyItem: HistoryItem | undefined): void {
+    if (historyItem) {
+      const { dataSource, manipulateNodeId } = historyItem
+      setActiveById(dataSource, manipulateNodeId)
+      this.brainMap.dataSource = dataSource
       this.render()
+    } else {
+      alert('已经到头啦~w_w')
     }
   }
 }

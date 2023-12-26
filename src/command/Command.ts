@@ -1,6 +1,7 @@
 import type BrainMap from '../../index'
 import { type DataSource, type Pair } from '../../index'
 import { EnumCommandName } from '../constant/constant'
+import type Node from '../node/Node'
 import { cloneDataSource } from '../utils'
 
 interface CommandOption {
@@ -14,11 +15,16 @@ interface CommandMap {
   DELETE_NODE?: Array<() => void>
 }
 
+export interface HistoryItem {
+  manipulateNodeId: string // todo: 目前只支持单节点操作，后续更新为多个
+  dataSource: DataSource
+}
+
 // 命令类: 将修改数据源的操作通过调用命令来实现，并记录修改历史，从而实现撤销和重做
 class Command {
   brainMap: BrainMap
   commandMap: CommandMap
-  history: DataSource[]
+  history: HistoryItem[]
   filterList: string[]
   activeHistoryIndex: number
 
@@ -42,8 +48,7 @@ class Command {
       this.commandMap[cmdName].forEach((task: (...arg: Pair<T1, T2>) => void) => {
         task(...arg)
       })
-
-      this.addHistory(cmdName)
+      this.addHistory(cmdName, arg ? arg[0] as Node : null)
     }
   }
 
@@ -62,37 +67,47 @@ class Command {
   }
 
   // 添加操作历史记录
-  addHistory (cmdName: string = ''): void {
+  // manipulateNodeId应该在history中，跟dataSource同级
+  addHistory (cmdName: string = '', node: Node | null = null): void {
     if (!this.filterList.includes(cmdName) && this.brainMap.dataSource) {
-      // 需要保存拷贝的值
-
+      const manipulateNodeId = node ? node.uid : ''
       const clone = cloneDataSource(this.brainMap.dataSource)
-      console.log(clone)
-
       if (clone && !Array.isArray(clone)) {
         this.history = this.history.slice(0, this.activeHistoryIndex + 1)
-        this.history.push(clone)
+        this.history.push({
+          dataSource: clone,
+          manipulateNodeId
+        })
         this.activeHistoryIndex = this.history.length - 1
       }
-      console.log(111)
     }
   }
 
   // 回退
-  back (): DataSource | undefined {
+  back (): HistoryItem | undefined {
     if (this.activeHistoryIndex - 1 >= 0) {
+      const { manipulateNodeId } = this.history[this.activeHistoryIndex]
       this.activeHistoryIndex--
-      const data = cloneDataSource(this.history[this.activeHistoryIndex])
-      return data
+      const { dataSource } = this.history[this.activeHistoryIndex]
+      const data = cloneDataSource(dataSource)
+      return {
+        dataSource: data,
+        manipulateNodeId
+      }
     }
   }
 
   // 重做
-  redo (): DataSource | undefined {
+  redo (): HistoryItem | undefined {
     if (this.activeHistoryIndex + 1 < this.history.length) {
+      // const { manipulateNodeId } = this.history[this.activeHistoryIndex]
       this.activeHistoryIndex++
-      const data = cloneDataSource(this.history[this.activeHistoryIndex])
-      return data
+      const { dataSource, manipulateNodeId } = this.history[this.activeHistoryIndex]
+      const data = cloneDataSource(dataSource)
+      return {
+        dataSource: data,
+        manipulateNodeId
+      }
     }
   }
 }
