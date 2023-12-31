@@ -56,7 +56,7 @@ class Render {
     this.brainMap.registerCommand(EnumCommandName.INSERT_SIBLING_NODE, this.appendSibingNode.bind(this))
     this.brainMap.registerCommand(EnumCommandName.DELETE_NODE, this.deleteNode.bind(this))
     this.brainMap.registerCommand(EnumCommandName.DELETE_SINGLE_NODE, this.deleteSingleNode.bind(this))
-    this.brainMap.registerCommand(EnumCommandName.BACK, this.back.bind(this))
+    this.brainMap.registerCommand(EnumCommandName.UNDO, this.undo.bind(this))
     this.brainMap.registerCommand(EnumCommandName.REDO, this.redo.bind(this))
     this.brainMap.registerCommand<Node, Partial<DataSourceItem>>(EnumCommandName.SET_NODE_DATA, this.setNodeData.bind(this))
     this.brainMap.registerCommand<Node, boolean>(EnumCommandName.SET_NODE_EXPAND, this.setNodeExpand.bind(this))
@@ -83,8 +83,8 @@ class Render {
       this.brainMap.execCommand(EnumCommandName.DELETE_SINGLE_NODE)
     })
 
-    this.brainMap.registerShortcut(EnumShortcutName.BACK, () => {
-      this.brainMap.execCommand(EnumCommandName.BACK)
+    this.brainMap.registerShortcut(EnumShortcutName.UNDO, () => {
+      this.brainMap.execCommand(EnumCommandName.UNDO)
     })
 
     this.brainMap.registerShortcut(EnumShortcutName.REDO, () => {
@@ -175,10 +175,6 @@ class Render {
         node.parent.nodeData.children = node.parent.nodeData.children.filter((child) => {
           return child.data.uid !== node.getData('uid')
         })
-        // nodeData.children和数据源的一致性保持
-        if (this.brainMap.root) {
-          this.brainMap.dataSource = this.brainMap.root.nodeData
-        }
       }
     })
 
@@ -317,8 +313,8 @@ class Render {
   }
 
   // 回退
-  back (): void {
-    const historyItem = this.brainMap.command.back()
+  undo (): void {
+    const historyItem = this.brainMap.command.undo()
     // this.clearActiveNodesList()
     this.switchHistoryItem(historyItem)
   }
@@ -329,7 +325,7 @@ class Render {
     this.switchHistoryItem(historyItem)
   }
 
-  // 切换为上一次操作的状态
+  // 历史记录切换
   switchHistoryItem (historyItem: HistoryItem | undefined): void {
     if (historyItem) {
       const { dataSource, manipulateNodeId } = historyItem

@@ -37,7 +37,7 @@ class Command {
       EnumCommandName.SET_NODE_ACTIVE,
       EnumCommandName.SET_NODE_DATA,
       EnumCommandName.SET_NODE_TEXT,
-      EnumCommandName.BACK,
+      EnumCommandName.UNDO,
       EnumCommandName.REDO
     ]
   }
@@ -68,7 +68,9 @@ class Command {
 
   // 添加操作历史记录
   addHistory (cmdName: string = '', node: Node | null = null): void {
+    // 进入编辑状态和未修改文本内容 则不触发历史记录
     if (cmdName === EnumCommandName.SET_NODE_EDIT && (node?.getData('isEdit') || !node?.textChange)) return
+    // 白名单过滤
     if (!this.filterList.includes(cmdName) && this.brainMap.dataSource) {
       const manipulateNodeId = node ? node.uid : ''
       const clone = cloneDataSource(this.brainMap.dataSource)
@@ -84,7 +86,7 @@ class Command {
   }
 
   // 回退
-  back (): HistoryItem | undefined {
+  undo (): HistoryItem | undefined {
     if (this.activeHistoryIndex - 1 >= 0) {
       const { manipulateNodeId } = this.history[this.activeHistoryIndex]
       this.activeHistoryIndex--

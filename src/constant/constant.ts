@@ -94,7 +94,7 @@ export enum EnumShortcutName {
   INS = 'Insert',
   DEL = 'Delete',
   DEL_SINGLE = 'Control|Delete',
-  BACK = 'Control|z',
+  UNDO = 'Control|z',
   REDO = 'Control|y'
 }
 
@@ -108,7 +108,7 @@ export enum EnumCommandName {
   SET_NODE_DATA = 'SET_NODE_DATA',
   SET_NODE_EDIT = 'SET_NODE_EDIT',
   SET_NODE_TEXT = 'SET_NODE_TEXT',
-  BACK = 'BACK',
+  UNDO = 'UNDO',
   REDO = 'REDO'
 }
 

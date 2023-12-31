@@ -27,6 +27,8 @@ class Base {
       // 如果数据源上已有节点实例的引用，则直接拿来复用
       newNode = data.node
       newNode.reset()
+      // 保持与历史记录中的数据拷贝值的相同引用
+      newNode.nodeData = data
 
       if (data.data.uid) {
         this.cacheNode(data.data.uid, newNode)
@@ -36,23 +38,17 @@ class Base {
       newNode = this.lruCache.get(data.data.uid) as Node
       newNode.reset()
 
-      // 如果节点数据源有变化，要更新数据
+      // 如果节点数据源有变化，相较于缓存有变化,则要重新创建节点内容
       const cacheNodeData = JSON.stringify(newNode.getData())
       const curNodeData = JSON.stringify(data.data)
-      const dataChanged = curNodeData !== cacheNodeData
-      const childrenChanged = newNode.nodeData?.children.length !== data.children.length
 
-      // fix: 复用缓存中的节点时，要根据数据源更新node.nodeData下的children
-      if (childrenChanged && newNode.nodeData) {
-        newNode.nodeData.children = data.children
+      // 更新节点内容之前,赋新值并且保持了相同引用
+      newNode.nodeData = data
+      if (curNodeData !== cacheNodeData) {
+        newNode.getSize()
+        newNode.needLayout = true
       }
-      if (dataChanged) {
-        if (newNode.nodeData) {
-          newNode.nodeData.data = data.data
-          newNode.getSize()
-          newNode.needLayout = true
-        }
-      }
+
       // 将节点实例挂载到数据源下
       data.node = newNode
       this.cacheNode(data.data.uid, newNode)
@@ -67,6 +63,8 @@ class Base {
       })
       // 将节点实例挂载到数据源下
       data.node = newNode
+      // 保持数据的相同引用
+      newNode.nodeData = data
 
       data.data.uid = uid
       this.cacheNode(data.data.uid, newNode)
