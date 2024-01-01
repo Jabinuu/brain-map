@@ -7,7 +7,7 @@ import { cssConstant } from './src/constant/constant'
 import Shortcut from './src/shortcut/Shortcut'
 import Command from './src/command/Command'
 
-export type Pair<T1, T2> = [T1?, T2?]
+export type Pair<T1, T2> = [T1, T2]
 
 interface BrainMapOption {
   [prop: string]: any
@@ -182,14 +182,17 @@ class BrainMap {
 
   // 注册命令
   registerCommand<T>(cmdName: string, task: (arg: T) => void): void
-  registerCommand <T1, T2>(cmdName: string, task: (...arg: Pair<T1, T2>) => void): void
+  registerCommand<T1, T2>(cmdName: string, task: (...arg: Pair<T1, T2>) => void): void
   registerCommand<T1, T2>(cmdName: string, task: (...arg: Pair<T1, T2>) => void): void {
-    this.command.addCommand(cmdName, task)
+    this.command.addCommand<T1, T2>(cmdName, task)
   }
 
   // 执行命令
-  execCommand <T1, T2>(cmdName: string, ...arg: Pair<T1, T2>): void {
-    this.command.exec<T1, T2>(cmdName, ...arg)
+  execCommand (cmdName: string): void
+  execCommand <T>(cmdName: string, arg: T): void
+  execCommand <T1, T2>(cmdName: string, ...arg: [T1, T2]): void
+  execCommand <T1, T2>(cmdName: string, ...arg: [T1, T2] | [T1] | []): void {
+    this.command.exec(cmdName, arg)
   }
 }
 

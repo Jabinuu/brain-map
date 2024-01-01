@@ -80,7 +80,7 @@ class Render {
     })
 
     this.brainMap.registerShortcut(EnumShortcutName.DEL_SINGLE, () => {
-      this.brainMap.execCommand(EnumCommandName.DELETE_SINGLE_NODE)
+      this.brainMap.execCommand(EnumCommandName.DELETE_SINGLE_NODE, this.activeNodes[0])
     })
 
     this.brainMap.registerShortcut(EnumShortcutName.UNDO, () => {
@@ -183,7 +183,7 @@ class Render {
   }
 
   // 删除单个节点
-  deleteSingleNode (): void {
+  deleteSingleNode (node: Node): void {
     if (this.activeNodes.length === 1) {
       const [activeNode] = this.activeNodes
       const parent = activeNode.parent?.nodeData
@@ -225,18 +225,18 @@ class Render {
   }
 
   // 改变节点激活状态
-  setNodeActive (node?: Node, isActive?: boolean): void {
+  setNodeActive (node: Node, isActive: boolean): void {
     this.brainMap.execCommand<Node, Partial<DataSourceItem>>(EnumCommandName.SET_NODE_DATA, node, {
       isActive
     })
     if (isActive) {
-      node?.showExpandBtn()
+      node.showExpandBtn()
     }
   }
 
   // 改变节点展开状态
-  setNodeExpand (node?: Node, isExpand?: boolean): void {
-    if (!isExpand && node) {
+  setNodeExpand (node: Node, isExpand: boolean): void {
+    if (!isExpand) {
       // 节点收缩时取消所有后代节点的激活状态
       this.cancelAllChildrenActive(node)
     }
@@ -247,32 +247,30 @@ class Render {
   }
 
   // 改变节点编辑状态
-  setNodeEdit (node?: Node, isEdit?: boolean): void {
-    if (node) {
-      this.editNode = isEdit ? node : null
-      this.brainMap.execCommand<Node, Partial<DataSourceItem>>(EnumCommandName.SET_NODE_DATA, node, {
-        isEdit
-      })
+  setNodeEdit (node: Node, isEdit: boolean): void {
+    this.editNode = isEdit ? node : null
+    this.brainMap.execCommand<Node, Partial<DataSourceItem>>(EnumCommandName.SET_NODE_DATA, node, {
+      isEdit
+    })
 
-      // 打开编辑模式
-      if (node.textData) {
-        if (isEdit) {
-          node.textData.div.setAttribute('contenteditable', 'true')
-          node.textData.div.style.cursor = 'text'
-          node.textData.div.style.userSelect = 'text'
-          selectAllText(node.textData.div)
-          node.lastText = node.getData('text') as string
-        } else {
-          node.textData.div.removeAttribute('contenteditable')
-          node.textData.div.style.cursor = 'default'
-          node.textData.div.style.userSelect = 'none'
-        }
+    // 打开编辑模式
+    if (node.textData) {
+      if (isEdit) {
+        node.textData.div.setAttribute('contenteditable', 'true')
+        node.textData.div.style.cursor = 'text'
+        node.textData.div.style.userSelect = 'text'
+        selectAllText(node.textData.div)
+        node.lastText = node.getData('text') as string
+      } else {
+        node.textData.div.removeAttribute('contenteditable')
+        node.textData.div.style.cursor = 'default'
+        node.textData.div.style.userSelect = 'none'
       }
     }
   }
 
   // 修改节点文本
-  setNodeText (node?: Node, text?: string): void {
+  setNodeText (node: Node, text: string): void {
     node?.renderer.setNodeDataRender(node, {
       text
     })

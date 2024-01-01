@@ -43,9 +43,9 @@ class Command {
   }
 
   // 执行命令
-  exec <T1, T2>(cmdName: string, ...arg: Pair<T1, T2>): void {
+  exec <T1, T2>(cmdName: string, arg: [T1, T2] | [T1] | []): void {
     if (this.commandMap[cmdName]) {
-      this.commandMap[cmdName].forEach((task: (...arg: Pair<T1, T2>) => void) => {
+      this.commandMap[cmdName].forEach((task: (...arg: [T1, T2] | [T1] | []) => void) => {
         task(...arg)
       })
       this.addHistory(cmdName, arg ? arg[0] as Node : null)
