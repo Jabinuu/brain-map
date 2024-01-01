@@ -52,9 +52,9 @@ class Render {
 
   // 注册命令
   registerCommand (): void {
-    this.brainMap.registerCommand(EnumCommandName.INSERT_CHILD_NODE, this.appendChildNode.bind(this))
-    this.brainMap.registerCommand(EnumCommandName.INSERT_SIBLING_NODE, this.appendSibingNode.bind(this))
-    this.brainMap.registerCommand(EnumCommandName.DELETE_NODE, this.deleteNode.bind(this))
+    this.brainMap.registerCommand<Node>(EnumCommandName.INSERT_CHILD_NODE, this.appendChildNode.bind(this))
+    this.brainMap.registerCommand<Node>(EnumCommandName.INSERT_SIBLING_NODE, this.appendSibingNode.bind(this))
+    this.brainMap.registerCommand<Node>(EnumCommandName.DELETE_NODE, this.deleteNode.bind(this))
     this.brainMap.registerCommand(EnumCommandName.DELETE_SINGLE_NODE, this.deleteSingleNode.bind(this))
     this.brainMap.registerCommand(EnumCommandName.UNDO, this.undo.bind(this))
     this.brainMap.registerCommand(EnumCommandName.REDO, this.redo.bind(this))
@@ -68,15 +68,15 @@ class Render {
   // 绑定快捷键
   bindShortcut (): void {
     this.brainMap.registerShortcut(EnumShortcutName.TAB, () => {
-      this.brainMap.execCommand(EnumCommandName.INSERT_CHILD_NODE)
+      this.brainMap.execCommand(EnumCommandName.INSERT_CHILD_NODE, this.activeNodes[0])
     })
 
     this.brainMap.registerShortcut(EnumShortcutName.ENTER, () => {
-      this.brainMap.execCommand(EnumCommandName.INSERT_SIBLING_NODE)
+      this.brainMap.execCommand(EnumCommandName.INSERT_SIBLING_NODE, this.activeNodes[0])
     })
 
     this.brainMap.registerShortcut(EnumShortcutName.DEL, () => {
-      this.brainMap.execCommand(EnumCommandName.DELETE_NODE)
+      this.brainMap.execCommand(EnumCommandName.DELETE_NODE, this.activeNodes[0])
     })
 
     this.brainMap.registerShortcut(EnumShortcutName.DEL_SINGLE, () => {
@@ -129,7 +129,7 @@ class Render {
   }
 
   // 添加子节点
-  appendChildNode (): void {
+  appendChildNode (node: Node): void {
     this.activeNodes.forEach((activeNode: Node) => {
       activeNode.nodeData?.children.push({
         data: {
@@ -149,7 +149,7 @@ class Render {
   }
 
   // 添加同级节点
-  appendSibingNode (): void {
+  appendSibingNode (node: Node): void {
     this.activeNodes.forEach((activeNode: Node) => {
       activeNode.parent?.nodeData?.children.push({
         data: {
@@ -169,7 +169,7 @@ class Render {
   }
 
   // 删除节点
-  deleteNode (): void {
+  deleteNode (node: Node): void {
     this.activeNodes.forEach((node) => {
       if (node.parent?.nodeData) {
         node.parent.nodeData.children = node.parent.nodeData.children.filter((child) => {

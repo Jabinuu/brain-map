@@ -181,7 +181,9 @@ class BrainMap {
   }
 
   // 注册命令
-  registerCommand <T1, T2>(cmdName: string, task: (...arg: Pair<T1, T2>) => void): void {
+  registerCommand<T>(cmdName: string, task: (arg: T) => void): void
+  registerCommand <T1, T2>(cmdName: string, task: (...arg: Pair<T1, T2>) => void): void
+  registerCommand<T1, T2>(cmdName: string, task: (...arg: Pair<T1, T2>) => void): void {
     this.command.addCommand(cmdName, task)
   }
 
