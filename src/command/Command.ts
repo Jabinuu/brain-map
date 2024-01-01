@@ -1,5 +1,5 @@
 import type BrainMap from '../../index'
-import { type DataSource, type Pair } from '../../index'
+import { type DataSource } from '../../index'
 import { EnumCommandName } from '../constant/constant'
 import type Node from '../node/Node'
 import { cloneDataSource } from '../utils'
@@ -43,17 +43,17 @@ class Command {
   }
 
   // 执行命令
-  exec <T1, T2>(cmdName: string, arg: [T1, T2] | [T1] | []): void {
+  exec (cmdName: string, args?: any): void {
     if (this.commandMap[cmdName]) {
-      this.commandMap[cmdName].forEach((task: (...arg: [T1, T2] | [T1] | []) => void) => {
-        task(...arg)
+      this.commandMap[cmdName].forEach((task: (...args: any) => void) => {
+        task(...args)
       })
-      this.addHistory(cmdName, arg ? arg[0] as Node : null)
+      this.addHistory(cmdName, args.length ? args[0] as Node : null)
     }
   }
 
   // 注册命令
-  addCommand <T1, T2>(cmdName: string, task: (...arg: Pair<T1, T2>) => void): void {
+  addCommand (cmdName: string, task: () => void): void {
     if (this.commandMap[cmdName]) {
       this.commandMap[cmdName].push(task)
     } else {
@@ -102,7 +102,6 @@ class Command {
   // 重做
   redo (): HistoryItem | undefined {
     if (this.activeHistoryIndex + 1 < this.history.length) {
-      // const { manipulateNodeId } = this.history[this.activeHistoryIndex]
       this.activeHistoryIndex++
       const { dataSource, manipulateNodeId } = this.history[this.activeHistoryIndex]
       const data = cloneDataSource(dataSource)

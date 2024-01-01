@@ -52,17 +52,17 @@ class Render {
 
   // 注册命令
   registerCommand (): void {
-    this.brainMap.registerCommand<Node>(EnumCommandName.INSERT_CHILD_NODE, this.appendChildNode.bind(this))
-    this.brainMap.registerCommand<Node>(EnumCommandName.INSERT_SIBLING_NODE, this.appendSibingNode.bind(this))
-    this.brainMap.registerCommand<Node>(EnumCommandName.DELETE_NODE, this.deleteNode.bind(this))
+    this.brainMap.registerCommand(EnumCommandName.INSERT_CHILD_NODE, this.appendChildNode.bind(this))
+    this.brainMap.registerCommand(EnumCommandName.INSERT_SIBLING_NODE, this.appendSibingNode.bind(this))
+    this.brainMap.registerCommand(EnumCommandName.DELETE_NODE, this.deleteNode.bind(this))
     this.brainMap.registerCommand(EnumCommandName.DELETE_SINGLE_NODE, this.deleteSingleNode.bind(this))
     this.brainMap.registerCommand(EnumCommandName.UNDO, this.undo.bind(this))
     this.brainMap.registerCommand(EnumCommandName.REDO, this.redo.bind(this))
-    this.brainMap.registerCommand<Node, Partial<DataSourceItem>>(EnumCommandName.SET_NODE_DATA, this.setNodeData.bind(this))
-    this.brainMap.registerCommand<Node, boolean>(EnumCommandName.SET_NODE_EXPAND, this.setNodeExpand.bind(this))
-    this.brainMap.registerCommand<Node, boolean>(EnumCommandName.SET_NODE_ACTIVE, this.setNodeActive.bind(this))
-    this.brainMap.registerCommand<Node, boolean>(EnumCommandName.SET_NODE_EDIT, this.setNodeEdit.bind(this))
-    this.brainMap.registerCommand<Node, string>(EnumCommandName.SET_NODE_TEXT, this.setNodeText.bind(this))
+    this.brainMap.registerCommand(EnumCommandName.SET_NODE_DATA, this.setNodeData.bind(this))
+    this.brainMap.registerCommand(EnumCommandName.SET_NODE_EXPAND, this.setNodeExpand.bind(this))
+    this.brainMap.registerCommand(EnumCommandName.SET_NODE_ACTIVE, this.setNodeActive.bind(this))
+    this.brainMap.registerCommand(EnumCommandName.SET_NODE_EDIT, this.setNodeEdit.bind(this))
+    this.brainMap.registerCommand(EnumCommandName.SET_NODE_TEXT, this.setNodeText.bind(this))
   }
 
   // 绑定快捷键
@@ -114,7 +114,7 @@ class Render {
   // 清空激活节点列表
   clearActiveNodesList (): void {
     this.activeNodes.forEach((item: Node) => {
-      this.brainMap.execCommand<Node, boolean>(EnumCommandName.SET_NODE_ACTIVE, item, false)
+      this.brainMap.execCommand(EnumCommandName.SET_NODE_ACTIVE, item, false)
       item.group?.removeClass('active')
       item.hideExpandBtn()
     })
@@ -124,7 +124,7 @@ class Render {
   // 添加激活节点
   addActiveNodeList (node: Node): void {
     node.group?.addClass('active')
-    this.brainMap.execCommand<Node, boolean>(EnumCommandName.SET_NODE_ACTIVE, node, true)
+    this.brainMap.execCommand(EnumCommandName.SET_NODE_ACTIVE, node, true)
     this.activeNodes.push(node)
   }
 
@@ -226,7 +226,7 @@ class Render {
 
   // 改变节点激活状态
   setNodeActive (node: Node, isActive: boolean): void {
-    this.brainMap.execCommand<Node, Partial<DataSourceItem>>(EnumCommandName.SET_NODE_DATA, node, {
+    this.brainMap.execCommand(EnumCommandName.SET_NODE_DATA, node, {
       isActive
     })
     if (isActive) {
@@ -240,7 +240,7 @@ class Render {
       // 节点收缩时取消所有后代节点的激活状态
       this.cancelAllChildrenActive(node)
     }
-    this.brainMap.execCommand<Node, Partial<DataSourceItem>>(EnumCommandName.SET_NODE_DATA, node, {
+    this.brainMap.execCommand(EnumCommandName.SET_NODE_DATA, node, {
       isExpand
     })
     this.render()
@@ -249,7 +249,7 @@ class Render {
   // 改变节点编辑状态
   setNodeEdit (node: Node, isEdit: boolean): void {
     this.editNode = isEdit ? node : null
-    this.brainMap.execCommand<Node, Partial<DataSourceItem>>(EnumCommandName.SET_NODE_DATA, node, {
+    this.brainMap.execCommand(EnumCommandName.SET_NODE_DATA, node, {
       isEdit
     })
 
@@ -281,7 +281,7 @@ class Render {
     node.needLayout = true
     const text = (e.target as HTMLElement).innerText
     node.textChange = text !== node.lastText
-    this.brainMap.execCommand<Node, string>(EnumCommandName.SET_NODE_TEXT, node, text)
+    this.brainMap.execCommand(EnumCommandName.SET_NODE_TEXT, node, text)
     // 将形状节点移动到图层底部，否则覆盖了文本编辑元素
     this.editNode?.shapeElem?.back()
   }
@@ -292,7 +292,7 @@ class Render {
       traversal(node.nodeData, node.isRoot, null, (node) => {
         node.children.forEach((child) => {
           if (child.node?.getData('isActive')) {
-            this.brainMap.execCommand<Node, Partial<DataSourceItem>>(EnumCommandName.SET_NODE_DATA, child.node, {
+            this.brainMap.execCommand(EnumCommandName.SET_NODE_DATA, child.node, {
               isActive: false
             })
             this.activeNodes = this.activeNodes.filter((item) => item !== child.node)
@@ -306,7 +306,7 @@ class Render {
   // 清除编辑状态
   clearEditStatus (): void {
     if (this.editNode) {
-      this.brainMap.execCommand<Node, boolean>(EnumCommandName.SET_NODE_EDIT, this.editNode, false)
+      this.brainMap.execCommand(EnumCommandName.SET_NODE_EDIT, this.editNode, false)
     }
   }
 

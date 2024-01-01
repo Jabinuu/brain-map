@@ -207,7 +207,7 @@ class Node {
     this.group?.on('dblclick', () => {
       // todo: 清除节点的编辑状态
       if (!this.getData('isEdit')) {
-        this.brainMap.execCommand<Node, boolean>(EnumCommandName.SET_NODE_EDIT, this, true)
+        this.brainMap.execCommand(EnumCommandName.SET_NODE_EDIT, this, true)
       }
     })
   }
@@ -339,7 +339,7 @@ class Node {
   // 激活节点
   active (): void {
     this.renderer.clearActiveNodesList()
-    this.brainMap.execCommand<Node, boolean>(EnumCommandName.SET_NODE_ACTIVE, this, true)
+    this.brainMap.execCommand(EnumCommandName.SET_NODE_ACTIVE, this, true)
     this.renderer.addActiveNodeList(this)
   }
 
@@ -389,7 +389,7 @@ class Node {
   bindExpandBtnEvent (g: GType, isExpand: boolean): void {
     g.on('click', (e) => {
       e.stopPropagation()
-      this.brainMap.execCommand<Node, boolean>(EnumCommandName.SET_NODE_EXPAND, this, !isExpand)
+      this.brainMap.execCommand(EnumCommandName.SET_NODE_EXPAND, this, !isExpand)
     })
   }
 

@@ -3,7 +3,7 @@ import Render from './src/render/Render'
 import type Node from './src/node/Node'
 import View from './src/view/View'
 import Event from './src/event/Event'
-import { cssConstant } from './src/constant/constant'
+import { type EnumCommandName, cssConstant } from './src/constant/constant'
 import Shortcut from './src/shortcut/Shortcut'
 import Command from './src/command/Command'
 
@@ -181,18 +181,57 @@ class BrainMap {
   }
 
   // 注册命令
-  registerCommand<T>(cmdName: string, task: (arg: T) => void): void
-  registerCommand<T1, T2>(cmdName: string, task: (...arg: Pair<T1, T2>) => void): void
-  registerCommand<T1, T2>(cmdName: string, task: (...arg: Pair<T1, T2>) => void): void {
-    this.command.addCommand<T1, T2>(cmdName, task)
+  registerCommand (cmdName: EnumCommandName.SET_NODE_TEXT, task: (arg1: Node, arg2: string) => void): void
+  registerCommand (cmdName: EnumCommandName.SET_NODE_DATA, task: (arg1: Node, arg2: Partial<DataSourceItem>) => void): void
+  registerCommand (cmdName: EnumCommandName.REDO | EnumCommandName.UNDO, task: () => void): void
+  registerCommand (cmdName:
+  EnumCommandName.SET_NODE_ACTIVE |
+  EnumCommandName.SET_NODE_EDIT |
+  EnumCommandName.SET_NODE_EXPAND, task: (arg1: Node, arg2: boolean) => void): void
+  registerCommand (cmdName:
+  EnumCommandName.DELETE_SINGLE_NODE |
+  EnumCommandName.DELETE_NODE |
+  EnumCommandName.INSERT_CHILD_NODE |
+  EnumCommandName.INSERT_SIBLING_NODE, task: (arg1: Node) => void): void
+
+  registerCommand (cmdName: string, task: (...args: any) => void): void {
+    this.command.addCommand(cmdName, task)
   }
 
   // 执行命令
-  execCommand (cmdName: string): void
-  execCommand <T>(cmdName: string, arg: T): void
-  execCommand <T1, T2>(cmdName: string, ...arg: [T1, T2]): void
-  execCommand <T1, T2>(cmdName: string, ...arg: [T1, T2] | [T1] | []): void {
-    this.command.exec(cmdName, arg)
+  execCommand (cmdName: EnumCommandName.SET_NODE_TEXT, arg1: Node, arg2: string): void
+  execCommand (cmdName: EnumCommandName.SET_NODE_DATA, arg1: Node, arg2: Partial<DataSourceItem>): void
+  execCommand (cmdName: EnumCommandName.REDO | EnumCommandName.UNDO): void
+  execCommand (cmdName:
+  EnumCommandName.SET_NODE_ACTIVE |
+  EnumCommandName.SET_NODE_EDIT |
+  EnumCommandName.SET_NODE_EXPAND, arg1: Node, arg2: boolean): void
+  execCommand (cmdName:
+  EnumCommandName.DELETE_SINGLE_NODE |
+  EnumCommandName.DELETE_NODE |
+  EnumCommandName.INSERT_CHILD_NODE |
+  EnumCommandName.INSERT_SIBLING_NODE, arg1: Node): void
+  execCommand (cmdName: keyof typeof EnumCommandName, ...args: any[]): void {
+    // switch (cmdName) {
+    //   case EnumCommandName.DELETE_NODE:
+    //     this.command.exec(cmdName, args[0])
+    //     break
+    //   case EnumCommandName.DELETE_SINGLE_NODE:
+    //     this.command.exec(cmdName, args[0])
+    //     break
+    //   case EnumCommandName.INSERT_CHILD_NODE:
+    //     this.command.exec(cmdName, args[0])
+    //     break
+    //   case EnumCommandName.INSERT_SIBLING_NODE:
+    //     this.command.exec(cmdName, args[0])
+    //     break
+    //   case EnumCommandName.REDO:
+    //     this.command.exec(cmdName)
+    //     break
+    //   case EnumCommandName.SET_NODE_EXPAND:
+    //     this.command.exec(cmdName, args)
+    // }
+    this.command.exec(cmdName, args)
   }
 }
 
