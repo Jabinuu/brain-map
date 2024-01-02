@@ -72,19 +72,11 @@ export function simpleDeepClone (source: unknown): any {
 // 深拷贝数据源，注意仅拷贝data和children字段，node字段不拷贝！
 export function cloneDataSource (dataSource: DataSource, newDataSourece: any = {}): DataSource {
   newDataSourece.data = simpleDeepClone(dataSource.data)
+  // 存在历史记录里的数据源全部设置为未激活
+  newDataSourece.data.isActive = false
   newDataSourece.children = []
   dataSource.children.forEach((child, index) => {
     newDataSourece.children[index] = cloneDataSource(child)
   })
   return newDataSourece
-}
-
-// 根据uid修改数据源中对应节点的active
-export function setActiveById (dataSource: DataSource, id: string): void {
-  traversal(dataSource, true, null, (cur) => {
-    if (cur.data.uid === id) {
-      cur.data.isActive = true
-    }
-    return false
-  })
 }

@@ -63,11 +63,17 @@ class Base {
       })
       // 将节点实例挂载到数据源下
       data.node = newNode
+
       // 保持数据的相同引用
       newNode.nodeData = data
 
       data.data.uid = uid
       this.cacheNode(data.data.uid, newNode)
+    }
+
+    // 若节点为激活节点，则添加到激活节点数组中
+    if (data.data.isActive) {
+      this.renderer.addActiveNodeList(newNode)
     }
 
     if (isRoot) {

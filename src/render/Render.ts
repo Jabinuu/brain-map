@@ -2,8 +2,8 @@ import type BrainMap from '../../index'
 import LogicalStructure from '../layouts/LogicalStructure'
 import { CONSTANT, EnumCommandName, EnumShortcutName } from '../constant/constant'
 import type Node from '../node/Node'
-import { type DataSourceItem } from '../../index'
-import { selectAllText, setActiveById, traversal } from '../utils'
+import { type DataSource, type DataSourceItem } from '../../index'
+import { selectAllText, traversal } from '../utils'
 import { type HistoryItem } from '../command/Command'
 interface RenderOption {
   brainMap: BrainMap
@@ -115,7 +115,6 @@ class Render {
   clearActiveNodesList (): void {
     this.activeNodes.forEach((item: Node) => {
       this.brainMap.execCommand(EnumCommandName.SET_NODE_ACTIVE, item, false)
-      item.group?.removeClass('active')
       item.hideExpandBtn()
     })
     this.activeNodes.length = 0
@@ -123,7 +122,10 @@ class Render {
 
   // 添加激活节点
   addActiveNodeList (node: Node): void {
-    node.group?.addClass('active')
+    // 不重复添加激活节点
+    if (this.activeNodes.findIndex((item) => item.uid === node.uid) !== -1) {
+      return
+    }
     this.brainMap.execCommand(EnumCommandName.SET_NODE_ACTIVE, node, true)
     this.activeNodes.push(node)
   }
@@ -151,7 +153,9 @@ class Render {
   // 添加同级节点
   appendSibingNode (node: Node): void {
     this.activeNodes.forEach((activeNode: Node) => {
-      activeNode.parent?.nodeData?.children.push({
+      if (!activeNode.parent) return
+      const insertPos = activeNode.parent.children.findIndex((item) => item === activeNode) + 1
+      activeNode.parent?.nodeData?.children.splice(insertPos, 0, {
         data: {
           text: '新增同级节点',
           paddingX: 25,
@@ -229,6 +233,7 @@ class Render {
     this.brainMap.execCommand(EnumCommandName.SET_NODE_DATA, node, {
       isActive
     })
+    node.updateNodeActiveClass()
     if (isActive) {
       node.showExpandBtn()
     }
@@ -313,26 +318,76 @@ class Render {
   // 回退
   undo (): void {
     const historyItem = this.brainMap.command.undo()
-    // this.clearActiveNodesList()
-    this.switchHistoryItem(historyItem)
+    this.clearActiveNodesList()
+    this.switchHistoryItem(historyItem, 'undo')
   }
 
   // 重做
   redo (): void {
     const historyItem = this.brainMap.command.redo()
-    this.switchHistoryItem(historyItem)
+    this.switchHistoryItem(historyItem, 'redo')
   }
 
   // 历史记录切换
-  switchHistoryItem (historyItem: HistoryItem | undefined): void {
+  switchHistoryItem (historyItem: HistoryItem | undefined, mode: 'undo' | 'redo'): void {
     if (historyItem) {
-      const { dataSource, manipulateNodeId } = historyItem
-      setActiveById(dataSource, manipulateNodeId)
+      const {
+        dataSource,
+        manipulateNodeId,
+        cmdName,
+        insertSiblingIndex
+      } = historyItem
+
+      if (mode === 'undo') {
+        this.setActiveById(dataSource, manipulateNodeId)
+      } else if (mode === 'redo') {
+        if (cmdName === EnumCommandName.INSERT_CHILD_NODE) {
+          this.setRedoActiveNodeById(dataSource, manipulateNodeId)
+        } else if (cmdName === EnumCommandName.INSERT_SIBLING_NODE) {
+          this.setRedoActiveNodeById(dataSource, manipulateNodeId, insertSiblingIndex)
+        } else {
+          this.setActiveById(dataSource, manipulateNodeId)
+        }
+      }
+
       this.brainMap.dataSource = dataSource
       this.render()
     } else {
       alert('已经到头啦~w_w')
     }
+  }
+
+  // 根据uid修改数据源中对应节点的active
+  setActiveById (dataSource: DataSource, id: string): void {
+    traversal(dataSource, true, null, (cur) => {
+      if (cur.data.uid === id) {
+        cur.data.isActive = true
+      }
+      return false
+    })
+  }
+
+  // 针对添加子级节点和同级节点的重做时激活节点的处理
+  setRedoActiveNodeById (
+    dataSource: DataSource,
+    manipulateNodeId: string,
+    insertSiblingIndex: number = -1
+  ): void {
+    traversal(dataSource, true, null, (cur, parent) => {
+      if (cur.data.uid === manipulateNodeId) {
+        let index = -1
+        if (insertSiblingIndex === -1) {
+          index = cur.children.length - 1
+          cur.children[index].data.isActive = true
+        } else {
+          index = insertSiblingIndex
+          if (parent) {
+            parent.children[index].data.isActive = true
+          }
+        }
+      }
+      return false
+    })
   }
 }
 

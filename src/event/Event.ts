@@ -7,16 +7,22 @@ interface EventOption {
 
 class Event extends EventEmitter {
   brainMap: BrainMap
+  isLeftMouseDown: boolean
+  isMiddleMouseDown: boolean
+  isRightMouseDown: boolean
 
   constructor (opt: EventOption) {
     super()
     this.brainMap = opt.brainMap
-
-    this.bind()
+    // 鼠标各个键有没有被按下
+    this.isLeftMouseDown = false
+    this.isMiddleMouseDown = false
+    this.isRightMouseDown = false
+    this.bindEvent()
   }
 
   // 绑定事件
-  bind (): void {
+  bindEvent (): void {
     this.brainMap.el?.addEventListener('click', this.onClick.bind(this))
     this.brainMap.el?.addEventListener('mousedown', this.onMousedown.bind(this))
     this.brainMap.el?.addEventListener('mousemove', this.onMousemove.bind(this))
@@ -41,16 +47,31 @@ class Event extends EventEmitter {
   }
 
   onMousedown (e: MouseEvent): void {
-    // if (Array.prototype.includes.call((e.target as HTMLElement).classList, 'bm-svg-container')) {
-    this.emit('mousedown', e)
-    // }
+    if (!(this.isLeftMouseDown || this.isMiddleMouseDown || this.isRightMouseDown)) {
+      switch (e.button) {
+        case 0:
+          this.isLeftMouseDown = true
+          break
+        case 1:
+          this.isMiddleMouseDown = true
+          break
+        case 2:
+          this.isRightMouseDown = true
+          break
+      }
+      this.emit('mousedown', e, this)
+    }
   }
 
   onMousemove (e: MouseEvent): void {
-    this.emit('mousemove', e)
+    this.emit('mousemove', e, this)
+    if (this.isRightMouseDown) {
+      this.emit('drag', e, this)
+    }
   }
 
   onMouseup (e: MouseEvent): void {
+    this.onNodeMouseup(e)
     this.emit('mouseup', e)
   }
 
@@ -67,6 +88,14 @@ class Event extends EventEmitter {
     }
     // mouseup事件在contextmenu之前
     this.brainMap.view.isDragging = false
+  }
+
+  onNodeMouseup (e: MouseEvent): void {
+    (e.target as HTMLElement).style.removeProperty('cursor')
+    // this.isDragging = false
+    this.isLeftMouseDown = false
+    this.isMiddleMouseDown = false
+    this.isRightMouseDown = false
   }
 }
 

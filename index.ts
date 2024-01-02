@@ -6,6 +6,7 @@ import Event from './src/event/Event'
 import { type EnumCommandName, cssConstant } from './src/constant/constant'
 import Shortcut from './src/shortcut/Shortcut'
 import Command from './src/command/Command'
+import Select from './src/plugins/Select'
 
 export type Pair<T1, T2> = [T1, T2]
 
@@ -67,6 +68,7 @@ class BrainMap {
   elRect: DOMRect | null
   dataSource: DataSource | null
   cssEl: HTMLStyleElement | null
+  select: Select
 
   constructor (opt: BrainMapOption) {
     // 画布容器
@@ -126,6 +128,11 @@ class BrainMap {
       brainMap: this
     })
 
+    // todo: 插件化
+    this.select = new Select({
+      brainMap: this
+    })
+
     // 初次渲染
     this.renderer.render()
     this.command.addHistory()
@@ -143,9 +150,9 @@ class BrainMap {
   // 初始化容器DOM尺寸位置信息
   initContainerSize (): void {
     if (this.el !== null) {
-      const elRect = this.el.getBoundingClientRect()
-      this.width = elRect.width
-      this.height = elRect.height
+      this.elRect = this.el.getBoundingClientRect()
+      this.width = this.elRect.width
+      this.height = this.elRect.height
       if (this.width <= 0 || this.height <= 0) { throw new Error('容器DOM宽高不能为0') }
     }
   }
@@ -214,6 +221,33 @@ class BrainMap {
   // 函数实现
   execCommand (cmdName: keyof typeof EnumCommandName, ...args: any[]): void {
     this.command.exec(cmdName, args)
+  }
+
+  // 触发自定义事件
+  emit (event: string, ...args: any[]): void {
+    this.event.emit(event, args)
+  }
+
+  // 订阅自定义事件
+  on (event: string, fn: (...args: any[]) => void): void {
+    this.event.on(event, fn)
+  }
+
+  // 解绑自定义事件
+  off (event: string, fn?: (...args: any[]) => void): void {
+    this.event.off(event, fn)
+  }
+
+  // 鼠标位置转相对位置
+  toRelativePos (x: number, y: number): { x: number, y: number } {
+    if (this.elRect) {
+      return {
+        x: x - this.elRect.left,
+        y: y - this.elRect.top
+      }
+    } else {
+      return { x: 0, y: 0 }
+    }
   }
 }
 

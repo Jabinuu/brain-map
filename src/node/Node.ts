@@ -227,22 +227,25 @@ class Node {
   }
 
   layout (): void {
+    if (!this.group) {
+      return
+    }
     if (!this.getData('isEdit')) {
-      this.group?.clear()
+      this.group.clear()
     } else {
-      this.group?.children().forEach((item) => {
+      this.group.children().forEach((item) => {
         if (item !== this.textData?.element) item.remove()
       })
     }
 
     // 节点形状
     this.shapeElem = this.shape.createRect()
-    this.group?.add(this.shapeElem)
+    this.group.add(this.shapeElem)
     // 根节点填充色
     if (this.isRoot) this.shapeElem.fill('#F0F0F0')
     // todo: 将所有类型的内容元素在节点内布局
     if (this.textData !== null && !this.getData('isEdit')) {
-      this.group?.add(this.textData.element)
+      this.group.add(this.textData.element)
     }
     // 激活边框
     const borderWidth = 2 // 激活边框宽度
@@ -250,7 +253,7 @@ class Node {
     const wrapRect = new Rect().size(width + (borderWidth + 1) * 2, height + (borderWidth + 1) * 2)
       .fill('none').stroke({ color: '#FF8C00' }).radius(4).move(-3, -3)
     wrapRect.addClass('bm-hover-node')
-    this.group?.add(wrapRect)
+    this.group.add(wrapRect)
     // 创建泛扩展按钮区域
     if (!this.isRoot && this.nodeData?.children && this.nodeData.children.length > 0) {
       this.renderGenericExpandArea()
@@ -259,7 +262,7 @@ class Node {
 
   // 根据数据源渲染出节点
   render (): void {
-    const { isExpand, isActive } = this.getData() as DataSourceItem
+    const { isExpand } = this.getData() as DataSourceItem
 
     // 渲染节点连线
     this.renderLine(this)
@@ -292,9 +295,10 @@ class Node {
     }
 
     // 节点激活
-    if (isActive) {
-      this.active()
-    }
+    // if (isActive) {
+    //   this.active()
+    // }
+    this.updateNodeActiveClass()
 
     // 每次渲染重置收缩扩展节点状态
     this.expandBtnElem?.remove()
@@ -339,8 +343,18 @@ class Node {
   // 激活节点
   active (): void {
     this.renderer.clearActiveNodesList()
-    this.brainMap.execCommand(EnumCommandName.SET_NODE_ACTIVE, this, true)
     this.renderer.addActiveNodeList(this)
+  }
+
+  // 更新节点激活状态
+  updateNodeActiveClass (): void {
+    if (!this.group) return
+    const isActive = this.getData('isActive') as boolean
+    if (isActive) {
+      this.group.addClass('active')
+    } else {
+      this.group.removeClass('active')
+    }
   }
 
   // 创建展开收起按钮

@@ -1,4 +1,5 @@
 import type BrainMap from '../../index'
+import type Event from '../event/Event'
 
 interface ViewOption {
   brainMap: BrainMap
@@ -12,9 +13,7 @@ interface positionPair {
 // 视图类
 class View {
   brainMap: BrainMap
-  isLeftMouseDown: boolean
-  isMiddleMouseDown: boolean
-  isRightMouseDown: boolean
+
   dragPosition: positionPair
   startOffset: positionPair
   curOffset: positionPair
@@ -23,10 +22,7 @@ class View {
 
   constructor (opt: ViewOption) {
     this.brainMap = opt.brainMap
-    // 鼠标各个键有没有被按下
-    this.isLeftMouseDown = false
-    this.isMiddleMouseDown = false
-    this.isRightMouseDown = false
+
     // 拖动点坐标
     this.dragPosition = {
       x: 0,
@@ -52,38 +48,25 @@ class View {
 
   // 绑定事件
   bindEvent (): void {
-    this.brainMap.event.on('mousedown', this.onDragDrawingMousedown.bind(this))
-    this.brainMap.event.on('mousemove', this.onDragDrawingMousemove.bind(this))
-    this.brainMap.event.on('mouseup', this.onDragDrawingMouseup.bind(this))
-    this.brainMap.event.on('wheel', this.zoomDrawing.bind(this))
+    this.brainMap.on('mousedown', this.onDragDrawingMousedown.bind(this))
+    this.brainMap.on('drag', this.onDragDrawingMousemove.bind(this))
+    this.brainMap.on('mouseup', this.onDragDrawingMouseup.bind(this))
+    this.brainMap.on('wheel', this.zoomDrawing.bind(this))
   }
 
   // 拖动思维导图前鼠标点击
-  onDragDrawingMousedown (e: MouseEvent): void {
-    if (!(this.isLeftMouseDown || this.isMiddleMouseDown || this.isRightMouseDown)) {
-      switch (e.button) {
-        case 0:
-          this.isLeftMouseDown = true
-          break
-        case 1:
-          this.isMiddleMouseDown = true
-          break
-        case 2:
-          this.isRightMouseDown = true
-          break
-      }
-      if (this.isRightMouseDown) {
-        this.dragPosition.x = e.clientX
-        this.dragPosition.y = e.clientY
-        this.startOffset.x = this.curOffset.x
-        this.startOffset.y = this.curOffset.y
-      }
+  onDragDrawingMousedown (e: MouseEvent, event: Event): void {
+    if (event.isRightMouseDown) {
+      this.dragPosition.x = e.clientX
+      this.dragPosition.y = e.clientY
+      this.startOffset.x = this.curOffset.x
+      this.startOffset.y = this.curOffset.y
     }
   }
 
   // 拖动思维导图过程中
-  onDragDrawingMousemove (e: MouseEvent): void {
-    if (this.isRightMouseDown) {
+  onDragDrawingMousemove (e: MouseEvent, event: Event): void {
+    if (event.isRightMouseDown) {
       // 减少触发浏览器重绘
       if (!this.isDragging) {
         (e.target as HTMLElement).style.cursor = 'grabbing'
@@ -100,7 +83,6 @@ class View {
 
   // 拖动思维导图结束后抬起鼠标
   onDragDrawingMouseup (e: MouseEvent): void {
-    this.resetDrag(e)
   }
 
   // 缩放思维导图容器
@@ -122,15 +104,6 @@ class View {
       scale: this.scale,
       translate: [this.curOffset.x, this.curOffset.y]
     })
-  }
-
-  // 重置拖动状态
-  resetDrag (e: MouseEvent): void {
-    (e.target as HTMLElement).style.removeProperty('cursor')
-    // this.isDragging = false
-    this.isLeftMouseDown = false
-    this.isMiddleMouseDown = false
-    this.isRightMouseDown = false
   }
 }
 

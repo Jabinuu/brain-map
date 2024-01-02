@@ -16,8 +16,10 @@ interface CommandMap {
 }
 
 export interface HistoryItem {
+  cmdName: string
   manipulateNodeId: string // todo: 目前只支持单节点操作，后续更新为多个
   dataSource: DataSource
+  insertSiblingIndex: number
 }
 
 // 命令类: 将修改数据源的操作通过调用命令来实现，并记录修改历史，从而实现撤销和重做
@@ -72,13 +74,19 @@ class Command {
     if (cmdName === EnumCommandName.SET_NODE_EDIT && (node?.getData('isEdit') || !node?.textChange)) return
     // 白名单过滤
     if (!this.filterList.includes(cmdName) && this.brainMap.dataSource) {
+      let insertSiblingIndex = -1
+      if (node?.parent && cmdName === EnumCommandName.INSERT_SIBLING_NODE) {
+        insertSiblingIndex = node.parent.children.findIndex((item) => item === node) + 1
+      }
       const manipulateNodeId = node ? node.uid : ''
       const clone = cloneDataSource(this.brainMap.dataSource)
       if (clone && !Array.isArray(clone)) {
         this.history = this.history.slice(0, this.activeHistoryIndex + 1)
         this.history.push({
+          cmdName,
           dataSource: clone,
-          manipulateNodeId
+          manipulateNodeId,
+          insertSiblingIndex
         })
         this.activeHistoryIndex = this.history.length - 1
       }
@@ -90,11 +98,18 @@ class Command {
     if (this.activeHistoryIndex - 1 >= 0) {
       const { manipulateNodeId } = this.history[this.activeHistoryIndex]
       this.activeHistoryIndex--
-      const { dataSource } = this.history[this.activeHistoryIndex]
+      const {
+        dataSource,
+        cmdName,
+        insertSiblingIndex
+      } = this.history[this.activeHistoryIndex]
+
       const data = cloneDataSource(dataSource)
       return {
+        cmdName,
         dataSource: data,
-        manipulateNodeId
+        manipulateNodeId,
+        insertSiblingIndex
       }
     }
   }
@@ -103,11 +118,19 @@ class Command {
   redo (): HistoryItem | undefined {
     if (this.activeHistoryIndex + 1 < this.history.length) {
       this.activeHistoryIndex++
-      const { dataSource, manipulateNodeId } = this.history[this.activeHistoryIndex]
+      const {
+        dataSource,
+        manipulateNodeId,
+        cmdName,
+        insertSiblingIndex
+      } = this.history[this.activeHistoryIndex]
+
       const data = cloneDataSource(dataSource)
       return {
+        cmdName,
         dataSource: data,
-        manipulateNodeId
+        manipulateNodeId,
+        insertSiblingIndex
       }
     }
   }
