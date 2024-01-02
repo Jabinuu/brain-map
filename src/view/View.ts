@@ -46,6 +46,16 @@ class View {
     this.scale = 1
     // 是否正在拖动
     this.isDragging = false
+
+    this.bindEvent()
+  }
+
+  // 绑定事件
+  bindEvent (): void {
+    this.brainMap.event.on('mousedown', this.onDragDrawingMousedown.bind(this))
+    this.brainMap.event.on('mousemove', this.onDragDrawingMousemove.bind(this))
+    this.brainMap.event.on('mouseup', this.onDragDrawingMouseup.bind(this))
+    this.brainMap.event.on('wheel', this.zoomDrawing.bind(this))
   }
 
   // 拖动思维导图前鼠标点击

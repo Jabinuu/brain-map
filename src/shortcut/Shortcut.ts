@@ -18,6 +18,12 @@ class Shortcut {
   constructor (opt: ShortcutOption) {
     this.brainMap = opt.brainMap
     this.shortcutMap = {}
+
+    this.bindEvent()
+  }
+
+  bindEvent (): void {
+    this.brainMap.event.on('keydown', this.onShortcutKeyDown.bind(this))
   }
 
   // 绑定快捷键事件

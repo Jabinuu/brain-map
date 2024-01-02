@@ -102,11 +102,10 @@ class BrainMap {
     // 添加基础常量样式
     this.addCss()
 
-    // 视图类实例化
-    this.view = new View({
+    // 事件类实例化
+    this.event = new Event({
       brainMap: this
     })
-
     // 快捷键类实例化
     this.shortcut = new Shortcut({
       brainMap: this
@@ -122,12 +121,9 @@ class BrainMap {
       brainMap: this
     })
 
-    // 事件类实例化
-    this.event = new Event({
-      brainMap: this,
-      view: this.view,
-      renderer: this.renderer,
-      shortcut: this.shortcut
+    // 视图类实例化
+    this.view = new View({
+      brainMap: this
     })
 
     // 初次渲染
@@ -181,6 +177,7 @@ class BrainMap {
   }
 
   // 注册命令
+  // 函数重载
   registerCommand (cmdName: EnumCommandName.SET_NODE_TEXT, task: (arg1: Node, arg2: string) => void): void
   registerCommand (cmdName: EnumCommandName.SET_NODE_DATA, task: (arg1: Node, arg2: Partial<DataSourceItem>) => void): void
   registerCommand (cmdName: EnumCommandName.REDO | EnumCommandName.UNDO, task: () => void): void
@@ -194,11 +191,13 @@ class BrainMap {
   EnumCommandName.INSERT_CHILD_NODE |
   EnumCommandName.INSERT_SIBLING_NODE, task: (arg1: Node) => void): void
 
+  // 函数实现
   registerCommand (cmdName: string, task: (...args: any) => void): void {
     this.command.addCommand(cmdName, task)
   }
 
   // 执行命令
+  // 函数重载
   execCommand (cmdName: EnumCommandName.SET_NODE_TEXT, arg1: Node, arg2: string): void
   execCommand (cmdName: EnumCommandName.SET_NODE_DATA, arg1: Node, arg2: Partial<DataSourceItem>): void
   execCommand (cmdName: EnumCommandName.REDO | EnumCommandName.UNDO): void
@@ -211,26 +210,9 @@ class BrainMap {
   EnumCommandName.DELETE_NODE |
   EnumCommandName.INSERT_CHILD_NODE |
   EnumCommandName.INSERT_SIBLING_NODE, arg1: Node): void
+
+  // 函数实现
   execCommand (cmdName: keyof typeof EnumCommandName, ...args: any[]): void {
-    // switch (cmdName) {
-    //   case EnumCommandName.DELETE_NODE:
-    //     this.command.exec(cmdName, args[0])
-    //     break
-    //   case EnumCommandName.DELETE_SINGLE_NODE:
-    //     this.command.exec(cmdName, args[0])
-    //     break
-    //   case EnumCommandName.INSERT_CHILD_NODE:
-    //     this.command.exec(cmdName, args[0])
-    //     break
-    //   case EnumCommandName.INSERT_SIBLING_NODE:
-    //     this.command.exec(cmdName, args[0])
-    //     break
-    //   case EnumCommandName.REDO:
-    //     this.command.exec(cmdName)
-    //     break
-    //   case EnumCommandName.SET_NODE_EXPAND:
-    //     this.command.exec(cmdName, args)
-    // }
     this.command.exec(cmdName, args)
   }
 }

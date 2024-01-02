@@ -1,26 +1,16 @@
 import type BrainMap from '../../index'
-import type Render from '../render/Render'
-import type Shortcut from '../shortcut/Shortcut'
-import type View from '../view/View'
+import EventEmitter from 'eventemitter3'
 
 interface EventOption {
   brainMap: BrainMap
-  renderer: Render
-  view: View
-  shortcut: Shortcut
 }
 
-class Event {
+class Event extends EventEmitter {
   brainMap: BrainMap
-  view: View
-  renderer: Render
-  shortcut: Shortcut
 
   constructor (opt: EventOption) {
+    super()
     this.brainMap = opt.brainMap
-    this.view = opt.view
-    this.renderer = opt.renderer
-    this.shortcut = opt.shortcut
 
     this.bind()
   }
@@ -29,7 +19,7 @@ class Event {
   bind (): void {
     this.brainMap.el?.addEventListener('click', this.onClick.bind(this))
     this.brainMap.el?.addEventListener('mousedown', this.onMousedown.bind(this))
-    window.addEventListener('mousemove', this.onMousemove.bind(this))
+    this.brainMap.el?.addEventListener('mousemove', this.onMousemove.bind(this))
     window.addEventListener('mouseup', this.onMouseup.bind(this))
     this.brainMap.el?.addEventListener('wheel', this.onMousewheel.bind(this))
     window.addEventListener('keydown', this.onKeyDown.bind(this))
@@ -40,43 +30,43 @@ class Event {
     if (['Tab', 'Enter', 'Delete'].includes(e.code)) {
       e.preventDefault()
     }
-    this.shortcut.onShortcutKeyDown(e)
+    this.emit('keydown', e)
   }
 
   onClick (e: MouseEvent): void {
     if (Array.prototype.includes.call((e.target as HTMLElement).classList, 'bm-svg-container')) {
-      this.renderer.clearActiveNodesList()
-      this.renderer.clearEditStatus()
+      this.brainMap.renderer.clearActiveNodesList()
+      this.brainMap.renderer.clearEditStatus()
     }
   }
 
   onMousedown (e: MouseEvent): void {
-    if (Array.prototype.includes.call((e.target as HTMLElement).classList, 'bm-svg-container')) {
-      this.view.onDragDrawingMousedown(e)
-    }
+    // if (Array.prototype.includes.call((e.target as HTMLElement).classList, 'bm-svg-container')) {
+    this.emit('mousedown', e)
+    // }
   }
 
   onMousemove (e: MouseEvent): void {
-    this.view.onDragDrawingMousemove(e)
+    this.emit('mousemove', e)
   }
 
   onMouseup (e: MouseEvent): void {
-    this.view.onDragDrawingMouseup(e)
+    this.emit('mouseup', e)
   }
 
   onMousewheel (e: WheelEvent): void {
-    this.view.zoomDrawing(e)
+    this.emit('wheel', e)
   }
 
   onContextMenu (e: MouseEvent): void {
     // e.preventDefault()
-    if (this.view.isDragging) {
+    if (this.brainMap.view.isDragging) {
       e.preventDefault()
     } else {
       // 自定义上下文菜单
     }
     // mouseup事件在contextmenu之前
-    this.view.isDragging = false
+    this.brainMap.view.isDragging = false
   }
 }
 
