@@ -74,19 +74,19 @@ class Render {
   // 绑定快捷键
   bindShortcut (): void {
     this.brainMap.registerShortcut(EnumShortcutName.TAB, () => {
-      this.brainMap.execCommand(EnumCommandName.INSERT_CHILD_NODE, this.activeNodes[0])
+      this.brainMap.execCommand(EnumCommandName.INSERT_CHILD_NODE, [...this.activeNodes])
     })
 
     this.brainMap.registerShortcut(EnumShortcutName.ENTER, () => {
-      this.brainMap.execCommand(EnumCommandName.INSERT_SIBLING_NODE, this.activeNodes[0])
+      this.brainMap.execCommand(EnumCommandName.INSERT_SIBLING_NODE, [...this.activeNodes])
     })
 
     this.brainMap.registerShortcut(EnumShortcutName.DEL, () => {
-      this.brainMap.execCommand(EnumCommandName.DELETE_NODE, this.activeNodes[0])
+      this.brainMap.execCommand(EnumCommandName.DELETE_NODE, [...this.activeNodes])
     })
 
     this.brainMap.registerShortcut(EnumShortcutName.DEL_SINGLE, () => {
-      this.brainMap.execCommand(EnumCommandName.DELETE_SINGLE_NODE, this.activeNodes[0])
+      this.brainMap.execCommand(EnumCommandName.DELETE_SINGLE_NODE, [...this.activeNodes])
     })
 
     this.brainMap.registerShortcut(EnumShortcutName.UNDO, () => {
@@ -131,7 +131,7 @@ class Render {
   // 清空激活节点列表
   clearActiveNodesList (): void {
     this.activeNodes.forEach((item: Node) => {
-      this.brainMap.execCommand(EnumCommandName.SET_NODE_ACTIVE, item, false)
+      this.brainMap.execCommand(EnumCommandName.SET_NODE_ACTIVE, [item], false)
       item.hideExpandBtn()
     })
     this.activeNodes.length = 0
@@ -143,30 +143,33 @@ class Render {
     if (this.activeNodes.findIndex((item) => item.uid === node.uid) !== -1) {
       return
     }
-    this.brainMap.execCommand(EnumCommandName.SET_NODE_ACTIVE, node, true)
+    this.brainMap.execCommand(EnumCommandName.SET_NODE_ACTIVE, [node], true)
     this.activeNodes.push(node)
   }
 
   // 从激活节点列表里移除
   removeNodeFromActiveList (node: Node): void {
-    this.brainMap.execCommand(EnumCommandName.SET_NODE_ACTIVE, node, false)
+    this.brainMap.execCommand(EnumCommandName.SET_NODE_ACTIVE, [node], false)
     this.activeNodes = this.activeNodes.filter((item) => node !== item)
   }
 
   // 添加子节点
-  appendChildNode (node: Node): void {
-    this.activeNodes.forEach((activeNode: Node) => {
-      activeNode.nodeData?.children.push({
-        data: {
-          text: '新增子节点',
-          paddingX: 25,
-          paddingY: 5,
-          isEdit: false,
-          isActive: true,
-          isExpand: true
-        },
-        children: []
-      })
+  appendChildNode (activeNodes: Node[]): void {
+    if (activeNodes.length > 1) {
+      return
+    }
+    const [node] = activeNodes
+    node.nodeData?.children.push({
+      data: {
+        text: '新增子节点',
+        paddingX: 25,
+        paddingY: 5,
+        isEdit: false,
+        isActive: true,
+        isExpand: true
+      },
+      children: []
+
     })
 
     // this.clearActiveNodesList()
@@ -175,21 +178,26 @@ class Render {
   }
 
   // 添加同级节点
-  appendSibingNode (node: Node): void {
-    this.activeNodes.forEach((activeNode: Node) => {
-      if (!activeNode.parent) return
-      const insertPos = activeNode.parent.children.findIndex((item) => item === activeNode) + 1
-      activeNode.parent?.nodeData?.children.splice(insertPos, 0, {
-        data: {
-          text: '新增同级节点',
-          paddingX: 25,
-          paddingY: 5,
-          isEdit: false,
-          isExpand: true,
-          isActive: true
-        },
-        children: []
-      })
+  appendSibingNode (activeNodes: Node[]): void {
+    if (this.activeNodes.length > 1) {
+      return
+    }
+    const [node] = activeNodes
+    if (!node.parent) {
+      return
+    }
+
+    const insertPos = node.parent.children.findIndex((item) => item === node) + 1
+    node.parent?.nodeData?.children.splice(insertPos, 0, {
+      data: {
+        text: '新增同级节点',
+        paddingX: 25,
+        paddingY: 5,
+        isEdit: false,
+        isExpand: true,
+        isActive: true
+      },
+      children: []
     })
     // this.clearActiveNodesList()
     this.brainMap.execCommand(EnumCommandName.CLEAR_ACTIVE_NODE)
@@ -198,11 +206,11 @@ class Render {
   }
 
   // 删除节点
-  deleteNode (node: Node): void {
-    this.activeNodes.forEach((node) => {
-      if (node.parent?.nodeData) {
-        node.parent.nodeData.children = node.parent.nodeData.children.filter((child) => {
-          return child.data.uid !== node.getData('uid')
+  deleteNode (activeNodes: Node[]): void {
+    activeNodes.forEach((item) => {
+      if (item.parent?.nodeData) {
+        item.parent.nodeData.children = item.parent.nodeData.children.filter((child) => {
+          return child.data.uid !== item.getData('uid')
         })
       }
     })
@@ -214,38 +222,38 @@ class Render {
   }
 
   // 删除单个节点
-  deleteSingleNode (node: Node): void {
-    if (this.activeNodes.length === 1) {
-      const [activeNode] = this.activeNodes
-      const parent = activeNode.parent?.nodeData
-      if (parent) {
-        let index = parent?.children.findIndex((child) => {
-          return child.data.uid === activeNode.uid
-        })
-        parent.children.splice(index, 1)
-        activeNode.nodeData?.children.forEach((child) => {
-          parent.children.splice(index++, 0, child)
-        })
-      }
-
-      this.render()
-    } else {
+  deleteSingleNode (activeNodes: Node[]): void {
+    if (activeNodes.length > 1) {
       alert('没有激活节点或多个激活节点不支持删除单个节点~')
+      return
     }
+    const [node] = activeNodes
+    const parent = node.parent?.nodeData
+    if (parent) {
+      let index = parent?.children.findIndex((child) => {
+        return child.data.uid === node.uid
+      })
+      parent.children.splice(index, 1)
+      node.nodeData?.children.forEach((child) => {
+        parent.children.splice(index++, 0, child)
+      })
+    }
+    this.brainMap.execCommand(EnumCommandName.CLEAR_ACTIVE_NODE)
+
+    this.render()
   }
 
   // 设置节点数据源数据
-  setNodeData (node?: Node, data?: Partial<DataSourceItem>): void {
-    if (data) {
-      Object.keys(data).forEach((key) => {
-        node?.setData(key, data[key])
-      })
-    }
+  setNodeData (manipulateNode: [Node], data: Partial<DataSourceItem>): void {
+    const [node] = manipulateNode
+    Object.keys(data).forEach((key) => {
+      node.setData(key, data[key])
+    })
   }
 
   // 修改节点数据源 并判断是否需要渲染
   setNodeDataRender (node: Node, data: Partial<DataSourceItem>): void {
-    this.brainMap.execCommand(EnumCommandName.SET_NODE_DATA, node, data)
+    this.brainMap.execCommand(EnumCommandName.SET_NODE_DATA, [node], data)
 
     // 判断是否要渲染
     const changed = node.reRender()
@@ -256,8 +264,9 @@ class Render {
   }
 
   // 改变节点激活状态
-  setNodeActive (node: Node, isActive: boolean): void {
-    this.brainMap.execCommand(EnumCommandName.SET_NODE_DATA, node, {
+  setNodeActive (manipulateNode: [Node], isActive: boolean): void {
+    const [node] = manipulateNode
+    this.brainMap.execCommand(EnumCommandName.SET_NODE_DATA, [node], {
       isActive
     })
     node.updateNodeActiveClass()
@@ -267,21 +276,23 @@ class Render {
   }
 
   // 改变节点展开状态
-  setNodeExpand (node: Node, isExpand: boolean): void {
+  setNodeExpand (manipulateNode: [Node], isExpand: boolean): void {
+    const [node] = manipulateNode
     if (!isExpand) {
       // 节点收缩时取消所有后代节点的激活状态
       this.cancelAllChildrenActive(node)
     }
-    this.brainMap.execCommand(EnumCommandName.SET_NODE_DATA, node, {
+    this.brainMap.execCommand(EnumCommandName.SET_NODE_DATA, [node], {
       isExpand
     })
     this.render()
   }
 
   // 改变节点编辑状态
-  setNodeEdit (node: Node, isEdit: boolean): void {
+  setNodeEdit (manipulateNode: [Node], isEdit: boolean): void {
+    const [node] = manipulateNode
     this.editNode = isEdit ? node : null
-    this.brainMap.execCommand(EnumCommandName.SET_NODE_DATA, node, {
+    this.brainMap.execCommand(EnumCommandName.SET_NODE_DATA, [node], {
       isEdit
     })
 
@@ -302,7 +313,8 @@ class Render {
   }
 
   // 修改节点文本
-  setNodeText (node: Node, text: string): void {
+  setNodeText (manipulateNode: [Node], text: string): void {
+    const [node] = manipulateNode
     node?.renderer.setNodeDataRender(node, {
       text
     })
@@ -313,7 +325,7 @@ class Render {
     node.needLayout = true
     const text = (e.target as HTMLElement).innerText
     node.textChange = text !== node.lastText
-    this.brainMap.execCommand(EnumCommandName.SET_NODE_TEXT, node, text)
+    this.brainMap.execCommand(EnumCommandName.SET_NODE_TEXT, [node], text)
     // 将形状节点移动到图层底部，否则覆盖了文本编辑元素
     this.editNode?.shapeElem?.back()
   }
@@ -324,7 +336,7 @@ class Render {
       traversal(node.nodeData, node.isRoot, null, (node) => {
         node.children.forEach((child) => {
           if (child.node?.getData('isActive')) {
-            this.brainMap.execCommand(EnumCommandName.SET_NODE_DATA, child.node, {
+            this.brainMap.execCommand(EnumCommandName.SET_NODE_DATA, [child.node], {
               isActive: false
             })
             this.activeNodes = this.activeNodes.filter((item) => item !== child.node)
@@ -338,7 +350,7 @@ class Render {
   // 清除编辑状态
   clearEditStatus (): void {
     if (this.editNode) {
-      this.brainMap.execCommand(EnumCommandName.SET_NODE_EDIT, this.editNode, false)
+      this.brainMap.execCommand(EnumCommandName.SET_NODE_EDIT, [this.editNode], false)
     }
   }
 
@@ -387,23 +399,25 @@ class Render {
   }
 
   // 根据uid修改数据源中对应节点的active
-  setActiveById (dataSource: DataSource, id: string): void {
-    traversal(dataSource, true, null, (cur) => {
-      if (cur.data.uid === id) {
-        cur.data.isActive = true
-      }
-      return false
+  setActiveById (dataSource: DataSource, id: string[]): void {
+    id.forEach((item) => {
+      traversal(dataSource, true, null, (cur) => {
+        if (cur.data.uid === item) {
+          cur.data.isActive = true
+        }
+        return false
+      })
     })
   }
 
   // 针对添加子级节点和同级节点的重做时激活节点的处理
   setRedoActiveNodeById (
     dataSource: DataSource,
-    manipulateNodeId: string,
+    manipulateNodeId: string[],
     insertSiblingIndex: number = -1
   ): void {
     traversal(dataSource, true, null, (cur, parent) => {
-      if (cur.data.uid === manipulateNodeId) {
+      if (cur.data.uid === manipulateNodeId[0]) {
         let index = -1
         if (insertSiblingIndex === -1) {
           index = cur.children.length - 1
@@ -417,6 +431,27 @@ class Render {
       }
       return false
     })
+  }
+
+  // 从激活节点列表中过滤得到所有父元素,用于多选节点的收缩操作，以及历史记录里的操作节点id
+  getParentNodeFromActiveList (manipulateNode: Node[]): Node[] {
+    // tip：对于每一个激活节点，沿着父节点链向上查找有没有哪个父代节点是激活的，如果有，则将该父代节点下的激活节点从列表中删除，以此迭代即可
+    return manipulateNode.filter((item) => {
+      const aa = !this.checkHasParentInActiveList(item, manipulateNode)
+      return aa
+    })
+  }
+
+  // 判断节点有没有父代节点在激活列表中
+  checkHasParentInActiveList (node: Node, manipulateNode: Node[]): boolean {
+    let p = node.parent
+    while (p) {
+      if (manipulateNode.includes(p)) {
+        return true
+      }
+      p = p.parent
+    }
+    return false
   }
 }
 

@@ -185,20 +185,20 @@ class BrainMap {
 
   // 注册命令
   // 函数重载
-  registerCommand (cmdName: EnumCommandName.SET_NODE_TEXT, task: (arg1: Node, arg2: string) => void): void
-  registerCommand (cmdName: EnumCommandName.SET_NODE_DATA, task: (arg1: Node, arg2: Partial<DataSourceItem>) => void): void
+  registerCommand (cmdName: EnumCommandName.SET_NODE_TEXT, task: (arg1: [Node], arg2: string) => void): void
+  registerCommand (cmdName: EnumCommandName.SET_NODE_DATA, task: (arg1: [Node], arg2: Partial<DataSourceItem>) => void): void
   registerCommand (cmdName: EnumCommandName.REDO |
   EnumCommandName.UNDO |
   EnumCommandName.CLEAR_ACTIVE_NODE, task: () => void): void
   registerCommand (cmdName:
   EnumCommandName.SET_NODE_ACTIVE |
-  EnumCommandName.SET_NODE_EDIT |
-  EnumCommandName.SET_NODE_EXPAND, task: (arg1: Node, arg2: boolean) => void): void
+  EnumCommandName.SET_NODE_EXPAND |
+  EnumCommandName.SET_NODE_EDIT, task: (arg1: [Node], arg2: boolean) => void): void
   registerCommand (cmdName:
   EnumCommandName.DELETE_SINGLE_NODE |
-  EnumCommandName.DELETE_NODE |
   EnumCommandName.INSERT_CHILD_NODE |
-  EnumCommandName.INSERT_SIBLING_NODE, task: (arg1: Node) => void): void
+  EnumCommandName.DELETE_NODE |
+  EnumCommandName.INSERT_SIBLING_NODE, task: (arg1: Node[]) => void): void
 
   // 函数实现
   registerCommand (cmdName: string, task: (...args: any) => void): void {
@@ -207,20 +207,20 @@ class BrainMap {
 
   // 执行命令
   // 函数重载
-  execCommand (cmdName: EnumCommandName.SET_NODE_TEXT, arg1: Node, arg2: string): void
-  execCommand (cmdName: EnumCommandName.SET_NODE_DATA, arg1: Node, arg2: Partial<DataSourceItem>): void
+  execCommand (cmdName: EnumCommandName.SET_NODE_TEXT, arg1: [Node], arg2: string): void
+  execCommand (cmdName: EnumCommandName.SET_NODE_DATA, arg1: [Node], arg2: Partial<DataSourceItem>): void
   execCommand (cmdName: EnumCommandName.REDO |
   EnumCommandName.UNDO |
   EnumCommandName.CLEAR_ACTIVE_NODE): void
   execCommand (cmdName:
   EnumCommandName.SET_NODE_ACTIVE |
-  EnumCommandName.SET_NODE_EDIT |
-  EnumCommandName.SET_NODE_EXPAND, arg1: Node, arg2: boolean): void
+  EnumCommandName.SET_NODE_EXPAND |
+  EnumCommandName.SET_NODE_EDIT, arg1: [Node], arg2: boolean): void
   execCommand (cmdName:
   EnumCommandName.DELETE_SINGLE_NODE |
-  EnumCommandName.DELETE_NODE |
   EnumCommandName.INSERT_CHILD_NODE |
-  EnumCommandName.INSERT_SIBLING_NODE, arg1: Node): void
+  EnumCommandName.INSERT_SIBLING_NODE, arg1: Node[]): void
+  execCommand (cmdName: EnumCommandName.DELETE_NODE, arg1: Node[]): void
 
   // 函数实现
   execCommand (cmdName: keyof typeof EnumCommandName, ...args: any[]): void {
