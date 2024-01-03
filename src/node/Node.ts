@@ -185,7 +185,13 @@ class Node {
     this.group?.on('click', (e: Event) => {
       e.stopPropagation()
       if (!this.getData('isEdit')) {
-        this.active()
+        // ctrl键多选激活节点
+        if ((e as MouseEvent).ctrlKey) {
+          this.brainMap.renderer.addNodeToActiveList(this)
+        } else {
+          // 仅单击则只激活这一个节点
+          this.active()
+        }
       }
     })
 
@@ -341,11 +347,11 @@ class Node {
     }
   }
 
-  // 激活节点
+  // 激活单个节点
   active (): void {
     // this.renderer.clearActiveNodesList()
     this.brainMap.execCommand(EnumCommandName.CLEAR_ACTIVE_NODE)
-    this.renderer.addActiveNodeList(this)
+    this.renderer.addNodeToActiveList(this)
   }
 
   // 更新节点激活状态

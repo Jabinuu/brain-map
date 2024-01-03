@@ -112,10 +112,10 @@ class Select {
           // 判断两矩形是否相交，若相交则激活节点
           if (checkRectanglesPartialOverlap(left, minx, top, miny, right, maxx, bottom, maxy)) {
             if (!isActive) {
-              this.brainMap.renderer.addActiveNodeList(cur.node)
+              this.brainMap.renderer.addNodeToActiveList(cur.node)
             }
           } else if (isActive) {
-            this.brainMap.renderer.removeActiveList(cur.node)
+            this.brainMap.renderer.removeNodeFromActiveList(cur.node)
           }
         }
         return false

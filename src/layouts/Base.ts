@@ -73,7 +73,7 @@ class Base {
 
     // 若节点为激活节点，则添加到激活节点数组中
     if (data.data.isActive) {
-      this.renderer.addActiveNodeList(newNode)
+      this.renderer.addNodeToActiveList(newNode)
     }
 
     if (isRoot) {

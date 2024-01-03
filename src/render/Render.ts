@@ -138,7 +138,7 @@ class Render {
   }
 
   // 添加激活节点
-  addActiveNodeList (node: Node): void {
+  addNodeToActiveList (node: Node): void {
     // 不重复添加激活节点
     if (this.activeNodes.findIndex((item) => item.uid === node.uid) !== -1) {
       return
@@ -148,7 +148,7 @@ class Render {
   }
 
   // 从激活节点列表里移除
-  removeActiveList (node: Node): void {
+  removeNodeFromActiveList (node: Node): void {
     this.brainMap.execCommand(EnumCommandName.SET_NODE_ACTIVE, node, false)
     this.activeNodes = this.activeNodes.filter((item) => node !== item)
   }
@@ -230,7 +230,7 @@ class Render {
 
       this.render()
     } else {
-      throw new Error('没有激活节点或多个激活节点不支持删除单个节点')
+      alert('没有激活节点或多个激活节点不支持删除单个节点~')
     }
   }
 
