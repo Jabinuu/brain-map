@@ -24,6 +24,7 @@ class Render {
   editNode: Node | null
   renderCache: RenderNodeCache
   lastRenderCache: RenderNodeCache
+  isSelecting: boolean
 
   constructor (opt: RenderOption) {
     this.brainMap = opt.brainMap
@@ -36,6 +37,8 @@ class Render {
     this.renderCache = {}
     // 上次渲染的节点缓存
     this.lastRenderCache = {}
+    // 是否正在多选节点
+    this.isSelecting = false
 
     // 设置布局
     this.setLayout()
@@ -128,6 +131,12 @@ class Render {
     }
     this.brainMap.execCommand(EnumCommandName.SET_NODE_ACTIVE, node, true)
     this.activeNodes.push(node)
+  }
+
+  // 从激活节点列表里移除
+  removeActiveList (node: Node): void {
+    this.brainMap.execCommand(EnumCommandName.SET_NODE_ACTIVE, node, false)
+    this.activeNodes = this.activeNodes.filter((item) => node !== item)
   }
 
   // 添加子节点

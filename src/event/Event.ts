@@ -23,7 +23,7 @@ class Event extends EventEmitter {
 
   // 绑定事件
   bindEvent (): void {
-    this.brainMap.el?.addEventListener('click', this.onClick.bind(this))
+    this.brainMap.svg?.on('click', this.onClick.bind(this) as EventListener)
     this.brainMap.el?.addEventListener('mousedown', this.onMousedown.bind(this))
     this.brainMap.el?.addEventListener('mousemove', this.onMousemove.bind(this))
     window.addEventListener('mouseup', this.onMouseup.bind(this))
@@ -39,8 +39,8 @@ class Event extends EventEmitter {
     this.emit('keydown', e)
   }
 
-  onClick (e: MouseEvent): void {
-    if (Array.prototype.includes.call((e.target as HTMLElement).classList, 'bm-svg-container')) {
+  onClick (): void {
+    if (!this.brainMap.renderer.isSelecting) {
       this.brainMap.renderer.clearActiveNodesList()
       this.brainMap.renderer.clearEditStatus()
     }

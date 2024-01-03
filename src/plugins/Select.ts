@@ -1,6 +1,7 @@
 import { type Polygon } from '@svgdotjs/svg.js'
 import type BrainMap from '../..'
 import type _Event from '../event/Event'
+import { checkRectanglesPartialOverlap, traversal } from '../utils'
 
 // 节点选择框插件
 class Select {
@@ -50,7 +51,7 @@ class Select {
 
   onMousemove (e: MouseEvent, event: _Event): void {
     if (!this.isMousedown) return
-
+    this.brainMap.renderer.isSelecting = true
     const { x, y } = this.brainMap.toRelativePos(e.clientX, e.clientY)
     this.movePt.x = x
     this.movePt.y = y
@@ -72,10 +73,46 @@ class Select {
     this.startPt.y = 0
     this.movePt.x = 0
     this.movePt.y = 0
+    // mouseup触发在click之前，因此需要将这个操作延时一下
+    requestAnimationFrame(() => {
+      this.brainMap.renderer.isSelecting = false
+    })
   }
 
   // 检查节点是否在选取框内
   checkNodeInSelect (): boolean {
+    if (!this.brainMap.drawing) {
+      return false
+    }
+    // 获取容器的transform数据
+    const { translateX, translateY, scaleX, scaleY } = this.brainMap.drawing.transform()
+    const minx = Math.min(this.startPt.x, this.movePt.x)
+    const miny = Math.min(this.startPt.y, this.movePt.y)
+    const maxx = Math.max(this.startPt.x, this.movePt.x)
+    const maxy = Math.max(this.startPt.y, this.movePt.y)
+
+    if (this.brainMap.dataSource) {
+      traversal(this.brainMap.dataSource, true, null, (cur) => {
+        if (cur.node) {
+          const isActive = cur.node.getData('isActive')
+          let { top, left, width, height } = cur.node
+          const right = (left + width) * (scaleX ?? 1) + (translateX ?? 0)
+          const bottom = (top + height) * (scaleY ?? 1) + (translateY ?? 0)
+          left = left * (scaleX ?? 1) + (translateX ?? 0)
+          top = top * (scaleY ?? 1) + (translateY ?? 0)
+          // 判断两矩形是否相交，若相交则激活节点
+          if (checkRectanglesPartialOverlap(left, minx, top, miny, right, maxx, bottom, maxy)) {
+            if (!isActive) {
+              this.brainMap.renderer.addActiveNodeList(cur.node)
+            }
+          } else if (isActive) {
+            this.brainMap.renderer.removeActiveList(cur.node)
+          }
+        }
+        return false
+      })
+    }
+
     return false
   }
 

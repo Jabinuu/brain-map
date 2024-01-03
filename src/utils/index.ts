@@ -80,3 +80,16 @@ export function cloneDataSource (dataSource: DataSource, newDataSourece: any = {
   })
   return newDataSourece
 }
+
+// 判断两个矩形是否部分重叠
+export function checkRectanglesPartialOverlap (
+  minx1: number,
+  minx2: number,
+  miny1: number,
+  miny2: number,
+  maxx1: number,
+  maxx2: number,
+  maxy1: number,
+  maxy2: number): boolean {
+  return maxx1 > minx2 && minx1 < maxx2 && miny1 < maxy2 && maxy1 > miny2
+}

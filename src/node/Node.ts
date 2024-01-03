@@ -182,14 +182,16 @@ class Node {
   // 绑定节点事件
   bindNodeEvent (): void {
     // 单击事件
-    this.group?.on('click', () => {
+    this.group?.on('click', (e: Event) => {
+      e.stopPropagation()
       if (!this.getData('isEdit')) {
         this.active()
       }
     })
 
     // 鼠标移入事件,mouseenter事件默认不冒泡
-    this.group?.on('mouseenter', () => {
+    this.group?.on('mouseenter', (e) => {
+      e.stopPropagation()
       // 设置个异步 防止鼠标光标样式跳为default
       setTimeout(() => {
         this.showExpandBtn()
@@ -197,14 +199,16 @@ class Node {
     })
 
     // 鼠标移出事件
-    this.group?.on('mouseleave', () => {
+    this.group?.on('mouseleave', (e) => {
+      e.stopPropagation()
       if (!this.getData('isActive') && this.getData('isExpand')) {
         this.hideExpandBtn()
       }
     })
 
     // 鼠标双击事件
-    this.group?.on('dblclick', () => {
+    this.group?.on('dblclick', (e) => {
+      e.stopPropagation()
       // todo: 清除节点的编辑状态
       if (!this.getData('isEdit')) {
         this.brainMap.execCommand(EnumCommandName.SET_NODE_EDIT, this, true)
@@ -295,9 +299,6 @@ class Node {
     }
 
     // 节点激活
-    // if (isActive) {
-    //   this.active()
-    // }
     this.updateNodeActiveClass()
 
     // 每次渲染重置收缩扩展节点状态
