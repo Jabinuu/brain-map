@@ -187,7 +187,9 @@ class BrainMap {
   // 函数重载
   registerCommand (cmdName: EnumCommandName.SET_NODE_TEXT, task: (arg1: Node, arg2: string) => void): void
   registerCommand (cmdName: EnumCommandName.SET_NODE_DATA, task: (arg1: Node, arg2: Partial<DataSourceItem>) => void): void
-  registerCommand (cmdName: EnumCommandName.REDO | EnumCommandName.UNDO, task: () => void): void
+  registerCommand (cmdName: EnumCommandName.REDO |
+  EnumCommandName.UNDO |
+  EnumCommandName.CLEAR_ACTIVE_NODE, task: () => void): void
   registerCommand (cmdName:
   EnumCommandName.SET_NODE_ACTIVE |
   EnumCommandName.SET_NODE_EDIT |
@@ -207,7 +209,9 @@ class BrainMap {
   // 函数重载
   execCommand (cmdName: EnumCommandName.SET_NODE_TEXT, arg1: Node, arg2: string): void
   execCommand (cmdName: EnumCommandName.SET_NODE_DATA, arg1: Node, arg2: Partial<DataSourceItem>): void
-  execCommand (cmdName: EnumCommandName.REDO | EnumCommandName.UNDO): void
+  execCommand (cmdName: EnumCommandName.REDO |
+  EnumCommandName.UNDO |
+  EnumCommandName.CLEAR_ACTIVE_NODE): void
   execCommand (cmdName:
   EnumCommandName.SET_NODE_ACTIVE |
   EnumCommandName.SET_NODE_EDIT |

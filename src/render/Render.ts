@@ -46,6 +46,8 @@ class Render {
     this.registerCommand()
     // 绑定快捷键
     this.bindShortcut()
+    // 绑定事件
+    this.bindEvent()
   }
 
   // 设置布局模式
@@ -66,6 +68,7 @@ class Render {
     this.brainMap.registerCommand(EnumCommandName.SET_NODE_ACTIVE, this.setNodeActive.bind(this))
     this.brainMap.registerCommand(EnumCommandName.SET_NODE_EDIT, this.setNodeEdit.bind(this))
     this.brainMap.registerCommand(EnumCommandName.SET_NODE_TEXT, this.setNodeText.bind(this))
+    this.brainMap.registerCommand(EnumCommandName.CLEAR_ACTIVE_NODE, this.clearActiveNodesList.bind(this))
   }
 
   // 绑定快捷键
@@ -92,6 +95,17 @@ class Render {
 
     this.brainMap.registerShortcut(EnumShortcutName.REDO, () => {
       this.brainMap.execCommand(EnumCommandName.REDO)
+    })
+  }
+
+  // 绑定事件
+  bindEvent (): void {
+    this.brainMap.on('draw_click', () => {
+      if (!this.brainMap.renderer.isSelecting) {
+        // this.clearActiveNodesList()
+        this.brainMap.execCommand(EnumCommandName.CLEAR_ACTIVE_NODE)
+        this.clearEditStatus()
+      }
     })
   }
 
@@ -155,7 +169,8 @@ class Render {
       })
     })
 
-    this.clearActiveNodesList()
+    // this.clearActiveNodesList()
+    this.brainMap.execCommand(EnumCommandName.CLEAR_ACTIVE_NODE)
     this.render()
   }
 
@@ -176,7 +191,8 @@ class Render {
         children: []
       })
     })
-    this.clearActiveNodesList()
+    // this.clearActiveNodesList()
+    this.brainMap.execCommand(EnumCommandName.CLEAR_ACTIVE_NODE)
 
     this.render()
   }
@@ -191,7 +207,9 @@ class Render {
       }
     })
 
-    this.clearActiveNodesList()
+    // this.clearActiveNodesList()
+    this.brainMap.execCommand(EnumCommandName.CLEAR_ACTIVE_NODE)
+
     this.render()
   }
 
@@ -327,7 +345,9 @@ class Render {
   // 回退
   undo (): void {
     const historyItem = this.brainMap.command.undo()
-    this.clearActiveNodesList()
+    // this.clearActiveNodesList()
+    this.brainMap.execCommand(EnumCommandName.CLEAR_ACTIVE_NODE)
+
     this.switchHistoryItem(historyItem, 'undo')
   }
 

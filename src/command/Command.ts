@@ -37,6 +37,7 @@ class Command {
     this.activeHistoryIndex = 0
     this.filterList = [
       EnumCommandName.SET_NODE_ACTIVE,
+      EnumCommandName.CLEAR_ACTIVE_NODE,
       EnumCommandName.SET_NODE_DATA,
       EnumCommandName.SET_NODE_TEXT,
       EnumCommandName.UNDO,

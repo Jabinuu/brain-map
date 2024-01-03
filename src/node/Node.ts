@@ -343,7 +343,8 @@ class Node {
 
   // 激活节点
   active (): void {
-    this.renderer.clearActiveNodesList()
+    // this.renderer.clearActiveNodesList()
+    this.brainMap.execCommand(EnumCommandName.CLEAR_ACTIVE_NODE)
     this.renderer.addActiveNodeList(this)
   }
 

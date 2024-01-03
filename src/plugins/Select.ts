@@ -51,10 +51,17 @@ class Select {
 
   onMousemove (e: MouseEvent, event: _Event): void {
     if (!this.isMousedown) return
-    this.brainMap.renderer.isSelecting = true
+
     const { x, y } = this.brainMap.toRelativePos(e.clientX, e.clientY)
     this.movePt.x = x
     this.movePt.y = y
+
+    const offsetX = Math.abs(this.startPt.x - this.movePt.x)
+    const offsetY = Math.abs(this.startPt.y - this.movePt.y)
+    // 任意方向偏移量大于5认为是在拖动选取框
+    if (offsetX >= 5 || offsetY >= 5) {
+      this.brainMap.renderer.isSelecting = true
+    }
 
     // 在画布上画矩形
     this.rect?.plot([
@@ -73,19 +80,21 @@ class Select {
     this.startPt.y = 0
     this.movePt.x = 0
     this.movePt.y = 0
-    // mouseup触发在click之前，因此需要将这个操作延时一下
+
+    // 由于mouseup触发在click之前，需要将这个操作延时一下
     requestAnimationFrame(() => {
       this.brainMap.renderer.isSelecting = false
     })
   }
 
   // 检查节点是否在选取框内
-  checkNodeInSelect (): boolean {
+  checkNodeInSelect (): void {
     if (!this.brainMap.drawing) {
-      return false
+      return
     }
     // 获取容器的transform数据
     const { translateX, translateY, scaleX, scaleY } = this.brainMap.drawing.transform()
+    // 选取框边界
     const minx = Math.min(this.startPt.x, this.movePt.x)
     const miny = Math.min(this.startPt.y, this.movePt.y)
     const maxx = Math.max(this.startPt.x, this.movePt.x)
@@ -112,8 +121,6 @@ class Select {
         return false
       })
     }
-
-    return false
   }
 
   createRect (): void {

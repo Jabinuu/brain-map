@@ -40,10 +40,7 @@ class Event extends EventEmitter {
   }
 
   onClick (): void {
-    if (!this.brainMap.renderer.isSelecting) {
-      this.brainMap.renderer.clearActiveNodesList()
-      this.brainMap.renderer.clearEditStatus()
-    }
+    this.brainMap.emit('draw_click')
   }
 
   onMousedown (e: MouseEvent): void {
