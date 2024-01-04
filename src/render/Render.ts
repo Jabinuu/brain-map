@@ -96,6 +96,12 @@ class Render {
     this.brainMap.registerShortcut(EnumShortcutName.REDO, () => {
       this.brainMap.execCommand(EnumCommandName.REDO)
     })
+
+    this.brainMap.registerShortcut(EnumShortcutName.EXPAND, () => {
+      // 检查前置，以免产生多余的相同历史记录
+      if (!this.activeNodes.length) return
+      this.brainMap.execCommand(EnumCommandName.SET_NODE_EXPAND, this.activeNodes)
+    })
   }
 
   // 绑定事件
@@ -276,15 +282,26 @@ class Render {
   }
 
   // 改变节点展开状态
-  setNodeExpand (manipulateNode: [Node], isExpand: boolean): void {
-    const [node] = manipulateNode
-    if (!isExpand) {
-      // 节点收缩时取消所有后代节点的激活状态
-      this.cancelAllChildrenActive(node)
-    }
-    this.brainMap.execCommand(EnumCommandName.SET_NODE_DATA, [node], {
-      isExpand
+  setNodeExpand (manipulateNode: Node[]): void {
+    const _manipulateNode = manipulateNode.length > 1 ? this.getParentNodeFromActiveList(manipulateNode) : manipulateNode
+    const allCollapse = _manipulateNode.every((node) => !node.getData('isExpand') as boolean)
+    const len = _manipulateNode.length
+
+    _manipulateNode.forEach((node) => {
+      const isExpand = node.getData('isExpand') as boolean
+      if (len > 1 && !isExpand && !allCollapse) {
+        this.removeNodeFromActiveList(node)
+        return
+      }
+      if (isExpand) {
+        // 节点收缩时取消所有后代节点的激活状态
+        this.cancelAllChildrenActive(node)
+      }
+      this.brainMap.execCommand(EnumCommandName.SET_NODE_DATA, [node], {
+        isExpand: !isExpand
+      })
     })
+
     this.render()
   }
 
@@ -437,8 +454,7 @@ class Render {
   getParentNodeFromActiveList (manipulateNode: Node[]): Node[] {
     // tip：对于每一个激活节点，沿着父节点链向上查找有没有哪个父代节点是激活的，如果有，则将该父代节点下的激活节点从列表中删除，以此迭代即可
     return manipulateNode.filter((item) => {
-      const aa = !this.checkHasParentInActiveList(item, manipulateNode)
-      return aa
+      return !this.checkHasParentInActiveList(item, manipulateNode)
     })
   }
 

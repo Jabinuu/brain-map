@@ -2,6 +2,7 @@ import { type Polygon } from '@svgdotjs/svg.js'
 import type BrainMap from '../..'
 import type _Event from '../event/Event'
 import { checkRectanglesPartialOverlap, traversal } from '../utils'
+import { type DataSource } from '../..'
 
 // 节点选择框插件
 class Select {
@@ -103,7 +104,7 @@ class Select {
     if (this.brainMap.dataSource) {
       traversal(this.brainMap.dataSource, true, null, (cur) => {
         if (cur.node) {
-          const isActive = cur.node.getData('isActive')
+          const { isActive, isExpand } = cur.node.getData() as DataSource
           let { top, left, width, height } = cur.node
           const right = (left + width) * (scaleX ?? 1) + (translateX ?? 0)
           const bottom = (top + height) * (scaleY ?? 1) + (translateY ?? 0)
@@ -116,6 +117,9 @@ class Select {
             }
           } else if (isActive) {
             this.brainMap.renderer.removeNodeFromActiveList(cur.node)
+          }
+          if (!isExpand) {
+            return true
           }
         }
         return false

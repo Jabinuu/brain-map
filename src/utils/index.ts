@@ -7,7 +7,13 @@ type PreCallback = ((cur: DataSource, parent: DataSource | null, isRoot: boolean
 type PostCallback = ((cur: DataSource, parent: DataSource | null, isRoot: boolean) => void)
 
 // dfs遍历数据源（渲染树）
-export function traversal (root: DataSource, isRoot: boolean, parent: DataSource | null, preCallback?: PreCallback, postCallback?: PostCallback): void {
+export function traversal (
+  root: DataSource,
+  isRoot: boolean,
+  parent: DataSource | null,
+  preCallback?: PreCallback,
+  postCallback?: PostCallback
+): void {
   let stop = false
   if (preCallback) {
     stop = preCallback(root, parent, isRoot)
@@ -90,6 +96,7 @@ export function checkRectanglesPartialOverlap (
   maxx1: number,
   maxx2: number,
   maxy1: number,
-  maxy2: number): boolean {
+  maxy2: number
+): boolean {
   return maxx1 > minx2 && minx1 < maxx2 && miny1 < maxy2 && maxy1 > miny2
 }

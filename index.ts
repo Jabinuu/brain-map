@@ -192,11 +192,11 @@ class BrainMap {
   EnumCommandName.CLEAR_ACTIVE_NODE, task: () => void): void
   registerCommand (cmdName:
   EnumCommandName.SET_NODE_ACTIVE |
-  EnumCommandName.SET_NODE_EXPAND |
   EnumCommandName.SET_NODE_EDIT, task: (arg1: [Node], arg2: boolean) => void): void
   registerCommand (cmdName:
   EnumCommandName.DELETE_SINGLE_NODE |
   EnumCommandName.INSERT_CHILD_NODE |
+  EnumCommandName.SET_NODE_EXPAND |
   EnumCommandName.DELETE_NODE |
   EnumCommandName.INSERT_SIBLING_NODE, task: (arg1: Node[]) => void): void
 
@@ -214,11 +214,11 @@ class BrainMap {
   EnumCommandName.CLEAR_ACTIVE_NODE): void
   execCommand (cmdName:
   EnumCommandName.SET_NODE_ACTIVE |
-  EnumCommandName.SET_NODE_EXPAND |
   EnumCommandName.SET_NODE_EDIT, arg1: [Node], arg2: boolean): void
   execCommand (cmdName:
   EnumCommandName.DELETE_SINGLE_NODE |
   EnumCommandName.INSERT_CHILD_NODE |
+  EnumCommandName.SET_NODE_EXPAND |
   EnumCommandName.INSERT_SIBLING_NODE, arg1: Node[]): void
   execCommand (cmdName: EnumCommandName.DELETE_NODE, arg1: Node[]): void
 

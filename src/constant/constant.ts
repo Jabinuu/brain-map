@@ -93,9 +93,11 @@ export enum EnumShortcutName {
   DOWN = 'ArrowDown',
   INS = 'Insert',
   DEL = 'Delete',
+  DIVIDE = '/',
   DEL_SINGLE = 'Control|Delete',
   UNDO = 'Control|z',
-  REDO = 'Control|y'
+  REDO = 'Control|y',
+  EXPAND = 'Control|/'
 }
 
 export enum EnumCommandName {

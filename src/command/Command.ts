@@ -89,7 +89,9 @@ class Command {
         }
       }
 
-      if (cmdName === EnumCommandName.DELETE_NODE && manipulateNode && manipulateNode.length > 1) {
+      if ((cmdName === EnumCommandName.DELETE_NODE || cmdName === EnumCommandName.SET_NODE_EXPAND) &&
+      manipulateNode &&
+      manipulateNode.length > 1) {
         manipulateNode = this.brainMap.renderer.getParentNodeFromActiveList(manipulateNode)
       }
 

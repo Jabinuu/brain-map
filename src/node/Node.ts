@@ -411,7 +411,7 @@ class Node {
   bindExpandBtnEvent (g: GType, isExpand: boolean): void {
     g.on('click', (e) => {
       e.stopPropagation()
-      this.brainMap.execCommand(EnumCommandName.SET_NODE_EXPAND, [this], !isExpand)
+      this.brainMap.execCommand(EnumCommandName.SET_NODE_EXPAND, [this])
     })
   }
 
