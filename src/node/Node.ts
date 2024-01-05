@@ -376,7 +376,7 @@ class Node {
     // 创建按钮节点
     const g = this.createExpandBtnContent(isExpand)
     // 绑定事件
-    this.bindExpandBtnEvent(g, isExpand)
+    this.bindExpandBtnEvent(g)
 
     return g
   }
@@ -408,10 +408,12 @@ class Node {
   }
 
   // 绑定展开收缩节点事件
-  bindExpandBtnEvent (g: GType, isExpand: boolean): void {
+  bindExpandBtnEvent (g: GType): void {
     g.on('click', (e) => {
       e.stopPropagation()
+      this.brainMap.execCommand(EnumCommandName.CLEAR_ACTIVE_NODE)
       this.brainMap.execCommand(EnumCommandName.SET_NODE_EXPAND, [this])
+      this.brainMap.renderer.addNodeToActiveList(this)
     })
   }
 

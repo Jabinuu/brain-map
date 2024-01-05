@@ -318,7 +318,6 @@ class Render {
       })
     })
     this.render()
-    console.log(this.activeNodes)
   }
 
   // 改变节点编辑状态
