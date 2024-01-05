@@ -17,7 +17,8 @@ interface CommandMap {
 
 export interface HistoryItem {
   cmdName: string
-  manipulateNodeId: string[] // todo: 目前只支持单节点操作，后续更新为多个
+  // todo: 添加一个manipulateNodeId的姊妹属性，manipulateNodeId负责记录undo时的激活节点id，后者负责记录redo时的激活节点id，两者都需要在addHistory中添加到历史
+  manipulateNodeId: string[]
   dataSource: DataSource
   insertSiblingIndex: number
 }
@@ -137,6 +138,7 @@ class Command {
       } = this.history[this.activeHistoryIndex]
 
       const data = cloneDataSource(dataSource)
+
       return {
         cmdName,
         dataSource: data,
@@ -147,8 +149,9 @@ class Command {
   }
 
   // 重做
-  redo (): HistoryItem | undefined {
+  redo (): { historyItem: HistoryItem, lastDataSource: DataSource | undefined } | undefined {
     if (this.activeHistoryIndex + 1 < this.history.length) {
+      let lastDataSource
       this.activeHistoryIndex++
       const {
         dataSource,
@@ -157,12 +160,19 @@ class Command {
         insertSiblingIndex
       } = this.history[this.activeHistoryIndex]
 
+      if (this.activeHistoryIndex - 1 >= 0) {
+        lastDataSource = this.history[this.activeHistoryIndex - 1].dataSource
+        lastDataSource = cloneDataSource(lastDataSource)
+      }
       const data = cloneDataSource(dataSource)
       return {
-        cmdName,
-        dataSource: data,
-        manipulateNodeId,
-        insertSiblingIndex
+        historyItem: {
+          cmdName,
+          dataSource: data,
+          manipulateNodeId,
+          insertSiblingIndex
+        },
+        lastDataSource
       }
     }
   }

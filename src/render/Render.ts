@@ -82,10 +82,15 @@ class Render {
     })
 
     this.brainMap.registerShortcut(EnumShortcutName.DEL, () => {
+      if (!this.activeNodes.length) return
       this.brainMap.execCommand(EnumCommandName.DELETE_NODE, [...this.activeNodes])
     })
 
     this.brainMap.registerShortcut(EnumShortcutName.DEL_SINGLE, () => {
+      if (this.activeNodes.length > 1) {
+        alert('没有激活节点或多个激活节点不支持删除单个节点~')
+        return
+      }
       this.brainMap.execCommand(EnumCommandName.DELETE_SINGLE_NODE, [...this.activeNodes])
     })
 
@@ -179,7 +184,6 @@ class Render {
 
     })
 
-    // this.clearActiveNodesList()
     this.brainMap.execCommand(EnumCommandName.CLEAR_ACTIVE_NODE)
     this.render()
   }
@@ -206,7 +210,6 @@ class Render {
       },
       children: []
     })
-    // this.clearActiveNodesList()
     this.brainMap.execCommand(EnumCommandName.CLEAR_ACTIVE_NODE)
 
     this.render()
@@ -221,21 +224,30 @@ class Render {
         })
       }
     })
-
-    // this.clearActiveNodesList()
     this.brainMap.execCommand(EnumCommandName.CLEAR_ACTIVE_NODE)
+
+    if (activeNodes.length === 1 && activeNodes[0].parent) {
+      const siblings = activeNodes[0].parent.children
+      let index = siblings.findIndex((item) => item === activeNodes[0])
+      index = index === 0 ? 1 : index - 1
+      if (index < siblings.length) {
+        this.addNodeToActiveList(siblings[index])
+      } else {
+        this.addNodeToActiveList(activeNodes[0].parent)
+      }
+    }
 
     this.render()
   }
 
   // 删除单个节点
   deleteSingleNode (activeNodes: Node[]): void {
-    if (activeNodes.length > 1) {
-      alert('没有激活节点或多个激活节点不支持删除单个节点~')
-      return
-    }
     const [node] = activeNodes
     const parent = node.parent?.nodeData
+    const parentNode = node.parent
+    const childrenCount = node.nodeData?.children.length as number
+    const deleteIndex = parentNode?.children.findIndex((item) => item === node) as number
+
     if (parent) {
       let index = parent?.children.findIndex((child) => {
         return child.data.uid === node.uid
@@ -248,6 +260,14 @@ class Render {
     this.brainMap.execCommand(EnumCommandName.CLEAR_ACTIVE_NODE)
 
     this.render()
+
+    if (childrenCount > 1) {
+      for (let i = deleteIndex; i < deleteIndex + childrenCount; i++) {
+        if (parentNode) {
+          this.addNodeToActiveList(parentNode.children[i])
+        }
+      }
+    }
   }
 
   // 设置节点数据源数据
@@ -389,7 +409,7 @@ class Render {
   // 回退
   undo (): void {
     const historyItem = this.brainMap.command.undo()
-    // this.clearActiveNodesList()
+    if (!historyItem) return
     this.brainMap.execCommand(EnumCommandName.CLEAR_ACTIVE_NODE)
 
     this.switchHistoryItem(historyItem, 'undo')
@@ -397,12 +417,16 @@ class Render {
 
   // 重做
   redo (): void {
-    const historyItem = this.brainMap.command.redo()
-    this.switchHistoryItem(historyItem, 'redo')
+    const history = this.brainMap.command.redo()
+    if (!history) return
+    const historyItem = history.historyItem
+    const lastDataSource = history.lastDataSource
+
+    this.switchHistoryItem(historyItem, 'redo', lastDataSource)
   }
 
   // 历史记录切换
-  switchHistoryItem (historyItem: HistoryItem | undefined, mode: 'undo' | 'redo'): void {
+  switchHistoryItem (historyItem: HistoryItem, mode: 'undo' | 'redo', lastDataSource?: DataSource): void {
     if (historyItem) {
       const {
         dataSource,
@@ -415,9 +439,13 @@ class Render {
         this.setActiveById(dataSource, manipulateNodeId)
       } else if (mode === 'redo') {
         if (cmdName === EnumCommandName.INSERT_CHILD_NODE) {
-          this.setRedoActiveNodeById(dataSource, manipulateNodeId)
+          this.setAddNodeRedoActiveNodeById(dataSource, manipulateNodeId)
         } else if (cmdName === EnumCommandName.INSERT_SIBLING_NODE) {
-          this.setRedoActiveNodeById(dataSource, manipulateNodeId, insertSiblingIndex)
+          this.setAddNodeRedoActiveNodeById(dataSource, manipulateNodeId, insertSiblingIndex)
+        } else if (cmdName === EnumCommandName.DELETE_NODE && lastDataSource) {
+          this.setDeleteNodeRedoActiveNodeById(dataSource, manipulateNodeId, lastDataSource, EnumCommandName.DELETE_NODE)
+        } else if (cmdName === EnumCommandName.DELETE_SINGLE_NODE && lastDataSource) {
+          this.setDeleteNodeRedoActiveNodeById(dataSource, manipulateNodeId, lastDataSource, EnumCommandName.DELETE_SINGLE_NODE)
         } else {
           this.setActiveById(dataSource, manipulateNodeId)
         }
@@ -443,7 +471,7 @@ class Render {
   }
 
   // 针对添加子级节点和同级节点的重做时激活节点的处理
-  setRedoActiveNodeById (
+  setAddNodeRedoActiveNodeById (
     dataSource: DataSource,
     manipulateNodeId: string[],
     insertSiblingIndex: number = -1
@@ -462,6 +490,37 @@ class Render {
         }
       }
       return false
+    })
+  }
+
+  // 针对删除节点的重做时激活节点的处理
+  setDeleteNodeRedoActiveNodeById (dataSource: DataSource, manipulateNodeId: string[], lastDataSource: DataSource, mode: string): void {
+    const id: string[] = []
+    manipulateNodeId.forEach((uid) => {
+      traversal(lastDataSource, true, null, (cur, parent) => {
+        if (cur.data.uid === uid && parent) {
+          if (mode === EnumCommandName.DELETE_NODE) {
+            let index = parent.children.findIndex((item) => item === cur)
+            index = index === 0 ? 1 : index - 1
+            id.push(parent.children[index].data.uid as string)
+          } else {
+            cur.children.forEach((item) => id.push(item.data.uid as string))
+          }
+          return true
+        }
+        return false
+      })
+    })
+
+    id.forEach((uid) => {
+      traversal(dataSource, true, null, (cur, parent) => {
+        if (uid === cur.data.uid && parent) {
+          const index = parent.children.findIndex((item) => item.data.uid === uid)
+          parent.children[index].data.isActive = true
+          return true
+        }
+        return false
+      })
     })
   }
 
