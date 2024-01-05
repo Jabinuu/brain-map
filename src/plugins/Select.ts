@@ -59,11 +59,6 @@ class Select {
 
     const offsetX = Math.abs(this.startPt.x - this.movePt.x)
     const offsetY = Math.abs(this.startPt.y - this.movePt.y)
-    // 任意方向偏移量大于5认为是在拖动选取框
-    if (offsetX >= 5 || offsetY >= 5) {
-      this.brainMap.renderer.isSelecting = true
-    }
-
     // 在画布上画矩形
     this.rect?.plot([
       [this.startPt.x, this.startPt.y],
@@ -71,7 +66,11 @@ class Select {
       [this.movePt.x, this.movePt.y],
       [this.movePt.x, this.startPt.y]
     ])
-    this.checkNodeInSelect()
+    // 任意方向偏移量大于5认为是在拖动选取框
+    if (offsetX >= 5 || offsetY >= 5) {
+      this.brainMap.renderer.isSelecting = true
+      this.checkNodeInSelect()
+    }
   }
 
   onMouseup (): void {

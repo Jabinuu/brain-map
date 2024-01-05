@@ -89,9 +89,21 @@ class Command {
         }
       }
 
-      if ((cmdName === EnumCommandName.DELETE_NODE || cmdName === EnumCommandName.SET_NODE_EXPAND) &&
-      manipulateNode &&
-      manipulateNode.length > 1) {
+      if (cmdName === EnumCommandName.SET_NODE_EXPAND && manipulateNode && manipulateNode.length > 1) {
+        const root = this.brainMap.root
+        const hasRootNode = manipulateNode.includes(root as Node)
+
+        if (root && hasRootNode) {
+          manipulateNode.length = 0
+          root.children.forEach((item) => {
+            manipulateNode?.push(item)
+          })
+        } else if (!hasRootNode) {
+          manipulateNode = this.brainMap.renderer.getParentNodeFromActiveList(manipulateNode)
+        }
+      }
+
+      if (cmdName === EnumCommandName.DELETE_NODE && manipulateNode && manipulateNode.length > 1) {
         manipulateNode = this.brainMap.renderer.getParentNodeFromActiveList(manipulateNode)
       }
 

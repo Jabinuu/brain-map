@@ -100,7 +100,7 @@ class Render {
     this.brainMap.registerShortcut(EnumShortcutName.EXPAND, () => {
       // 检查前置，以免产生多余的相同历史记录
       if (!this.activeNodes.length) return
-      this.brainMap.execCommand(EnumCommandName.SET_NODE_EXPAND, this.activeNodes)
+      this.brainMap.execCommand(EnumCommandName.SET_NODE_EXPAND, [...this.activeNodes])
     })
   }
 
@@ -149,6 +149,7 @@ class Render {
     if (this.activeNodes.findIndex((item) => item.uid === node.uid) !== -1) {
       return
     }
+
     this.brainMap.execCommand(EnumCommandName.SET_NODE_ACTIVE, [node], true)
     this.activeNodes.push(node)
   }
@@ -276,6 +277,7 @@ class Render {
       isActive
     })
     node.updateNodeActiveClass()
+
     if (isActive) {
       node.showExpandBtn()
     }
@@ -286,6 +288,16 @@ class Render {
     const _manipulateNode = manipulateNode.length > 1 ? this.getParentNodeFromActiveList(manipulateNode) : manipulateNode
     const allCollapse = _manipulateNode.every((node) => !node.getData('isExpand') as boolean)
     const len = _manipulateNode.length
+    const root = this.brainMap.root
+    const hasRootNode = _manipulateNode.includes(root as Node)
+
+    if (root && hasRootNode) {
+      _manipulateNode.length = 0
+      root.children.forEach((item) => {
+        _manipulateNode.push(item)
+      })
+      this.removeNodeFromActiveList(root)
+    }
 
     _manipulateNode.forEach((node) => {
       const isExpand = node.getData('isExpand') as boolean
@@ -296,13 +308,17 @@ class Render {
       if (isExpand) {
         // 节点收缩时取消所有后代节点的激活状态
         this.cancelAllChildrenActive(node)
+        if (hasRootNode) {
+          this.addNodeToActiveList(node)
+        }
       }
+
       this.brainMap.execCommand(EnumCommandName.SET_NODE_DATA, [node], {
         isExpand: !isExpand
       })
     })
-
     this.render()
+    console.log(this.activeNodes)
   }
 
   // 改变节点编辑状态

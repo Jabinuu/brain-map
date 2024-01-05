@@ -6,7 +6,6 @@ import Event from './src/event/Event'
 import { type EnumCommandName, cssConstant } from './src/constant/constant'
 import Shortcut from './src/shortcut/Shortcut'
 import Command from './src/command/Command'
-import Select from './src/plugins/Select'
 
 export type Pair<T1, T2> = [T1, T2]
 
@@ -68,7 +67,7 @@ class BrainMap {
   elRect: DOMRect | null
   dataSource: DataSource | null
   cssEl: HTMLStyleElement | null
-  select: Select
+  // select: Select
 
   constructor (opt: BrainMapOption) {
     // 画布容器
@@ -128,10 +127,7 @@ class BrainMap {
       brainMap: this
     })
 
-    // todo: 插件化
-    this.select = new Select({
-      brainMap: this
-    })
+    this.initPlugins()
 
     // 初次渲染
     this.renderer.render()
@@ -169,6 +165,17 @@ class BrainMap {
       this.nodeDrawing = this.drawing.group()
       this.nodeDrawing.addClass('bm-node-drawing')
     }
+  }
+
+  // 初始化插件
+  initPlugins (): void {
+    BrainMap.pluginList.forEach((plugin) => {
+      const instanceName = plugin.default.name.toLocaleLowerCase()
+      const Constructor = plugin.default
+      this[instanceName] = new Constructor({
+        brainMap: this
+      })
+    })
   }
 
   // 添加基础常量样式
@@ -252,6 +259,28 @@ class BrainMap {
     } else {
       return { x: 0, y: 0 }
     }
+  }
+
+  // 已注册的插件列表
+  static pluginList: any[] = []
+  // 注册插件
+  static async usePlugin (plugin: string): Promise<typeof BrainMap> {
+    if (BrainMap.hasPlugin(plugin)) {
+      return this
+    }
+
+    const pluginModule = await import(`./src/plugins/${plugin}.ts`)
+
+    // tip:类静态成员的this指向的类本身而不是实例
+    this.pluginList.push(pluginModule)
+    return this
+  }
+
+  // 检查插件是否已被注册过
+  static hasPlugin (plugin: string): boolean {
+    return !!BrainMap.pluginList.find((item) => {
+      return item.name === plugin
+    })
   }
 }
 
