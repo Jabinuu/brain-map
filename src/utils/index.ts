@@ -2,6 +2,7 @@ import { type DataSource } from '../../index'
 import { type PositionPair } from '../layouts/LogicalStructure'
 import type Node from '../node/Node'
 import { v4 as uuidv4 } from 'uuid'
+import { type Rectangle } from '../render/Render'
 
 type PreCallback = ((cur: DataSource, parent: DataSource | null, isRoot: boolean) => boolean)
 type PostCallback = ((cur: DataSource, parent: DataSource | null, isRoot: boolean) => void)
@@ -99,4 +100,35 @@ export function checkRectanglesPartialOverlap (
   maxy2: number
 ): boolean {
   return maxx1 > minx2 && minx1 < maxx2 && miny1 < maxy2 && maxy1 > miny2
+}
+
+// 获取多个矩形的最小包含矩形boundingbox
+export function getBoundingBox (rectangles: Rectangle[]): Rectangle {
+  let _x1 = Infinity
+  let _y1 = Infinity
+  let _x2 = -Infinity
+  let _y2 = -Infinity
+
+  rectangles.forEach(rectangle => {
+    const x1 = rectangle.left
+    const y1 = rectangle.top
+    const x2 = rectangle.left + rectangle.width
+    const y2 = rectangle.top + rectangle.height
+
+    _x1 = Math.min(_x1, x2, x1)
+    _y1 = Math.min(_y1, y2, y1)
+    _x2 = Math.max(x1, _x2, x2)
+    _y2 = Math.max(y1, _y2, y2)
+  })
+
+  return {
+    left: _x1 - 4.5,
+    top: _y1 - 4.5,
+    width: _x2 - _x1 + 7,
+    height: _y2 - _y1 + 7
+  }
+}
+
+export function isInfinity (val: number): boolean {
+  return Math.abs(val) === Infinity
 }

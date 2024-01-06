@@ -3,8 +3,10 @@ import LogicalStructure from '../layouts/LogicalStructure'
 import { CONSTANT, EnumCommandName, EnumShortcutName } from '../constant/constant'
 import type Node from '../node/Node'
 import { type DataSource, type DataSourceItem } from '../../index'
-import { selectAllText, traversal } from '../utils'
+import { getBoundingBox, isInfinity, selectAllText, traversal } from '../utils'
 import { type HistoryItem } from '../command/Command'
+import { type Polygon } from '@svgdotjs/svg.js'
+
 interface RenderOption {
   brainMap: BrainMap
 }
@@ -16,6 +18,13 @@ const layouts = {
   [CONSTANT.LAYOUTS.LOGICAL_STRUCTURE]: LogicalStructure
 }
 
+export interface Rectangle {
+  left: number
+  top: number
+  width: number
+  height: number
+}
+
 // 渲染类，负责渲染相关
 class Render {
   brainMap: BrainMap
@@ -25,6 +34,7 @@ class Render {
   renderCache: RenderNodeCache
   lastRenderCache: RenderNodeCache
   isSelecting: boolean
+  activeNodesBoundingBox: Polygon | null
 
   constructor (opt: RenderOption) {
     this.brainMap = opt.brainMap
@@ -39,6 +49,8 @@ class Render {
     this.lastRenderCache = {}
     // 是否正在多选节点
     this.isSelecting = false
+    // 包含多个激活节点的边框
+    this.activeNodesBoundingBox = null
 
     // 设置布局
     this.setLayout()
@@ -111,9 +123,9 @@ class Render {
 
   // 绑定事件
   bindEvent (): void {
-    this.brainMap.on('draw_click', () => {
+    this.brainMap.on('draw_mousedown', (e: Event) => {
+      this.activeNodesBoundingBox?.remove()
       if (!this.brainMap.renderer.isSelecting) {
-        // this.clearActiveNodesList()
         this.brainMap.execCommand(EnumCommandName.CLEAR_ACTIVE_NODE)
         this.clearEditStatus()
       }
@@ -145,6 +157,7 @@ class Render {
       this.brainMap.execCommand(EnumCommandName.SET_NODE_ACTIVE, [item], false)
       item.hideExpandBtn()
     })
+    this.activeNodesBoundingBox?.remove()
     this.activeNodes.length = 0
   }
 
@@ -154,7 +167,6 @@ class Render {
     if (this.activeNodes.findIndex((item) => item.uid === node.uid) !== -1) {
       return
     }
-
     this.brainMap.execCommand(EnumCommandName.SET_NODE_ACTIVE, [node], true)
     this.activeNodes.push(node)
   }
@@ -268,6 +280,7 @@ class Render {
         }
       }
     }
+    this.activeNodes.length > 1 && this.createActiveNodesBoundingBox()
   }
 
   // 设置节点数据源数据
@@ -305,7 +318,9 @@ class Render {
 
   // 改变节点展开状态
   setNodeExpand (manipulateNode: Node[]): void {
-    const _manipulateNode = manipulateNode.length > 1 ? this.getParentNodeFromActiveList(manipulateNode) : manipulateNode
+    const _manipulateNode = manipulateNode.length > 1
+      ? this.getParentNodeFromActiveList(manipulateNode)
+      : manipulateNode
     const allCollapse = _manipulateNode.every((node) => !node.getData('isExpand') as boolean)
     const len = _manipulateNode.length
     const root = this.brainMap.root
@@ -337,7 +352,14 @@ class Render {
         isExpand: !isExpand
       })
     })
+
     this.render()
+
+    if (_manipulateNode.length > 1) {
+      this.createActiveNodesBoundingBox()
+    } else {
+      this.activeNodesBoundingBox?.remove()
+    }
   }
 
   // 改变节点编辑状态
@@ -413,6 +435,7 @@ class Render {
     this.brainMap.execCommand(EnumCommandName.CLEAR_ACTIVE_NODE)
 
     this.switchHistoryItem(historyItem, 'undo')
+    this.activeNodes.length > 1 && this.createActiveNodesBoundingBox()
   }
 
   // 重做
@@ -423,6 +446,7 @@ class Render {
     const lastDataSource = history.lastDataSource
 
     this.switchHistoryItem(historyItem, 'redo', lastDataSource)
+    this.activeNodes.length > 1 && this.createActiveNodesBoundingBox()
   }
 
   // 历史记录切换
@@ -494,8 +518,14 @@ class Render {
   }
 
   // 针对删除节点的重做时激活节点的处理
-  setDeleteNodeRedoActiveNodeById (dataSource: DataSource, manipulateNodeId: string[], lastDataSource: DataSource, mode: string): void {
+  setDeleteNodeRedoActiveNodeById (
+    dataSource: DataSource,
+    manipulateNodeId: string[],
+    lastDataSource: DataSource,
+    mode: string
+  ): void {
     const id: string[] = []
+
     manipulateNodeId.forEach((uid) => {
       traversal(lastDataSource, true, null, (cur, parent) => {
         if (cur.data.uid === uid && parent) {
@@ -542,6 +572,37 @@ class Render {
       p = p.parent
     }
     return false
+  }
+
+  // 绘制包含多个激活节点的边界方框
+  createActiveNodesBoundingBox (): void {
+    if (!this.brainMap.drawing) return
+
+    this.activeNodesBoundingBox?.remove()
+    const rectangles: Rectangle[] = []
+    this.activeNodes.forEach((node) => {
+      rectangles.push({
+        left: node.left,
+        top: node.top,
+        width: node.width,
+        height: node.height
+      })
+    })
+
+    const { left, top, width, height } = getBoundingBox(rectangles)
+    if (isInfinity(left) || isInfinity(top) || isInfinity(width) || isInfinity(height)) {
+      return
+    }
+
+    this.activeNodesBoundingBox = this.brainMap.drawing.polygon().plot([
+      [left, top],
+      [left, top + height],
+      [left + width, top + height],
+      [left + width, top]
+    ])
+      .stroke({ color: '#0984e3', width: 1 })
+      .fill({ color: 'transparent' })
+      .back()
   }
 }
 

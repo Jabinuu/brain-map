@@ -3,10 +3,13 @@ import type BrainMap from '../..'
 import type _Event from '../event/Event'
 import { checkRectanglesPartialOverlap, traversal } from '../utils'
 import { type DataSource } from '../..'
+import type Render from '../render/Render'
 
 // 节点选择框插件
 class Select {
   brainMap: BrainMap
+  renderer: Render
+
   // 选取框起始点坐标
   startPt: { x: number, y: number }
   // 选取框移动点坐标
@@ -18,6 +21,7 @@ class Select {
 
   constructor (opt: { brainMap: BrainMap }) {
     this.brainMap = opt.brainMap
+    this.renderer = opt.brainMap.renderer
     this.startPt = { x: 0, y: 0 }
     this.movePt = { x: 0, y: 0 }
     this.isMousedown = false
@@ -28,15 +32,15 @@ class Select {
 
   // 思维导图容器绑定事件
   bindEvent (): void {
-    this.brainMap.on('mousedown', this.onMousedown.bind(this))
-    this.brainMap.on('mousemove', this.onMousemove.bind(this))
+    this.brainMap.on('draw_mousedown', this.onMousedown.bind(this))
+    this.brainMap.on('draw_mousemove', this.onMousemove.bind(this))
     this.brainMap.on('mouseup', this.onMouseup.bind(this))
   }
 
   // 思维导图容器解绑事件
   unBindEvent (): void {
-    this.brainMap.off('mousedown', this.onMouseup.bind(this))
-    this.brainMap.off('mousemove', this.onMousemove.bind(this))
+    this.brainMap.off('draw_mousedown', this.onMouseup.bind(this))
+    this.brainMap.off('draw_mousemove', this.onMousemove.bind(this))
     this.brainMap.off('mouseup', this.onMouseup.bind(this))
   }
 
@@ -68,7 +72,7 @@ class Select {
     ])
     // 任意方向偏移量大于5认为是在拖动选取框
     if (offsetX >= 5 || offsetY >= 5) {
-      this.brainMap.renderer.isSelecting = true
+      this.renderer.isSelecting = true
       this.checkNodeInSelect()
     }
   }
@@ -81,10 +85,14 @@ class Select {
     this.movePt.x = 0
     this.movePt.y = 0
 
+    if (this.renderer.isSelecting) {
     // 由于mouseup触发在click之前，需要将这个操作延时一下
-    requestAnimationFrame(() => {
-      this.brainMap.renderer.isSelecting = false
-    })
+      requestAnimationFrame(() => {
+        this.renderer.isSelecting = false
+      })
+
+      this.renderer.activeNodes.length > 1 && this.renderer.createActiveNodesBoundingBox()
+    }
   }
 
   // 检查节点是否在选取框内

@@ -181,18 +181,29 @@ class Node {
 
   // 绑定节点事件
   bindNodeEvent (): void {
-    // 单击事件
-    this.group?.on('click', (e: Event) => {
+    // 鼠标按下事件
+    this.group?.on('mousedown', (e: Event) => {
       e.stopPropagation()
+      const isActive = this.getData('isActive')
+
       if (!this.getData('isEdit')) {
         // ctrl键多选激活节点
         if ((e as MouseEvent).ctrlKey) {
-          this.brainMap.renderer.addNodeToActiveList(this)
-        } else {
+          isActive
+            ? this.renderer.removeNodeFromActiveList(this)
+            : this.renderer.addNodeToActiveList(this)
+
+          this.renderer.activeNodes.length > 1 && this.renderer.createActiveNodesBoundingBox()
+        } else if (!this.renderer.activeNodes.includes(this)) {
           // 仅单击则只激活这一个节点
           this.active()
         }
       }
+    })
+
+    // 单击事件
+    this.group?.on('click', (e: Event) => {
+
     })
 
     // 鼠标移入事件,mouseenter事件默认不冒泡

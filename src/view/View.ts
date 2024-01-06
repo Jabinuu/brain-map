@@ -48,7 +48,7 @@ class View {
 
   // 绑定事件
   bindEvent (): void {
-    this.brainMap.on('mousedown', this.onDragDrawingMousedown.bind(this))
+    this.brainMap.on('draw_mousedown', this.onDragDrawingMousedown.bind(this))
     this.brainMap.on('drag', this.onDragDrawingMousemove.bind(this))
     this.brainMap.on('mouseup', this.onDragDrawingMouseup.bind(this))
     this.brainMap.on('wheel', this.zoomDrawing.bind(this))

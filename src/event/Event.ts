@@ -24,8 +24,8 @@ class Event extends EventEmitter {
   // 绑定事件
   bindEvent (): void {
     this.brainMap.svg?.on('click', this.onClick.bind(this) as EventListener)
-    this.brainMap.el?.addEventListener('mousedown', this.onMousedown.bind(this))
-    this.brainMap.el?.addEventListener('mousemove', this.onMousemove.bind(this))
+    this.brainMap.svg?.on('mousedown', this.onMousedown.bind(this) as EventListener)
+    this.brainMap.svg?.on('mousemove', this.onMousemove.bind(this) as EventListener)
     window.addEventListener('mouseup', this.onMouseup.bind(this))
     this.brainMap.el?.addEventListener('wheel', this.onMousewheel.bind(this))
     window.addEventListener('keydown', this.onKeyDown.bind(this))
@@ -56,12 +56,12 @@ class Event extends EventEmitter {
           this.isRightMouseDown = true
           break
       }
-      this.emit('mousedown', e, this)
+      this.emit('draw_mousedown', e, this)
     }
   }
 
   onMousemove (e: MouseEvent): void {
-    this.emit('mousemove', e, this)
+    this.emit('draw_mousemove', e, this)
     if (this.isRightMouseDown) {
       this.emit('drag', e, this)
     }
