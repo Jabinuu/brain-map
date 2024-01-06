@@ -67,6 +67,7 @@ class BrainMap {
   elRect: DOMRect | null
   dataSource: DataSource | null
   cssEl: HTMLStyleElement | null
+  themeConfig: any
   // select: Select
 
   constructor (opt: BrainMapOption) {
@@ -93,6 +94,8 @@ class BrainMap {
     this.layout = ''
     // 样式容器
     this.cssEl = null
+    // 主题配置
+    this.themeConfig = null
 
     // 注入选项数据
     this.handleOpt(opt)

@@ -7,6 +7,7 @@ import { EnumCommandName, EnumDataSource, EnumLineShape } from '../constant/cons
 import type Render from '../render/Render'
 import { close as closeBtn } from '../svg/btns'
 import { traversal } from '../utils'
+import Style from '../Style/Style'
 
 interface NodeCreateOption {
   data: DataSource | null
@@ -45,6 +46,7 @@ class Node {
   isRoot: boolean
   group: GType | null
   shape: Shape
+  style: Style
   shapeElem: Path | null
   genericExpandArea: Rect | null
   expandBtnElem: GType | null
@@ -90,6 +92,9 @@ class Node {
     this.group = null
     // Shape实例
     this.shape = new Shape(this)
+    // Style实例
+    this.style = new Style(this)
+
     // 节点形状元素
     this.shapeElem = null
     // 展开收起按钮元素
