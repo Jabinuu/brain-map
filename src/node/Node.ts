@@ -189,11 +189,16 @@ class Node {
       if (!this.getData('isEdit')) {
         // ctrl键多选激活节点
         if ((e as MouseEvent).ctrlKey) {
-          isActive
-            ? this.renderer.removeNodeFromActiveList(this)
-            : this.renderer.addNodeToActiveList(this)
-
-          this.renderer.activeNodes.length > 1 && this.renderer.createActiveNodesBoundingBox()
+          let activeNum = this.renderer.activeNodes.length
+          if (isActive) {
+            this.renderer.removeNodeFromActiveList(this)
+          } else {
+            this.renderer.addNodeToActiveList(this)
+          }
+          this.renderer.activeNodes[activeNum - 1].hideExpandBtn()
+          if (++activeNum > 1) {
+            this.renderer.createActiveNodesBoundingBox()
+          }
         } else if (!this.renderer.activeNodes.includes(this)) {
           // 仅单击则只激活这一个节点
           this.active()
@@ -211,8 +216,10 @@ class Node {
       e.stopPropagation()
       // 设置个异步 防止鼠标光标样式跳为default
       setTimeout(() => {
-        this.showExpandBtn()
-      }, 0)
+        if (!this.renderer.isSelecting && this.renderer.activeNodes.length === 1) {
+          this.showExpandBtn()
+        }
+      })
     })
 
     // 鼠标移出事件
@@ -258,7 +265,6 @@ class Node {
         if (item !== this.textData?.element) item.remove()
       })
     }
-
     // 节点形状
     this.shapeElem = this.shape.createRect()
     this.group.add(this.shapeElem)
@@ -360,7 +366,6 @@ class Node {
 
   // 激活单个节点
   active (): void {
-    // this.renderer.clearActiveNodesList()
     this.brainMap.execCommand(EnumCommandName.CLEAR_ACTIVE_NODE)
     this.renderer.addNodeToActiveList(this)
   }

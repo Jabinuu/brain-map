@@ -90,8 +90,6 @@ class Select {
       requestAnimationFrame(() => {
         this.renderer.isSelecting = false
       })
-
-      this.renderer.activeNodes.length > 1 && this.renderer.createActiveNodesBoundingBox()
     }
   }
 
@@ -121,9 +119,17 @@ class Select {
           if (checkRectanglesPartialOverlap(left, minx, top, miny, right, maxx, bottom, maxy)) {
             if (!isActive) {
               this.brainMap.renderer.addNodeToActiveList(cur.node)
+              // 更新边框
+              this.renderer.activeNodes.length > 1 && this.renderer.createActiveNodesBoundingBox()
             }
           } else if (isActive) {
             this.brainMap.renderer.removeNodeFromActiveList(cur.node)
+            // 更新边框
+            if (this.renderer.activeNodes.length > 1) {
+              this.renderer.createActiveNodesBoundingBox()
+            } else {
+              this.renderer.activeNodesBoundingBox?.remove()
+            }
           }
           if (!isExpand) {
             return true

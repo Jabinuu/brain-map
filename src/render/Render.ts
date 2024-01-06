@@ -198,6 +198,9 @@ class Render {
 
     this.brainMap.execCommand(EnumCommandName.CLEAR_ACTIVE_NODE)
     this.render()
+
+    // 添加节点后直接就是编辑状态
+    this.brainMap.execCommand(EnumCommandName.SET_NODE_EDIT, [node.children[node.children.length - 1]], true)
   }
 
   // 添加同级节点
@@ -222,9 +225,12 @@ class Render {
       },
       children: []
     })
-    this.brainMap.execCommand(EnumCommandName.CLEAR_ACTIVE_NODE)
 
+    this.brainMap.execCommand(EnumCommandName.CLEAR_ACTIVE_NODE)
     this.render()
+
+    // 添加节点后直接就是编辑状态
+    this.brainMap.execCommand(EnumCommandName.SET_NODE_EDIT, [node.parent.children[insertPos]], true)
   }
 
   // 删除节点
@@ -311,7 +317,7 @@ class Render {
     })
     node.updateNodeActiveClass()
 
-    if (isActive) {
+    if (isActive && !this.isSelecting) {
       node.showExpandBtn()
     }
   }
