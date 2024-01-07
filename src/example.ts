@@ -2,7 +2,7 @@ import type { DataSource } from '..'
 
 const dataSource: DataSource = {
   data: {
-    text: '英雄联盟',
+    text: '根节点',
     paddingX: 25,
     paddingY: 5,
     isExpand: true,
@@ -11,7 +11,7 @@ const dataSource: DataSource = {
   },
   children: [{
     data: {
-      text: '上单',
+      text: '二级节点1',
       paddingX: 25,
       paddingY: 5,
       isExpand: true,
@@ -91,7 +91,7 @@ const dataSource: DataSource = {
     }]
   }, {
     data: {
-      text: '中单',
+      text: '二级节点2',
       paddingX: 25,
       paddingY: 5,
       isExpand: true,
@@ -121,7 +121,7 @@ const dataSource: DataSource = {
     }]
   }, {
     data: {
-      text: '打野',
+      text: '二级节点3',
       paddingX: 25,
       paddingY: 5,
       isExpand: true,
@@ -141,7 +141,7 @@ const dataSource: DataSource = {
     }]
   }, {
     data: {
-      text: '下路',
+      text: '二级节点4',
       paddingX: 25,
       paddingY: 5,
       isExpand: true,

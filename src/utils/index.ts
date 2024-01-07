@@ -4,7 +4,7 @@ import type Node from '../node/Node'
 import { v4 as uuidv4 } from 'uuid'
 import { type Rectangle } from '../render/Render'
 
-type PreCallback = ((cur: DataSource, parent: DataSource | null, isRoot: boolean) => boolean)
+type PreCallback = ((cur: DataSource, parent: DataSource | null, isRoot: boolean, layerIndex: number) => boolean)
 type PostCallback = ((cur: DataSource, parent: DataSource | null, isRoot: boolean) => void)
 
 // dfs遍历数据源（渲染树）
@@ -13,16 +13,17 @@ export function traversal (
   isRoot: boolean,
   parent: DataSource | null,
   preCallback?: PreCallback,
-  postCallback?: PostCallback
+  postCallback?: PostCallback,
+  _layerIndex: number = 0
 ): void {
   let stop = false
   if (preCallback) {
-    stop = preCallback(root, parent, isRoot)
+    stop = preCallback(root, parent, isRoot, _layerIndex)
   }
 
   if (!stop) {
     root.children.forEach((child: DataSource) => {
-      traversal(child, false, root, preCallback, postCallback)
+      traversal(child, false, root, preCallback, postCallback, _layerIndex + 1)
     })
   }
 

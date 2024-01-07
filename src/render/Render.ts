@@ -437,7 +437,10 @@ class Render {
   // 回退
   undo (): void {
     const historyItem = this.brainMap.command.undo()
-    if (!historyItem) return
+    if (!historyItem) {
+      alert('已经到头啦~w_w')
+      return
+    }
     this.brainMap.execCommand(EnumCommandName.CLEAR_ACTIVE_NODE)
 
     this.switchHistoryItem(historyItem, 'undo')
@@ -447,7 +450,10 @@ class Render {
   // 重做
   redo (): void {
     const history = this.brainMap.command.redo()
-    if (!history) return
+    if (!history) {
+      alert('已经到头啦~w_w')
+      return
+    }
     const historyItem = history.historyItem
     const lastDataSource = history.lastDataSource
 
@@ -457,6 +463,8 @@ class Render {
 
   // 历史记录切换
   switchHistoryItem (historyItem: HistoryItem, mode: 'undo' | 'redo', lastDataSource?: DataSource): void {
+    console.log()
+
     if (historyItem) {
       const {
         dataSource,
@@ -483,8 +491,6 @@ class Render {
 
       this.brainMap.dataSource = dataSource
       this.render()
-    } else {
-      alert('已经到头啦~w_w')
     }
   }
 

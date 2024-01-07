@@ -3,6 +3,8 @@ import Render from './src/render/Render'
 import type Node from './src/node/Node'
 import View from './src/view/View'
 import Event from './src/event/Event'
+import theme from './src/themes'
+import merge from 'deepmerge'
 import { type EnumCommandName, cssConstant } from './src/constant/constant'
 import Shortcut from './src/shortcut/Shortcut'
 import Command from './src/command/Command'
@@ -11,33 +13,57 @@ export type Pair<T1, T2> = [T1, T2]
 
 interface BrainMapOption {
   [prop: string]: any
-  el: HTMLElement // 思维导图容器元素
-  dataSource: DataSource // 思维导图数据源
-  layout?: string // 思维导图布局结构
-  fishBoneDeg?: number // 鱼骨图斜线角度
-  theme?: string // 样式主题
-  scaleDelta?: number // 缩放比例的单位增量，默认0.1
-  readOnly?: boolean // 是否是只读模式
-  enableDrag?: boolean // 是否允许拖动节点
-  textAutoWrapWidth?: number // 文本节点达到该宽度时自动更换行
-  exportPadding?: number // 导图图片的内边距
-
+  // 思维导图容器元素
+  el: HTMLElement
+  // 思维导图数据源
+  dataSource: DataSource
+  // 思维导图布局结构
+  layout?: string
+  // 鱼骨图斜线角度
+  fishBoneDeg?: number
+  // 样式主题
+  theme?: string
+  // 自定义主题配置对象
+  themeConfig?: any
+  // 缩放比例的单位增量，默认0.1
+  scaleDelta?: number
+  // 是否是只读模式
+  readOnly?: boolean
+  // 是否允许拖动节点
+  enableDrag?: boolean
+  // 文本节点达到该宽度时自动更换行
+  textAutoWrapWidth?: number
+  // 导图图片的内边距
+  exportPadding?: number
 }
 
 export interface DataSourceItem {
   [prop: string]: any
+
+  // 节点唯一id
   uid?: string
-  text: string // 文本数据
-  image?: string // 图片url
-  icon?: string[] // 图标列表
-  tag?: string[] // 标签列表
-  isExpand: boolean // 节点是否展开
-  isActive: boolean // 节点激活状态
-  isEdit: boolean // 该节点是否处于编辑状态
-  richText?: boolean // 该节点是否是富文本模式
-  hyperLink?: string // 超链接url
-  paddingX: number // 节点x轴内边距
-  paddingY: number // 节点y轴内边距
+  // 文本数据
+  text: string
+  // 图片url
+  image?: string
+  // 图标列表
+  icon?: string[]
+  // 标签列表
+  tag?: string[]
+  // 节点是否展开
+  isExpand: boolean
+  // 节点激活状态
+  isActive: boolean
+  // 该节点是否处于编辑状态
+  isEdit: boolean
+  // 该节点是否是富文本模式
+  richText?: boolean
+  // 超链接url
+  hyperLink?: string
+  // 节点x轴内边距
+  paddingX: number
+  // 节点y轴内边距
+  paddingY: number
   // ...其他样式字段,参考主题属性
 }
 
@@ -67,8 +93,31 @@ class BrainMap {
   elRect: DOMRect | null
   dataSource: DataSource | null
   cssEl: HTMLStyleElement | null
+  theme: string
   themeConfig: any
   // select: Select
+
+  // 已注册的插件列表
+  static pluginList: any[] = []
+  // 注册插件
+  static async usePlugin (plugin: string): Promise<typeof BrainMap> {
+    if (BrainMap.hasPlugin(plugin)) {
+      return this
+    }
+
+    const pluginModule = await import(`./src/plugins/${plugin}.ts`)
+
+    // tip:类静态成员的this指向的类本身而不是实例
+    this.pluginList.push(pluginModule)
+    return this
+  }
+
+  // 检查插件是否已被注册过
+  static hasPlugin (plugin: string): boolean {
+    return !!BrainMap.pluginList.find((item) => {
+      return item.name === plugin
+    })
+  }
 
   constructor (opt: BrainMapOption) {
     // 画布容器
@@ -94,8 +143,10 @@ class BrainMap {
     this.layout = ''
     // 样式容器
     this.cssEl = null
-    // 主题配置
-    this.themeConfig = null
+    // 主题名称
+    this.theme = 'default'
+    // 主题配置对象
+    this.themeConfig = {}
 
     // 注入选项数据
     this.handleOpt(opt)
@@ -105,6 +156,8 @@ class BrainMap {
     this.initContainer()
     // 添加基础常量样式
     this.addCss()
+    // 初始化主题
+    this.initTheme(opt)
 
     // 事件类实例化
     this.event = new Event({
@@ -179,6 +232,11 @@ class BrainMap {
         brainMap: this
       })
     })
+  }
+
+  // 初始化主题
+  initTheme (opt: BrainMapOption): void {
+    this.themeConfig = merge(theme[this.theme], opt.themeConfig ?? {})
   }
 
   // 添加基础常量样式
@@ -262,28 +320,6 @@ class BrainMap {
     } else {
       return { x: 0, y: 0 }
     }
-  }
-
-  // 已注册的插件列表
-  static pluginList: any[] = []
-  // 注册插件
-  static async usePlugin (plugin: string): Promise<typeof BrainMap> {
-    if (BrainMap.hasPlugin(plugin)) {
-      return this
-    }
-
-    const pluginModule = await import(`./src/plugins/${plugin}.ts`)
-
-    // tip:类静态成员的this指向的类本身而不是实例
-    this.pluginList.push(pluginModule)
-    return this
-  }
-
-  // 检查插件是否已被注册过
-  static hasPlugin (plugin: string): boolean {
-    return !!BrainMap.pluginList.find((item) => {
-      return item.name === plugin
-    })
   }
 }
 

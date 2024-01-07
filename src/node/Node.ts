@@ -21,6 +21,7 @@ interface NodeCreateOption {
   isRoot?: boolean
   brainMap: BrainMap
   uid: string
+  layerIndex: number
 }
 
 export interface TextData {
@@ -43,6 +44,7 @@ class Node {
   lines: Array<Path | Polyline>
   parent: Node | null
   children: Node[]
+  layerIndex: number
   isRoot: boolean
   group: GType | null
   shape: Shape
@@ -127,6 +129,8 @@ class Node {
     this.lineDrawing = this.brainMap.lineDrawing
     // 连线元素
     this.lines = []
+    // 节点所处层
+    this.layerIndex = -1
 
     /* 该节点的内容元素 */
     // 文本元素
@@ -146,6 +150,7 @@ class Node {
       this.paddingX = opt.data.data.paddingX
       this.paddingY = opt.data.data.paddingY
     }
+    this.layerIndex = opt.layerIndex
   }
 
   // 生成该节点下的所有内容元素

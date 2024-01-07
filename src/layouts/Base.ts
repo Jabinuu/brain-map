@@ -20,7 +20,12 @@ class Base {
   }
 
   // 创建节点实例
-  createNode (data: DataSource, parent: DataSource | null, isRoot: boolean): Node {
+  createNode (
+    data: DataSource,
+    parent: DataSource | null,
+    isRoot: boolean,
+    layerIndex: number
+  ): Node {
     let newNode: Node
 
     if (data.node) {
@@ -55,11 +60,13 @@ class Base {
     } else {
       // 没有可复用的节点实例，则创建新的节点实例
       const uid = data.data.uid ?? createUid()
+
       newNode = new Node({
         data,
         brainMap: this.brainMap,
         isRoot,
-        uid
+        uid,
+        layerIndex
       })
       // 将节点实例挂载到数据源下
       data.node = newNode
