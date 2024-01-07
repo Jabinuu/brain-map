@@ -134,7 +134,9 @@ class LogicalStructure extends Base {
   }
 
   // 渲染连线
-  renderLine (node: Node, lineShape: string): void {
+  renderLine (node: Node): void {
+    const lineShape = node.style.getStyle('lineStyle', true)
+
     if (lineShape === EnumLineShape.CURVE) {
       this.createCurveLine(node)
     } else if (lineShape === EnumLineShape.STRAIGHT) {
@@ -152,7 +154,7 @@ class LogicalStructure extends Base {
       const end: PositionPair = [child.left, child.top + (height - 0) / 2]
       const pathArray = this.cubicBezierPath(start, end)
       const line = new Path().plot(pathArray)
-        .fill('none').stroke({ width: 2, color: '#f06' })
+      node.style.line(line)
       node.lines.push(line)
     })
   }

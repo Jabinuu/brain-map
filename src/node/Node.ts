@@ -3,7 +3,7 @@ import type BrainMap from '../..'
 import type { DataSource, DataSourceItem } from '../..'
 import Shape from '../shape/Shape'
 import nodeCreateContentMethods from './nodeCreateContent'
-import { EnumCommandName, EnumDataSource, EnumLineShape } from '../constant/constant'
+import { EnumCommandName, EnumDataSource } from '../constant/constant'
 import type Render from '../render/Render'
 import { close as closeBtn } from '../svg/btns'
 import { traversal } from '../utils'
@@ -366,7 +366,7 @@ class Node {
       // 删除上次渲染的线
       node.lines.forEach((line) => line.remove())
       node.lines = []
-      this.renderer.layout.renderLine(node, EnumLineShape.CURVE)
+      this.renderer.layout.renderLine(node)
 
       node.lines.forEach((item) => {
         if (this.lineDrawing != null) {
@@ -420,7 +420,7 @@ class Node {
       cursor: 'pointer'
     })
     const btnRadius = 18
-    g.circle(btnRadius - 1).fill('#f06')
+    g.circle(btnRadius - 1).fill('#fff')
     if (isExpand) {
       SVG(closeBtn).size(btnRadius, btnRadius).addTo(g)
     } else {

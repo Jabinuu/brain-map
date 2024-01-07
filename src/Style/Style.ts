@@ -1,10 +1,16 @@
+import { type Path } from '@svgdotjs/svg.js'
 import type BrainMap from '../..'
 import type Node from '../node/Node'
+import { type NodeStyle, type ThemeConfig } from '../themes/default'
 
-// 样式类
+// 节点样式类
 class Style {
   node: Node
   brainMap: BrainMap
+
+  static setBackgroundStyle (el: HTMLElement, themeConfig: ThemeConfig): void {
+    el.style.backgroundColor = themeConfig.backgroundColor
+  }
 
   constructor (ctx: Node) {
     this.node = ctx
@@ -12,24 +18,29 @@ class Style {
   }
 
   // 使用样式
-  useStyle (prop: string): unknown {
+  useStyle (prop: string, isBasicProp: boolean = false): unknown {
     const themeConfig = this.brainMap.themeConfig
 
     if (themeConfig) {
-      let defaultStyle = themeConfig.node
-      if (this.node.layerIndex === 0) {
+      let defaultStyle: NodeStyle | ThemeConfig = themeConfig.node
+
+      if (isBasicProp) {
+        // 如果是非节点样式
+        defaultStyle = themeConfig
+      } else if (this.node.layerIndex === 0) {
         defaultStyle = themeConfig.root
       } else if (this.node.layerIndex === 1) {
         defaultStyle = themeConfig.second
       }
       const selfStyle = this.getSelfStyle(prop)
+
       return selfStyle === undefined ? defaultStyle[prop] : selfStyle
     }
   }
 
   // 获取某个样式值
-  getStyle (prop: string): unknown {
-    return this.useStyle(prop)
+  getStyle (prop: string, isBasicProp: boolean = false): unknown {
+    return this.useStyle(prop, isBasicProp)
   }
 
   // 获取node的某个独立样式值
@@ -62,8 +73,11 @@ class Style {
   }
 
   // 给连线设置样式
-  line (): void {
-
+  line (node: Path): void {
+    node.fill('none').stroke({
+      color: this.useStyle('lineColor', true) as string,
+      width: this.useStyle('lineWidth', true) as number
+    })
   }
 }
 

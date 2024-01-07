@@ -1,6 +1,6 @@
 //  默认主题
 // 定义节点样式类型
-interface NodeStyle {
+export interface NodeStyle {
   [prop: string]: any
   shape: string
   marginX?: number
@@ -26,7 +26,7 @@ interface NodeStyle {
 type GeneralizationStyle = NodeStyle
 
 // 定义根节点样式类型
-type RootStyle = NodeStyle & {
+export type RootStyle = NodeStyle & {
   [prop: string]: any
   shape: string
   fillColor: string

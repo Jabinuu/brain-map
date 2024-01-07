@@ -9,6 +9,7 @@ import { type EnumCommandName, cssConstant } from './src/constant/constant'
 import Shortcut from './src/shortcut/Shortcut'
 import Command from './src/command/Command'
 import { type ThemeConfig } from './src/themes/default'
+import Style from './src/Style/Style'
 
 export type Pair<T1, T2> = [T1, T2]
 
@@ -25,7 +26,7 @@ interface BrainMapOption {
   // 样式主题
   theme?: string
   // 自定义主题配置对象
-  themeConfig?: ThemeConfig
+  themeConfig?: Partial<ThemeConfig>
   // 缩放比例的单位增量，默认0.1
   scaleDelta?: number
   // 是否是只读模式
@@ -96,7 +97,6 @@ class BrainMap {
   cssEl: HTMLStyleElement | null
   theme: string
   themeConfig: ThemeConfig | null
-  // select: Select
 
   // 已注册的插件列表
   static pluginList: any[] = []
@@ -238,6 +238,9 @@ class BrainMap {
   // 初始化主题
   initTheme (opt: BrainMapOption): void {
     this.themeConfig = merge(theme[this.theme], opt.themeConfig ?? {})
+    if (this.el) {
+      Style.setBackgroundStyle(this.el, this.themeConfig)
+    }
   }
 
   // 添加基础常量样式
