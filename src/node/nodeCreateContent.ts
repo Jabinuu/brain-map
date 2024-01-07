@@ -10,6 +10,8 @@ export interface NodeCreateContentMethods {
 function getEditAreaSize (node: Node): { height: number, width: number, div: HTMLElement } {
   const text = document.createTextNode(`${node.nodeData?.data.text as string}`)
   const div = document.createElement('div')
+  node.style.text(div)
+
   div.appendChild(text)
   div.classList.add('bm-text-editer')
 
@@ -48,6 +50,7 @@ function createTextElem (this: Node): void {
   } else {
     const g = new G()
     const { width: initWidth, height: initHeight, div } = getEditAreaSize(this)
+
     const foreigObject = g.foreignObject(initWidth, initHeight)
     foreigObject.add(SVG(div))
     g.add(foreigObject)

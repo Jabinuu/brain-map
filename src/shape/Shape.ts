@@ -36,10 +36,10 @@ class Shape {
       ['Q', 0, height, 0, height - borderRadius],
       ['V', borderRadius],
       ['Q', 0, 0, borderRadius, 0]
-    ])
-      .fill('transparent')
-      .stroke({ width: 2, color: '#f06', linecap: 'round', linejoin: 'round' })
-      .addClass('bm-node-shape')
+    ]).addClass('bm-node-shape')
+    // .fill('transparent')
+    // .stroke({ width: 2, color: '#f06', linecap: 'round', linejoin: 'round' })
+    // .addClass('bm-node-shape')
   }
 
   // 创建胶囊形状

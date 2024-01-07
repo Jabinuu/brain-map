@@ -1,4 +1,87 @@
 //  默认主题
+// 定义节点样式类型
+interface NodeStyle {
+  [prop: string]: any
+  shape: string
+  marginX?: number
+  marginY?: number
+  fillColor: string
+  fontFamily: string
+  color: string
+  fontSize: number
+  fontWeight: string
+  fontStyle: string
+  lineHeight: number
+  borderColor: string
+  borderWidth: number
+  borderDasharray: string
+  borderRadius: number
+  textDecoration: string
+  gradientStyle: boolean
+  startColor: string
+  endColor: string
+}
+
+// 定义概要节点样式类型
+type GeneralizationStyle = NodeStyle
+
+// 定义根节点样式类型
+type RootStyle = NodeStyle & {
+  [prop: string]: any
+  shape: string
+  fillColor: string
+  color: string
+  fontSize: number
+  fontWeight: string
+  fontStyle: string
+  lineHeight: number
+  borderColor: string
+  borderWidth: number
+  borderDasharray: string
+  borderRadius: number
+  textDecoration: string
+  gradientStyle: boolean
+  startColor: string
+  endColor: string
+}
+
+// 定义图表样式类型
+export interface ThemeConfig {
+  [prop: string]: any
+  paddingX: number
+  paddingY: number
+  imgMaxWidth: number
+  imgMaxHeight: number
+  iconSize: number
+  lineWidth: number
+  lineColor: string
+  lineDasharray: string
+  lineStyle: string
+  rootLineKeepSameInCurve: boolean
+  showLineMarker: boolean
+  generalizationLineWidth: number
+  generalizationLineColor: string
+  generalizationLineMargin: number
+  generalizationNodeMargin: number
+  associativeLineWidth: number
+  associativeLineColor: string
+  associativeLineActiveWidth: number
+  associativeLineActiveColor: string
+  associativeLineTextColor: string
+  associativeLineTextFontSize: number
+  associativeLineTextLineHeight: number
+  associativeLineTextFontFamily: string
+  backgroundColor: string
+  backgroundImage: string
+  backgroundRepeat: string
+  backgroundPosition: string
+  backgroundSize: string
+  nodeUseLineStyle: boolean
+  root: RootStyle
+  second: NodeStyle
+  node: NodeStyle
+  generalization: GeneralizationStyle
+}
 
 export default {
   // 节点内边距

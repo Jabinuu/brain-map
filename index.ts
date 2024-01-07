@@ -8,6 +8,7 @@ import merge from 'deepmerge'
 import { type EnumCommandName, cssConstant } from './src/constant/constant'
 import Shortcut from './src/shortcut/Shortcut'
 import Command from './src/command/Command'
+import { type ThemeConfig } from './src/themes/default'
 
 export type Pair<T1, T2> = [T1, T2]
 
@@ -24,7 +25,7 @@ interface BrainMapOption {
   // 样式主题
   theme?: string
   // 自定义主题配置对象
-  themeConfig?: any
+  themeConfig?: ThemeConfig
   // 缩放比例的单位增量，默认0.1
   scaleDelta?: number
   // 是否是只读模式
@@ -94,7 +95,7 @@ class BrainMap {
   dataSource: DataSource | null
   cssEl: HTMLStyleElement | null
   theme: string
-  themeConfig: any
+  themeConfig: ThemeConfig | null
   // select: Select
 
   // 已注册的插件列表
@@ -146,7 +147,7 @@ class BrainMap {
     // 主题名称
     this.theme = 'default'
     // 主题配置对象
-    this.themeConfig = {}
+    this.themeConfig = null
 
     // 注入选项数据
     this.handleOpt(opt)

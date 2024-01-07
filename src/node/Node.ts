@@ -92,10 +92,6 @@ class Node {
 
     // 节点容器(包括形状和内容)
     this.group = null
-    // Shape实例
-    this.shape = new Shape(this)
-    // Style实例
-    this.style = new Style(this)
 
     // 节点形状元素
     this.shapeElem = null
@@ -129,6 +125,11 @@ class Node {
     this.lineDrawing = this.brainMap.lineDrawing
     // 连线元素
     this.lines = []
+
+    // Shape实例
+    this.shape = new Shape(this)
+    // Style实例
+    this.style = new Style(this)
     // 节点所处层
     this.layerIndex = -1
 
@@ -226,7 +227,7 @@ class Node {
       e.stopPropagation()
       // 设置个异步 防止鼠标光标样式跳为default
       setTimeout(() => {
-        if (!this.renderer.isSelecting && this.renderer.activeNodes.length === 1) {
+        if (!this.renderer.isSelecting && this.renderer.activeNodes.length <= 1) {
           this.showExpandBtn()
         }
       })
@@ -277,6 +278,7 @@ class Node {
     }
     // 节点形状
     this.shapeElem = this.shape.createRect()
+    this.style.shape(this)
     this.group.add(this.shapeElem)
     // 根节点填充色
     if (this.isRoot) this.shapeElem.fill('#F0F0F0')
