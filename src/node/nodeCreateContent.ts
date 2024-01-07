@@ -1,6 +1,5 @@
 import { G, SVG } from '@svgdotjs/svg.js'
 import type Node from './Node'
-import { EnumDataSource } from '../constant/constant'
 
 export interface NodeCreateContentMethods {
   [prop: string]: any
@@ -54,7 +53,7 @@ function createTextElem (this: Node): void {
     const foreigObject = g.foreignObject(initWidth, initHeight)
     foreigObject.add(SVG(div))
     g.add(foreigObject)
-    g.translate(this.getData(EnumDataSource.PADDINGX) as number, this.getData(EnumDataSource.PADDINGY) as number)
+    g.translate(this.style.getStyle('paddingX') as number, this.style.getStyle('paddingY') as number)
     const { width, height } = g.bbox()
 
     // 编辑节点文本事件

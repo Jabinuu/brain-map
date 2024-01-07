@@ -67,11 +67,6 @@ class Style {
     contentDiv.style.textDecoration = this.useStyle('textDecoration') as string
   }
 
-  // 给展开收起按钮设置样式
-  expandBtn (): void {
-
-  }
-
   // 给连线设置样式
   line (node: Path): void {
     node.fill('none').stroke({

@@ -133,3 +133,26 @@ export function getBoundingBox (rectangles: Rectangle[]): Rectangle {
 export function isInfinity (val: number): boolean {
   return Math.abs(val) === Infinity
 }
+
+// 获取后代节点个数
+export function getNumberOfAllChildren (node: Node): number {
+  let cnt = -1
+  if (node.nodeData) {
+    traversal(node.nodeData, false, null, () => {
+      cnt++
+      return false
+    })
+  }
+  return cnt
+}
+
+// 获取数组位数
+export function getDigitCount (number: number): number {
+  // 使用数学方法计算数字的位数
+  return Math.floor(Math.log10(Math.abs(number)) + 1)
+}
+
+// 角度转弧度
+export function degreesToRadians (drgee: number): number {
+  return drgee * (Math.PI / 180)
+}

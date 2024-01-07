@@ -1,13 +1,12 @@
-import { G, type Polyline, type G as GType, type Path, Rect, SVG } from '@svgdotjs/svg.js'
+import { G, type Polyline, type G as GType, type Path, Rect } from '@svgdotjs/svg.js'
 import type BrainMap from '../..'
 import type { DataSource, DataSourceItem } from '../..'
 import Shape from '../shape/Shape'
 import nodeCreateContentMethods from './nodeCreateContent'
-import { EnumCommandName, EnumDataSource } from '../constant/constant'
+import { EnumCommandName } from '../constant/constant'
 import type Render from '../render/Render'
-import { close as closeBtn } from '../svg/btns'
-import { traversal } from '../utils'
 import Style from '../Style/Style'
+import { getDigitCount, getNumberOfAllChildren } from '../utils'
 
 interface NodeCreateOption {
   data: DataSource | null
@@ -169,9 +168,9 @@ class Node {
       _height = this.textData.height
     }
     // 节点形状的边框线宽度
-    const borderWidth = 2
-    const width = _width + 2 * (this.getData(EnumDataSource.PADDINGX) as number) + 2 * this.shapePadding.paddingX + borderWidth
-    const height = _height + 2 * (this.getData(EnumDataSource.PADDINGY) as number) + 2 * this.shapePadding.paddingY + borderWidth
+    const borderWidth = this.style.getStyle('borderWidth') as number
+    const width = _width + 2 * (this.style.getStyle('paddingX', true) as number) + 2 * this.shapePadding.paddingX + borderWidth
+    const height = _height + 2 * (this.style.getStyle('paddingY', true) as number) + 2 * this.shapePadding.paddingY + borderWidth
     const isSizeChange = this.width !== width || this.height !== height
     this.width = width
     this.height = height
@@ -181,7 +180,7 @@ class Node {
 
   // 获取去除边框宽度的节点总宽高
   getSizeWithoutBorderWidth (): { width: number, height: number } {
-    const borderWidth = 2
+    const borderWidth = this.style.getStyle('borderWidth') as number
     const width = this.width - borderWidth
     const height = this.height - borderWidth
     return {
@@ -412,7 +411,8 @@ class Node {
   // 创建展开收缩按钮节点内容
   createExpandBtnContent (isExpand: boolean): GType {
     let { width, height } = this.getSizeWithoutBorderWidth()
-    const borderWidth = 2
+    const fillColor = this.style.getStyle('lineColor', true) as string
+    const borderWidth = this.style.getStyle('borderWidth') as number
     width += (borderWidth / 2)
     height += (borderWidth / 2)
     const g = new G()
@@ -420,15 +420,34 @@ class Node {
       cursor: 'pointer'
     })
     const btnRadius = 18
-    g.circle(btnRadius - 1).fill('#fff')
+
     if (isExpand) {
-      SVG(closeBtn).size(btnRadius, btnRadius).addTo(g)
+      g.circle(btnRadius - 1).fill(fillColor)
+      g.text('<')
+        .font({ size: 18 })
+        .fill({ color: '#fff' })
+        .x(btnRadius / 2 - 6)
+        .y(-4)
     } else {
-      const num = this.getNumberOfAllChildren()
-      g.text(num.toString()).x(btnRadius / 2 - 6).y(-2).font({
-        size: 14
-      })
-      g.circle(btnRadius - 1).stroke({ width: 1, color: '#000' }).fill('transparent')
+      const numSize = 12
+      const num = getNumberOfAllChildren(this)
+      const btnWidth = numSize * (getDigitCount(num) - 1)
+
+      g.path().plot([
+        ['M', btnRadius / 2, 0],
+        ['H', btnRadius / 2 + btnWidth],
+        ['Q', btnRadius + btnWidth, 0, btnRadius + btnWidth, btnRadius / 2],
+        ['Q', btnRadius + btnWidth, btnRadius, btnRadius / 2 + btnWidth, btnRadius],
+        ['H', btnRadius / 2],
+        ['Q', 0, btnRadius, 0, btnRadius / 2],
+        ['Q', 0, 0, btnRadius / 2, 0]
+      ]).fill(fillColor)
+
+      g.text(num.toString())
+        .font({ size: numSize })
+        .fill({ color: '#fff' })
+        .x(btnRadius / 2 - 4)
+        .y(1)
     }
     g.translate(width, (height - btnRadius) / 2)
 
@@ -472,25 +491,13 @@ class Node {
   // 创建泛扩展按钮区域
   renderGenericExpandArea (): void {
     let { width, height } = this.getSizeWithoutBorderWidth()
-    const borderWidth = 2
+    const borderWidth = this.style.getStyle('borderWidth') as number
     width += (borderWidth / 2)
     const btnRadius = 18
     const rect = new Rect().size(btnRadius + 8, height + borderWidth)
     rect.translate(width, -borderWidth / 2).fill('transparent')
     this.genericExpandArea = rect
     this.group?.add(rect)
-  }
-
-  // 获取后代节点个数
-  getNumberOfAllChildren (): number {
-    let cnt = -1
-    if (this.nodeData) {
-      traversal(this.nodeData, false, null, () => {
-        cnt++
-        return false
-      })
-    }
-    return cnt
   }
 
   // 重置复用节点布局相关数据
