@@ -50,9 +50,9 @@ function createTextElem (this: Node): void {
     const g = new G()
     const { width: initWidth, height: initHeight, div } = getEditAreaSize(this)
 
-    const foreigObject = g.foreignObject(initWidth, initHeight)
-    foreigObject.add(SVG(div))
-    g.add(foreigObject)
+    const foreignObject = g.foreignObject(initWidth, initHeight)
+    foreignObject.add(SVG(div))
+    g.add(foreignObject)
 
     g.translate(this.paddingX, this.paddingY)
     const { width, height } = g.bbox()
@@ -64,6 +64,7 @@ function createTextElem (this: Node): void {
 
     this.textData = {
       element: g,
+      foreignObject,
       div,
       width,
       height

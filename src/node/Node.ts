@@ -1,4 +1,4 @@
-import { G, type Polyline, type G as GType, type Path, Rect, type Circle } from '@svgdotjs/svg.js'
+import { G, type Polyline, type G as GType, type Path, Rect, type Circle, type ForeignObject } from '@svgdotjs/svg.js'
 import type BrainMap from '../..'
 import type { DataSource, DataSourceItem } from '../..'
 import Shape from '../shape/Shape'
@@ -28,6 +28,7 @@ export interface TextData {
   height: number
   element: GType
   div: HTMLElement
+  foreignObject: ForeignObject
 }
 
 // 思维导图节点类
@@ -36,6 +37,7 @@ class Node {
   uid: string
   width: number
   height: number
+  minWidth: number
   left: number
   top: number
   nodeData: DataSource | null
@@ -78,6 +80,8 @@ class Node {
     this.width = opt.width ?? 0
     // 节点高度
     this.height = opt.width ?? 0
+    // 节点最小宽度
+    this.minWidth = 40
     // 节点相对于画布left
     this.left = opt.top ?? 0
     // 节点相对于画布top
@@ -170,6 +174,7 @@ class Node {
     }
     // 节点形状的边框线宽度
     const borderWidth = this.style.getStyle('borderWidth') as number
+
     const width = _width + 2 * this.paddingX + 2 * this.shapePadding.paddingX + borderWidth
     const height = _height + 2 * this.paddingY + 2 * this.shapePadding.paddingY + borderWidth
     const isSizeChange = this.width !== width || this.height !== height
@@ -318,6 +323,26 @@ class Node {
       .move(width + borderWidth / 2 - controlPtRadius - 2, 0)
       .addClass('bm-control-point')
 
+    this.controlPtElem.on('mousedown', (e: Event) => {
+      e.stopPropagation()
+      const downX = (e as MouseEvent).clientX
+      const downY = (e as MouseEvent).clientY
+      const foreignObjectwidth = this.textData?.foreignObject.width() as number
+      const foreignObjectHeight = this.textData?.foreignObject.height() as number
+
+      if (this.brainMap.el) {
+        this.brainMap.el.style.cursor = 'nesw-resize'
+      }
+      const bindFn = this.resize.bind(this, downX, downY, this.width, this.height, foreignObjectwidth, foreignObjectHeight)
+
+      this.brainMap.el?.addEventListener('mousemove', bindFn)
+
+      this.brainMap.el?.addEventListener('mouseup', () => {
+        this.brainMap.el?.removeEventListener('mousemove', bindFn)
+        this.brainMap.el?.style.removeProperty('cursor')
+      })
+    })
+
     // 创建泛扩展按钮区域
     if (!this.isRoot && this.nodeData?.children && this.nodeData.children.length > 0) {
       this.renderGenericExpandArea()
@@ -384,9 +409,6 @@ class Node {
 
   // 渲染连线
   renderLine (node: Node): void {
-    if (!node.getData('isExpand')) {
-      return
-    }
     if (this.renderer.layout) {
       // 删除上次渲染的线
       node.lines.forEach((line) => line.remove())
@@ -413,6 +435,9 @@ class Node {
     const isActive = this.getData('isActive') as boolean
     if (isActive) {
       this.group.addClass('active')
+      if (this.renderer.activeNodes.length <= 1 && !this.renderer.isSelecting) {
+        this.showControlPoint()
+      }
     } else {
       this.group.removeClass('active')
     }
@@ -531,6 +556,37 @@ class Node {
     this.controlPtElem?.css({
       visibility: 'hidden'
     })
+  }
+
+  // resize节点尺寸
+  resize (
+    downX: number,
+    downY: number,
+    originWidth: number,
+    originHeight: number,
+    originForeignObjectWidth: number,
+    originforeignObjectHeight: number,
+    e: MouseEvent
+  ): void {
+    if (this.width <= this.minWidth && e.clientX < this.left + this.minWidth) {
+      return
+    }
+    console.log()
+
+    this.needLayout = true
+    const offsetX = (e.clientX - downX) / this.brainMap.view.scale
+    const offsetY = this.textData?.div.scrollHeight as number - originforeignObjectHeight
+
+    if (this.textData) {
+      this.textData.foreignObject.attr({
+        width: originForeignObjectWidth + offsetX,
+        height: this.textData?.div.scrollHeight
+      })
+    }
+    this.width = originWidth + offsetX
+    this.height = originHeight + offsetY
+
+    this.renderer.render()
   }
 
   // 创建泛扩展按钮区域

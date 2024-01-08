@@ -137,7 +137,7 @@ export const cssConstant = `
   }
 
   .bm-text-editer{
-    white-space:nowrap;
+    // white-space:nowrap;
     outline:none;
   }
   .bm-text-editer::selection{
