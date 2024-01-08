@@ -53,7 +53,8 @@ function createTextElem (this: Node): void {
     const foreigObject = g.foreignObject(initWidth, initHeight)
     foreigObject.add(SVG(div))
     g.add(foreigObject)
-    g.translate(this.style.getStyle('paddingX') as number, this.style.getStyle('paddingY') as number)
+
+    g.translate(this.paddingX, this.paddingY)
     const { width, height } = g.bbox()
 
     // 编辑节点文本事件

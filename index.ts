@@ -62,10 +62,7 @@ export interface DataSourceItem {
   richText?: boolean
   // 超链接url
   hyperLink?: string
-  // 节点x轴内边距
-  paddingX: number
-  // 节点y轴内边距
-  paddingY: number
+
   // ...其他样式字段,参考主题属性
 }
 

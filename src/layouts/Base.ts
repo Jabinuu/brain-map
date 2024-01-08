@@ -99,7 +99,7 @@ class Base {
   }
 
   getMarginY (): number {
-    return 50
+    return 20
   }
 
   cacheNode (uid: string, node: Node): void {

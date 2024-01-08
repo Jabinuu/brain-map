@@ -114,30 +114,30 @@ export enum EnumCommandName {
 export const cssConstant = `
   /* 鼠标hover和激活时渲染的矩形 */
   .bm-hover-node{
-    display: none;
+    visibility: hidden;
     opacity: 0.6;
-    stroke-width: 1;
   }
 
   .bm-node{
-    user-select: none
+    user-select: none;
   }
 
-  .bm-node:not(.bm-node-dragging):hover .bm-hover-node{
-    display: block;
+  .bm-node:hover .bm-hover-node{
+    visibility: visible;
+  }
+
+  .bm-control-point{
+    visibility:hidden;
+    cursor: nesw-resize;
   }
 
   .bm-node.active .bm-hover-node{
-    display: block;
+    visibility: visible;
     opacity: 1;
-    stroke-width: 2;
   }
 
   .bm-text-editer{
     white-space:nowrap;
-    font-size:20px;
-    font-family:Helvetica;
-    line-height:1.74;
     outline:none;
   }
   .bm-text-editer::selection{

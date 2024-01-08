@@ -65,6 +65,7 @@ class Style {
     contentDiv.style.fontWeight = this.useStyle('fontWeight') as string
     contentDiv.style.fontStyle = this.useStyle('fontStyle') as string
     contentDiv.style.textDecoration = this.useStyle('textDecoration') as string
+    contentDiv.style.lineHeight = this.useStyle('lineHeight') as string
   }
 
   // 给连线设置样式

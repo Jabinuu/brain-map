@@ -25,21 +25,19 @@ class Shape {
   // 创建圆角矩形
   createRect (): Path {
     const { height, width } = this.node.getSizeWithoutBorderWidth()
-    const borderRadius = 5
+    const borderRadius = this.node.style.getStyle('borderRadius') as number
     return new Path().plot([
       ['M', borderRadius, 0],
       ['H', width - borderRadius],
-      ['Q', width, 0, width, borderRadius],
+      ['A', borderRadius, borderRadius, 0, 0, 1, width, borderRadius],
       ['V', height - borderRadius],
-      ['Q', width, height, width - borderRadius, height],
+      ['A', borderRadius, borderRadius, 0, 0, 1, width - borderRadius, height],
       ['H', borderRadius],
-      ['Q', 0, height, 0, height - borderRadius],
+      ['A', borderRadius, borderRadius, 0, 0, 1, 0, height - borderRadius],
       ['V', borderRadius],
-      ['Q', 0, 0, borderRadius, 0]
+      ['A', borderRadius, borderRadius, 0, 0, 1, borderRadius, 0]
+
     ]).addClass('bm-node-shape')
-    // .fill('transparent')
-    // .stroke({ width: 2, color: '#f06', linecap: 'round', linejoin: 'round' })
-    // .addClass('bm-node-shape')
   }
 
   // 创建胶囊形状

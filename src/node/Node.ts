@@ -1,4 +1,4 @@
-import { G, type Polyline, type G as GType, type Path, Rect } from '@svgdotjs/svg.js'
+import { G, type Polyline, type G as GType, type Path, Rect, type Circle } from '@svgdotjs/svg.js'
 import type BrainMap from '../..'
 import type { DataSource, DataSourceItem } from '../..'
 import Shape from '../shape/Shape'
@@ -49,6 +49,7 @@ class Node {
   shape: Shape
   style: Style
   shapeElem: Path | null
+  controlPtElem: Circle | null
   genericExpandArea: Rect | null
   expandBtnElem: GType | null
   shapePadding: {
@@ -78,9 +79,9 @@ class Node {
     // 节点高度
     this.height = opt.width ?? 0
     // 节点相对于画布left
-    this.left = opt.top ?? 600
+    this.left = opt.top ?? 0
     // 节点相对于画布top
-    this.top = opt.top ?? 200
+    this.top = opt.top ?? 0
 
     // 双亲节点
     this.parent = opt.parent ?? null
@@ -96,6 +97,8 @@ class Node {
     this.shapeElem = null
     // 展开收起按钮元素
     this.expandBtnElem = null
+    // 控制点元素
+    this.controlPtElem = null
     // 泛展开按钮区域元素
     this.genericExpandArea = null
     // 节点形状所需的额外内边距
@@ -146,10 +149,8 @@ class Node {
   }
 
   handleOpt (opt: NodeCreateOption): void {
-    if (opt.data) {
-      this.paddingX = opt.data.data.paddingX
-      this.paddingY = opt.data.data.paddingY
-    }
+    this.paddingX = this.style.getStyle('paddingX', true) as number
+    this.paddingY = this.style.getStyle('paddingY', true) as number
     this.layerIndex = opt.layerIndex
   }
 
@@ -169,8 +170,8 @@ class Node {
     }
     // 节点形状的边框线宽度
     const borderWidth = this.style.getStyle('borderWidth') as number
-    const width = _width + 2 * (this.style.getStyle('paddingX', true) as number) + 2 * this.shapePadding.paddingX + borderWidth
-    const height = _height + 2 * (this.style.getStyle('paddingY', true) as number) + 2 * this.shapePadding.paddingY + borderWidth
+    const width = _width + 2 * this.paddingX + 2 * this.shapePadding.paddingX + borderWidth
+    const height = _height + 2 * this.paddingY + 2 * this.shapePadding.paddingY + borderWidth
     const isSizeChange = this.width !== width || this.height !== height
     this.width = width
     this.height = height
@@ -200,14 +201,18 @@ class Node {
         // ctrl键多选激活节点
         if ((e as MouseEvent).ctrlKey) {
           let activeNum = this.renderer.activeNodes.length
+
           if (isActive) {
             this.renderer.removeNodeFromActiveList(this)
           } else {
             this.renderer.addNodeToActiveList(this)
           }
           this.renderer.activeNodes[activeNum - 1].hideExpandBtn()
+          this.renderer.activeNodes[activeNum - 1].hideControlPoint()
+
           if (++activeNum > 1) {
             this.renderer.createActiveNodesBoundingBox()
+            this.renderer.activeNodes[activeNum - 1].hideControlPoint()
           }
         } else if (!this.renderer.activeNodes.includes(this)) {
           // 仅单击则只激活这一个节点
@@ -275,23 +280,44 @@ class Node {
         if (item !== this.textData?.element) item.remove()
       })
     }
+
     // 节点形状
     this.shapeElem = this.shape.createRect()
     this.style.shape(this)
     this.group.add(this.shapeElem)
-    // 根节点填充色
-    if (this.isRoot) this.shapeElem.fill('#F0F0F0')
+
     // todo: 将所有类型的内容元素在节点内布局
     if (this.textData !== null && !this.getData('isEdit')) {
       this.group.add(this.textData.element)
     }
+
     // 激活边框
-    const borderWidth = 2 // 激活边框宽度
+    const borderWidth = this.style.getStyle('borderWidth') as number
+    const borderRadius = this.style.getStyle('borderRadius') as number
     const { width, height } = this.getSizeWithoutBorderWidth()
-    const wrapRect = new Rect().size(width + (borderWidth + 1) * 2, height + (borderWidth + 1) * 2)
-      .fill('none').stroke({ color: '#FF8C00' }).radius(4).move(-3, -3)
-    wrapRect.addClass('bm-hover-node')
-    this.group.add(wrapRect)
+    this.group.path().plot([
+      ['M', borderRadius, -borderWidth / 2 + 0.5],
+      ['H', width - borderRadius],
+      ['A', borderRadius + borderWidth / 2 - 0.5, borderRadius + borderWidth / 2 - 0.5, 0, 0, 1, width + borderWidth / 2 - 0.5, borderRadius],
+      ['V', height - borderRadius],
+      ['A', borderRadius + borderWidth / 2 - 0.5, borderRadius + borderWidth / 2 - 0.5, 0, 0, 1, width - borderRadius, height + borderWidth / 2 - 0.5],
+      ['H', borderRadius],
+      ['A', borderRadius + borderWidth / 2 - 0.5, borderRadius + borderWidth / 2 - 0.5, 0, 0, 1, -borderWidth / 2 + 0.5, height - borderRadius + 0.5],
+      ['V', borderRadius],
+      ['A', borderRadius + borderWidth / 2 - 0.5, borderRadius + borderWidth / 2 - 0.5, 0, 0, 1, borderRadius, -borderWidth / 2 + 0.5]
+    ])
+      .fill('none')
+      .stroke({ color: '#0984e3' })
+      .addClass('bm-hover-node')
+
+    // 控制点
+    const controlPtRadius = 3
+    this.controlPtElem = this.group.circle(controlPtRadius * 2)
+      .fill('#fff')
+      .stroke({ color: 'rgba(88, 90, 90, 0.7)' })
+      .move(width + borderWidth / 2 - controlPtRadius - 2, 0)
+      .addClass('bm-control-point')
+
     // 创建泛扩展按钮区域
     if (!this.isRoot && this.nodeData?.children && this.nodeData.children.length > 0) {
       this.renderGenericExpandArea()
@@ -392,7 +418,7 @@ class Node {
     }
   }
 
-  // 创建展开收起按钮
+  // 渲染展开收起按钮
   renderExpandBtn (): GType | undefined {
     if (this.isRoot ||
       !this.nodeData?.children ||
@@ -419,37 +445,42 @@ class Node {
     g.addClass('bm-expand-btn').css({
       cursor: 'pointer'
     })
-    const btnRadius = 18
+    const btnRadius = 6
 
     if (isExpand) {
-      g.circle(btnRadius - 1).fill(fillColor)
+      g.circle(btnRadius * 2).fill(fillColor).x(5)
       g.text('<')
-        .font({ size: 18 })
+        .font({ size: btnRadius * 2 })
         .fill({ color: '#fff' })
-        .x(btnRadius / 2 - 6)
-        .y(-4)
+        .x(btnRadius + 1)
+        .y(-3)
     } else {
-      const numSize = 12
+      const numSize = 9
       const num = getNumberOfAllChildren(this)
-      const btnWidth = numSize * (getDigitCount(num) - 1)
+      const btnWidth = numSize / 2 * (getDigitCount(num) - 1)
 
       g.path().plot([
-        ['M', btnRadius / 2, 0],
-        ['H', btnRadius / 2 + btnWidth],
-        ['Q', btnRadius + btnWidth, 0, btnRadius + btnWidth, btnRadius / 2],
-        ['Q', btnRadius + btnWidth, btnRadius, btnRadius / 2 + btnWidth, btnRadius],
-        ['H', btnRadius / 2],
-        ['Q', 0, btnRadius, 0, btnRadius / 2],
-        ['Q', 0, 0, btnRadius / 2, 0]
-      ]).fill(fillColor)
+        ['M', btnRadius, 0],
+        ['H', btnRadius + btnWidth],
+        ['A', btnRadius, btnRadius, 0, 0, 1, btnRadius + btnWidth, btnRadius * 2],
+        ['H', btnRadius],
+        ['A', btnRadius, btnRadius, 0, 0, 1, btnRadius, 0]
+      ]).fill(fillColor).x(5)
+
+      g.line(0, btnRadius, btnRadius + 4, btnRadius)
+        .stroke({
+          width: this.style.getStyle('lineWidth', true) as number,
+          color: fillColor,
+          linecap: 'round'
+        })
 
       g.text(num.toString())
         .font({ size: numSize })
         .fill({ color: '#fff' })
-        .x(btnRadius / 2 - 4)
-        .y(1)
+        .x(btnRadius + 2)
+        .y(0.5)
     }
-    g.translate(width, (height - btnRadius) / 2)
+    g.translate(width, (height - btnRadius * 2) / 2)
 
     return g
   }
@@ -486,6 +517,20 @@ class Node {
         visibility: 'hidden'
       })
     }
+  }
+
+  // 显示控制点
+  showControlPoint (): void {
+    this.controlPtElem?.css({
+      visibility: 'visible'
+    })
+  }
+
+  // 隐藏控制点
+  hideControlPoint (): void {
+    this.controlPtElem?.css({
+      visibility: 'hidden'
+    })
   }
 
   // 创建泛扩展按钮区域

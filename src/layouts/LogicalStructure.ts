@@ -36,7 +36,7 @@ class LogicalStructure extends Base {
 
           if (newNode.isRoot) {
             newNode.left = 300
-            newNode.top = this.brainMap.height / 2
+            newNode.top = 250
           } else {
             if (parent?.node != null) {
               newNode.left = parent.node.left + this.getMarginX() + parent.node.width

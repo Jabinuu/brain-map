@@ -3,8 +3,6 @@
 export interface NodeStyle {
   [prop: string]: any
   shape: string
-  marginX?: number
-  marginY?: number
   fillColor: string
   fontFamily: string
   color: string
@@ -85,8 +83,8 @@ export interface ThemeConfig {
 
 export default {
   // 节点内边距
-  paddingX: 15,
-  paddingY: 5,
+  paddingX: 10,
+  paddingY: 2,
   // 图片显示的最大宽度
   imgMaxWidth: 100,
   // 图片显示的最大高度
@@ -163,8 +161,6 @@ export default {
   // 二级节点样式
   second: {
     shape: 'rectangle',
-    marginX: 100,
-    marginY: 40,
     fillColor: '#fff',
     fontFamily: '微软雅黑, Microsoft YaHei',
     color: '#565656',
@@ -184,8 +180,6 @@ export default {
   // 三级及以下节点样式
   node: {
     shape: 'rectangle',
-    marginX: 50,
-    marginY: 0,
     fillColor: 'transparent',
     fontFamily: '微软雅黑, Microsoft YaHei',
     color: '#6a6d6c',

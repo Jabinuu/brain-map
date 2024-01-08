@@ -156,6 +156,7 @@ class Render {
     this.activeNodes.forEach((item: Node) => {
       this.brainMap.execCommand(EnumCommandName.SET_NODE_ACTIVE, [item], false)
       item.hideExpandBtn()
+      item.hideControlPoint()
     })
     this.activeNodesBoundingBox?.remove()
     this.activeNodes.length = 0
@@ -319,6 +320,7 @@ class Render {
 
     if (isActive && !this.isSelecting) {
       node.showExpandBtn()
+      node.showControlPoint()
     }
   }
 

@@ -87,6 +87,7 @@ class View {
 
   // 缩放思维导图容器
   zoomDrawing (e: WheelEvent): void {
+    e.preventDefault()
     const delta = e.deltaY > 0 ? -0.1 : 0.1
     const lastScale = this.scale
     this.scale = Math.max(0.1, delta + this.scale)
