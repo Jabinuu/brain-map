@@ -379,9 +379,9 @@ class Render {
       isEdit
     })
 
-    // 打开编辑模式
     if (node.textData) {
       if (isEdit) {
+        // 打开编辑模式
         node.textData.div.setAttribute('contenteditable', 'true')
         node.textData.div.style.cursor = 'text'
         node.textData.div.style.userSelect = 'text'
@@ -466,8 +466,6 @@ class Render {
 
   // 历史记录切换
   switchHistoryItem (historyItem: HistoryItem, mode: 'undo' | 'redo', lastDataSource?: DataSource): void {
-    console.log()
-
     if (historyItem) {
       const {
         dataSource,

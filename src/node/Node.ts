@@ -329,18 +329,29 @@ class Node {
       const downY = (e as MouseEvent).clientY
       const foreignObjectwidth = this.textData?.foreignObject.width() as number
       const foreignObjectHeight = this.textData?.foreignObject.height() as number
+      let divWidth = 0; let divHeight = 0
+      if (this.textData) {
+        divWidth = this.textData.div.offsetWidth
+        divHeight = this.textData.div.offsetHeight
+      }
 
       if (this.brainMap.el) {
         this.brainMap.el.style.cursor = 'nesw-resize'
       }
-      const bindFn = this.resize.bind(this, downX, downY, this.width, this.height, foreignObjectwidth, foreignObjectHeight)
+      const bindFn = this.resize.bind(this, downX, downY, this.width, this.height, divWidth, divHeight, foreignObjectwidth, foreignObjectHeight)
 
-      this.brainMap.el?.addEventListener('mousemove', bindFn)
-
-      this.brainMap.el?.addEventListener('mouseup', () => {
+      const onMouseup = (e: MouseEvent): void => {
         this.brainMap.el?.removeEventListener('mousemove', bindFn)
         this.brainMap.el?.style.removeProperty('cursor')
-      })
+        if (this.textData) {
+          this.textData.width += (e.clientX - downX) / this.brainMap.view.scale
+          this.textData.height = 21 + (this.textData.div.scrollHeight - divHeight)
+        }
+        this.brainMap.el?.removeEventListener('mouseup', onMouseup)
+      }
+
+      this.brainMap.el?.addEventListener('mousemove', bindFn)
+      this.brainMap.el?.addEventListener('mouseup', onMouseup)
     })
 
     // 创建泛扩展按钮区域
@@ -566,21 +577,26 @@ class Node {
     originHeight: number,
     originForeignObjectWidth: number,
     originforeignObjectHeight: number,
+    originDivWidth: number,
+    originDivHeight: number,
     e: MouseEvent
   ): void {
+    // todo:考虑缩放
     if (this.width <= this.minWidth && e.clientX < this.left + this.minWidth) {
       return
     }
-    console.log()
 
     this.needLayout = true
     const offsetX = (e.clientX - downX) / this.brainMap.view.scale
-    const offsetY = this.textData?.div.scrollHeight as number - originforeignObjectHeight
-
+    let offsetY = 0
     if (this.textData) {
+      const scrollHeight = this.textData.div.scrollHeight
+      offsetY = scrollHeight - originDivHeight
+      this.textData.div.style.width = `${originDivWidth + offsetX}px`
+
       this.textData.foreignObject.attr({
         width: originForeignObjectWidth + offsetX,
-        height: this.textData?.div.scrollHeight
+        height: scrollHeight
       })
     }
     this.width = originWidth + offsetX

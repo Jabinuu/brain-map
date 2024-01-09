@@ -66,6 +66,8 @@ class Style {
     contentDiv.style.fontStyle = this.useStyle('fontStyle') as string
     contentDiv.style.textDecoration = this.useStyle('textDecoration') as string
     contentDiv.style.lineHeight = this.useStyle('lineHeight') as string
+    contentDiv.style.minWidth = '20px'
+    contentDiv.style.minHeight = '21px'
   }
 
   // 给连线设置样式

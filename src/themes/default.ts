@@ -84,7 +84,7 @@ export interface ThemeConfig {
 export default {
   // 节点内边距
   paddingX: 10,
-  paddingY: 2,
+  paddingY: 5,
   // 图片显示的最大宽度
   imgMaxWidth: 100,
   // 图片显示的最大高度

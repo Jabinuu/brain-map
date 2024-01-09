@@ -8,18 +8,37 @@ export interface NodeCreateContentMethods {
 
 function getEditAreaSize (node: Node): { height: number, width: number, div: HTMLElement } {
   const text = document.createTextNode(`${node.nodeData?.data.text as string}`)
-  const div = document.createElement('div')
-  node.style.text(div)
+  const wrapElem = document.createElement('span')
+  wrapElem.appendChild(text)
+  node.style.text(wrapElem)
+  document.body.appendChild(wrapElem)
+  let width = wrapElem.offsetWidth + 0.5
+  let height = wrapElem.offsetHeight
+  document.body.removeChild(wrapElem)
 
-  div.appendChild(text)
-  div.classList.add('bm-text-editer')
+  let div = document.createElement('div')
 
-  div.style.display = 'inline-block'
-  document.body.appendChild(div)
-  const width = div.clientWidth
-  const height = div.clientHeight
-  div.style.removeProperty('display')
-  document.body.removeChild(div)
+  if (node.textData && node.textData.width > width) {
+    height = node.textData.height
+    width = node.textData.width
+    div = node.textData.div as HTMLDivElement
+  } else {
+    if (node.getData('isEdit') && node.textData) {
+      div = node.textData.div as HTMLDivElement
+      node.textData.div.style.width = `${width}px`
+      node.textData.div.style.height = `${height}px`
+    } else {
+      div.appendChild(text)
+      node.style.text(div)
+
+      div.style.width = `${width}px`
+      div.style.height = `${height}px`
+
+      div.style.minWidth = '20px'
+      div.style.minHeight = '21px'
+      div.classList.add('bm-text-editer')
+    }
+  }
 
   return {
     height,
@@ -33,6 +52,7 @@ function createTextElem (this: Node): void {
   // 如果处于编辑模式，则复用之前文本元素，对其做修改更新即可
   if (this.getData('isEdit')) {
     const { width: divWidth, height: divHeight } = getEditAreaSize(this)
+
     if (this.textData) {
       this.textData.element.children().forEach((elem) => {
         if (elem.type === 'foreignObject') {
@@ -43,6 +63,7 @@ function createTextElem (this: Node): void {
         }
       })
       const { width, height } = this.textData.element.bbox()
+
       this.textData.width = width
       this.textData.height = height
     }
