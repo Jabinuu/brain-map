@@ -19,6 +19,7 @@ function getEditAreaSize (node: Node): { height: number, width: number, div: HTM
   let div = document.createElement('div')
 
   if (node.textData && node.textData.width > width) {
+    // 若当前编辑区域长度大于 文字宽度则不做处理，直接返回编辑区域的长宽即可
     height = node.textData.height
     width = node.textData.width
     div = node.textData.div as HTMLDivElement

@@ -322,37 +322,12 @@ class Node {
       .stroke({ color: 'rgba(88, 90, 90, 0.7)' })
       .move(width + borderWidth / 2 - controlPtRadius - 2, 0)
       .addClass('bm-control-point')
-
-    this.controlPtElem.on('mousedown', (e: Event) => {
-      e.stopPropagation()
-      const downX = (e as MouseEvent).clientX
-      const downY = (e as MouseEvent).clientY
-      const foreignObjectwidth = this.textData?.foreignObject.width() as number
-      const foreignObjectHeight = this.textData?.foreignObject.height() as number
-      let divWidth = 0; let divHeight = 0
-      if (this.textData) {
-        divWidth = this.textData.div.offsetWidth
-        divHeight = this.textData.div.offsetHeight
-      }
-
-      if (this.brainMap.el) {
-        this.brainMap.el.style.cursor = 'nesw-resize'
-      }
-      const bindFn = this.resize.bind(this, downX, downY, this.width, this.height, divWidth, divHeight, foreignObjectwidth, foreignObjectHeight)
-
-      const onMouseup = (e: MouseEvent): void => {
-        this.brainMap.el?.removeEventListener('mousemove', bindFn)
-        this.brainMap.el?.style.removeProperty('cursor')
-        if (this.textData) {
-          this.textData.width += (e.clientX - downX) / this.brainMap.view.scale
-          this.textData.height = 21 + (this.textData.div.scrollHeight - divHeight)
-        }
-        this.brainMap.el?.removeEventListener('mouseup', onMouseup)
-      }
-
-      this.brainMap.el?.addEventListener('mousemove', bindFn)
-      this.brainMap.el?.addEventListener('mouseup', onMouseup)
-    })
+    let textDataWidth = 0; let textDataHeight = 0
+    if (this.textData) {
+      textDataWidth = this.textData.width
+      textDataHeight = this.textData.height
+    }
+    this.controlPtElem.on('mousedown', this.onMousedownControlPt.bind(this, textDataWidth, textDataHeight))
 
     // 创建泛扩展按钮区域
     if (!this.isRoot && this.nodeData?.children && this.nodeData.children.length > 0) {
@@ -569,14 +544,44 @@ class Node {
     })
   }
 
+  // 点击下控制点的监听器
+  onMousedownControlPt (textDataWidth: number, textDataHeight: number, e: Event): void {
+    e.stopPropagation()
+
+    const downX = (e as MouseEvent).clientX
+    const foreignObjectwidth = this.textData?.foreignObject.width() as number
+    let divWidth = 0; let divHeight = 0
+
+    if (this.textData) {
+      divWidth = this.textData.div.offsetWidth
+      divHeight = this.textData.div.offsetHeight
+    }
+
+    if (this.brainMap.el) {
+      this.brainMap.el.style.cursor = 'nesw-resize'
+    }
+    const bindFn = this.resize.bind(this, downX, this.width, this.height, foreignObjectwidth, divWidth, divHeight)
+
+    const onMouseup = (e: MouseEvent): void => {
+      this.brainMap.el?.removeEventListener('mousemove', bindFn)
+      this.brainMap.el?.style.removeProperty('cursor')
+      if (this.textData) {
+        this.textData.width = textDataWidth + (e.clientX - downX) / this.brainMap.view.scale
+        this.textData.height = textDataHeight + (this.textData.div.scrollHeight - divHeight)
+      }
+      this.brainMap.el?.removeEventListener('mouseup', onMouseup)
+    }
+
+    this.brainMap.el?.addEventListener('mousemove', bindFn)
+    this.brainMap.el?.addEventListener('mouseup', onMouseup)
+  }
+
   // resize节点尺寸
   resize (
     downX: number,
-    downY: number,
     originWidth: number,
     originHeight: number,
     originForeignObjectWidth: number,
-    originforeignObjectHeight: number,
     originDivWidth: number,
     originDivHeight: number,
     e: MouseEvent
