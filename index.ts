@@ -267,7 +267,8 @@ class BrainMap {
   EnumCommandName.INSERT_CHILD_NODE |
   EnumCommandName.SET_NODE_EXPAND |
   EnumCommandName.DELETE_NODE |
-  EnumCommandName.INSERT_SIBLING_NODE, task: (arg1: Node[]) => void): void
+  EnumCommandName.INSERT_SIBLING_NODE |
+  EnumCommandName.RESIZE_NODE, task: (arg1: Node[]) => void): void
 
   // 函数实现
   registerCommand (cmdName: string, task: (...args: any) => void): void {
@@ -280,7 +281,8 @@ class BrainMap {
   execCommand (cmdName: EnumCommandName.SET_NODE_DATA, arg1: [Node], arg2: Partial<DataSourceItem>): void
   execCommand (cmdName: EnumCommandName.REDO |
   EnumCommandName.UNDO |
-  EnumCommandName.CLEAR_ACTIVE_NODE): void
+  EnumCommandName.CLEAR_ACTIVE_NODE |
+  EnumCommandName.RESIZE_NODE): void
   execCommand (cmdName:
   EnumCommandName.SET_NODE_ACTIVE |
   EnumCommandName.SET_NODE_EDIT, arg1: [Node], arg2: boolean): void
@@ -288,7 +290,8 @@ class BrainMap {
   EnumCommandName.DELETE_SINGLE_NODE |
   EnumCommandName.INSERT_CHILD_NODE |
   EnumCommandName.SET_NODE_EXPAND |
-  EnumCommandName.INSERT_SIBLING_NODE, arg1: Node[]): void
+  EnumCommandName.INSERT_SIBLING_NODE |
+  EnumCommandName.RESIZE_NODE, arg1: Node[]): void
   execCommand (cmdName: EnumCommandName.DELETE_NODE, arg1: Node[]): void
 
   // 函数实现

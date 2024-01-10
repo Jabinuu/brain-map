@@ -46,10 +46,16 @@ class Base {
       // 如果节点数据源有变化，相较于缓存有变化,则要重新创建节点内容
       const cacheNodeData = JSON.stringify(newNode.getData())
       const curNodeData = JSON.stringify(data.data)
+      const isDataChange = curNodeData !== cacheNodeData
 
       // 更新节点内容之前,赋新值并且保持了相同引用
       newNode.nodeData = data
-      if (curNodeData !== cacheNodeData) {
+
+      if (this.renderer.resizeRecord && this.renderer.resizeRecord.uid === newNode.uid) {
+        newNode.getSize(true)
+        newNode.needLayout = true
+        this.renderer.resizeRecord = null
+      } else if (isDataChange) {
         newNode.getSize()
         newNode.needLayout = true
       }

@@ -4,7 +4,7 @@ import { CONSTANT, EnumCommandName, EnumShortcutName } from '../constant/constan
 import type Node from '../node/Node'
 import { type DataSource, type DataSourceItem } from '../../index'
 import { getBoundingBox, isInfinity, selectAllText, traversal } from '../utils'
-import { type HistoryItem } from '../command/Command'
+import { type ResizeRecod, type HistoryItem } from '../command/Command'
 import { type Polygon } from '@svgdotjs/svg.js'
 
 interface RenderOption {
@@ -34,6 +34,7 @@ class Render {
   renderCache: RenderNodeCache
   lastRenderCache: RenderNodeCache
   isSelecting: boolean
+  resizeRecord: ResizeRecod | null
   activeNodesBoundingBox: Polygon | null
 
   constructor (opt: RenderOption) {
@@ -51,7 +52,8 @@ class Render {
     this.isSelecting = false
     // 包含多个激活节点的边框
     this.activeNodesBoundingBox = null
-
+    // 某个节点被resize的记录
+    this.resizeRecord = null
     // 设置布局
     this.setLayout()
     // 注册渲染相关命令
@@ -81,6 +83,7 @@ class Render {
     this.brainMap.registerCommand(EnumCommandName.SET_NODE_EDIT, this.setNodeEdit.bind(this))
     this.brainMap.registerCommand(EnumCommandName.SET_NODE_TEXT, this.setNodeText.bind(this))
     this.brainMap.registerCommand(EnumCommandName.CLEAR_ACTIVE_NODE, this.clearActiveNodesList.bind(this))
+    this.brainMap.registerCommand(EnumCommandName.RESIZE_NODE, this.resizeNode.bind(this))
   }
 
   // 绑定快捷键
@@ -187,9 +190,7 @@ class Render {
     const [node] = activeNodes
     node.nodeData?.children.push({
       data: {
-        text: '新增子节点',
-        paddingX: 25,
-        paddingY: 5,
+        text: '',
         isEdit: false,
         isActive: true,
         isExpand: true
@@ -199,6 +200,7 @@ class Render {
     })
 
     this.brainMap.execCommand(EnumCommandName.CLEAR_ACTIVE_NODE)
+    this.clearEditStatus()
     this.render()
 
     // 添加节点后直接就是编辑状态
@@ -218,9 +220,7 @@ class Render {
     const insertPos = node.parent.children.findIndex((item) => item === node) + 1
     node.parent?.nodeData?.children.splice(insertPos, 0, {
       data: {
-        text: '新增同级节点',
-        paddingX: 25,
-        paddingY: 5,
+        text: '',
         isEdit: false,
         isExpand: true,
         isActive: true
@@ -229,6 +229,7 @@ class Render {
     })
 
     this.brainMap.execCommand(EnumCommandName.CLEAR_ACTIVE_NODE)
+    this.clearEditStatus()
     this.render()
 
     // 添加节点后直接就是编辑状态
@@ -245,6 +246,7 @@ class Render {
       }
     })
     this.brainMap.execCommand(EnumCommandName.CLEAR_ACTIVE_NODE)
+    this.clearEditStatus()
 
     if (activeNodes.length === 1 && activeNodes[0].parent) {
       const siblings = activeNodes[0].parent.children
@@ -278,7 +280,7 @@ class Render {
       })
     }
     this.brainMap.execCommand(EnumCommandName.CLEAR_ACTIVE_NODE)
-
+    this.clearEditStatus()
     this.render()
 
     if (childrenCount > 1) {
@@ -403,6 +405,12 @@ class Render {
     })
   }
 
+  // 修改节点尺寸
+  resizeNode (manipulateNode: Node[]): void {
+    // const [node] = manipulateNode
+    // node.resizeLog.push([node.width, node.height])
+  }
+
   // 编辑节点时的操作
   onEditNodeText (e: Event, node: Node): void {
     node.needLayout = true
@@ -460,6 +468,7 @@ class Render {
     const historyItem = history.historyItem
     const lastDataSource = history.lastDataSource
 
+    this.brainMap.execCommand(EnumCommandName.CLEAR_ACTIVE_NODE)
     this.switchHistoryItem(historyItem, 'redo', lastDataSource)
     this.activeNodes.length > 1 && this.createActiveNodesBoundingBox()
   }
@@ -471,8 +480,14 @@ class Render {
         dataSource,
         manipulateNodeId,
         cmdName,
-        insertSiblingIndex
+        insertSiblingIndex,
+        resizeRecord
       } = historyItem
+
+      // todo：如果该条历史记录中有resize的信息，则赋值
+      if (resizeRecord) {
+        this.resizeRecord = resizeRecord
+      }
 
       if (mode === 'undo') {
         this.setActiveById(dataSource, manipulateNodeId)
@@ -491,6 +506,7 @@ class Render {
       }
 
       this.brainMap.dataSource = dataSource
+
       this.render()
     }
   }

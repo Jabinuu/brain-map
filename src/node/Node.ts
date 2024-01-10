@@ -23,6 +23,8 @@ interface NodeCreateOption {
   layerIndex: number
 }
 
+type NodeSize = [width:number, height:number]
+
 export interface TextData {
   width: number
   height: number
@@ -46,6 +48,9 @@ class Node {
   parent: Node | null
   children: Node[]
   layerIndex: number
+  isResized: boolean
+  // isResizeChange: boolean
+  resizeLog: NodeSize[]
   isRoot: boolean
   group: GType | null
   shape: Shape
@@ -138,7 +143,12 @@ class Node {
     this.style = new Style(this)
     // 节点所处层
     this.layerIndex = -1
-
+    // 是否通过控制点调整过尺寸
+    this.isResized = false
+    // 该节点是否经过resize
+    // this.isResizeChange = false
+    // 通过控制点resize的历史记录
+    this.resizeLog = []
     /* 该节点的内容元素 */
     // 文本元素
     this.textData = null
@@ -164,7 +174,12 @@ class Node {
   }
 
   // 获得节点总宽高
-  getSize (): boolean {
+  getSize (isResizeChange: boolean = false): boolean {
+    if (isResizeChange && this.renderer.resizeRecord) {
+      this.width = this.renderer.resizeRecord.width
+      this.height = this.renderer.resizeRecord.height
+      return true
+    }
     // todo: 获取节点中所有类型元素的size，当前只有文本节点
     let _width: number = 0; let _height: number = 0
     this.generateContentElem()
@@ -172,7 +187,7 @@ class Node {
       _width = this.textData.width
       _height = this.textData.height
     }
-    // 节点形状的边框线宽度
+    // 节点形状的线宽度
     const borderWidth = this.style.getStyle('borderWidth') as number
 
     const width = _width + 2 * this.paddingX + 2 * this.shapePadding.paddingX + borderWidth
@@ -274,6 +289,7 @@ class Node {
     }
   }
 
+  // 节点内的内容进行布局
   layout (): void {
     if (!this.group) {
       return
@@ -412,6 +428,7 @@ class Node {
   // 激活单个节点
   active (): void {
     this.brainMap.execCommand(EnumCommandName.CLEAR_ACTIVE_NODE)
+    this.renderer.clearEditStatus()
     this.renderer.addNodeToActiveList(this)
   }
 
@@ -502,6 +519,7 @@ class Node {
       e.stopPropagation()
       this.brainMap.execCommand(EnumCommandName.CLEAR_ACTIVE_NODE)
       this.brainMap.execCommand(EnumCommandName.SET_NODE_EXPAND, [this])
+      this.renderer.clearEditStatus()
       this.brainMap.renderer.addNodeToActiveList(this)
     })
   }
@@ -549,18 +567,18 @@ class Node {
     e.stopPropagation()
 
     const downX = (e as MouseEvent).clientX
-    const foreignObjectwidth = this.textData?.foreignObject.width() as number
+    const foreignObjectWidth = this.textData?.foreignObject.width() as number
     let divWidth = 0; let divHeight = 0
 
     if (this.textData) {
       divWidth = this.textData.div.offsetWidth
-      divHeight = this.textData.div.offsetHeight
+      divHeight = this.textData.div.scrollHeight
     }
 
     if (this.brainMap.el) {
       this.brainMap.el.style.cursor = 'nesw-resize'
     }
-    const bindFn = this.resize.bind(this, downX, this.width, this.height, foreignObjectwidth, divWidth, divHeight)
+    const bindFn = this.resize.bind(this, downX, this.width, this.height, foreignObjectWidth, divWidth, divHeight)
 
     const onMouseup = (e: MouseEvent): void => {
       this.brainMap.el?.removeEventListener('mousemove', bindFn)
@@ -569,6 +587,8 @@ class Node {
         this.textData.width = textDataWidth + (e.clientX - downX) / this.brainMap.view.scale
         this.textData.height = textDataHeight + (this.textData.div.scrollHeight - divHeight)
       }
+      // 执行resize命令
+      this.brainMap.execCommand(EnumCommandName.RESIZE_NODE, [this])
       this.brainMap.el?.removeEventListener('mouseup', onMouseup)
     }
 
@@ -590,13 +610,15 @@ class Node {
     if (this.width <= this.minWidth && e.clientX < this.left + this.minWidth) {
       return
     }
-
+    this.isResized = true
+    this.isResizeChange = true
     this.needLayout = true
     const offsetX = (e.clientX - downX) / this.brainMap.view.scale
-    let offsetY = 0
+    let offsetY = 0; let scrollHeight = 0
     if (this.textData) {
-      const scrollHeight = this.textData.div.scrollHeight
+      scrollHeight = this.textData.div.scrollHeight
       offsetY = scrollHeight - originDivHeight
+
       this.textData.div.style.width = `${originDivWidth + offsetX}px`
 
       this.textData.foreignObject.attr({

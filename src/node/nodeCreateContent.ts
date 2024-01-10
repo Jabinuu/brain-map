@@ -7,6 +7,11 @@ export interface NodeCreateContentMethods {
 }
 
 function getEditAreaSize (node: Node): { height: number, width: number, div: HTMLElement } {
+  const minWidth = 20
+  const minHeight = 21
+  const isEdit = node.getData('isEdit')
+  let div = document.createElement('div')
+
   const text = document.createTextNode(`${node.nodeData?.data.text as string}`)
   const wrapElem = document.createElement('span')
   wrapElem.appendChild(text)
@@ -16,15 +21,13 @@ function getEditAreaSize (node: Node): { height: number, width: number, div: HTM
   let height = wrapElem.offsetHeight
   document.body.removeChild(wrapElem)
 
-  let div = document.createElement('div')
-
-  if (node.textData && node.textData.width > width) {
-    // 若当前编辑区域长度大于 文字宽度则不做处理，直接返回编辑区域的长宽即可
+  if (isEdit && node.isResized && node.textData) {
+    // 如果节点已通过控制点重新设置尺寸,则不做处理，直接返回编辑区域的长宽即可
     height = node.textData.height
     width = node.textData.width
     div = node.textData.div as HTMLDivElement
   } else {
-    if (node.getData('isEdit') && node.textData) {
+    if (isEdit && node.textData) {
       div = node.textData.div as HTMLDivElement
       node.textData.div.style.width = `${width}px`
       node.textData.div.style.height = `${height}px`
@@ -35,15 +38,15 @@ function getEditAreaSize (node: Node): { height: number, width: number, div: HTM
       div.style.width = `${width}px`
       div.style.height = `${height}px`
 
-      div.style.minWidth = '20px'
-      div.style.minHeight = '21px'
+      div.style.minWidth = `${minWidth}px`
+      div.style.minHeight = `${minHeight}px`
       div.classList.add('bm-text-editer')
     }
   }
 
   return {
-    height,
-    width,
+    height: height < minHeight ? minHeight : height,
+    width: width < minWidth ? minWidth : width,
     div
   }
 }

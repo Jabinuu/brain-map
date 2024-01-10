@@ -21,6 +21,13 @@ export interface HistoryItem {
   manipulateNodeId: string[]
   dataSource: DataSource
   insertSiblingIndex: number
+  resizeRecord?: ResizeRecod
+}
+
+export interface ResizeRecod {
+  uid: string
+  width: number
+  height: number
 }
 
 // 命令类: 将修改数据源的操作通过调用命令来实现，并记录修改历史，从而实现撤销和重做
@@ -115,12 +122,29 @@ class Command {
 
       if (clone && !Array.isArray(clone)) {
         this.history = this.history.slice(0, this.activeHistoryIndex + 1)
-        this.history.push({
-          cmdName,
-          dataSource: clone,
-          manipulateNodeId,
-          insertSiblingIndex
-        })
+
+        // todo: 如果是reszie命令，则额外加一个resize的节点uid及其size的信息
+        if (cmdName === EnumCommandName.RESIZE_NODE && manipulateNode) {
+          this.history.push({
+            cmdName,
+            dataSource: clone,
+            manipulateNodeId,
+            insertSiblingIndex,
+            resizeRecord: {
+              uid: manipulateNode[0].uid,
+              width: manipulateNode[0].width,
+              height: manipulateNode[0].height
+            }
+          })
+        } else {
+          this.history.push({
+            cmdName,
+            dataSource: clone,
+            manipulateNodeId,
+            insertSiblingIndex
+          })
+        }
+
         this.activeHistoryIndex = this.history.length - 1
       }
     }
@@ -134,7 +158,8 @@ class Command {
       const {
         dataSource,
         cmdName,
-        insertSiblingIndex
+        insertSiblingIndex,
+        resizeRecord
       } = this.history[this.activeHistoryIndex]
 
       const data = cloneDataSource(dataSource)
@@ -143,7 +168,8 @@ class Command {
         cmdName,
         dataSource: data,
         manipulateNodeId,
-        insertSiblingIndex
+        insertSiblingIndex,
+        resizeRecord
       }
     }
   }
@@ -157,7 +183,8 @@ class Command {
         dataSource,
         manipulateNodeId,
         cmdName,
-        insertSiblingIndex
+        insertSiblingIndex,
+        resizeRecord
       } = this.history[this.activeHistoryIndex]
 
       if (this.activeHistoryIndex - 1 >= 0) {
@@ -170,7 +197,8 @@ class Command {
           cmdName,
           dataSource: data,
           manipulateNodeId,
-          insertSiblingIndex
+          insertSiblingIndex,
+          resizeRecord
         },
         lastDataSource
       }
