@@ -46,9 +46,17 @@ export function getNodeIndexOfChildrenList (node: Node, childrenList: Node[]): n
 // 获得连线的起点坐标
 export function getStartPointOfLine (root: Node): PositionPair {
   const { height, width } = root.getSizeWithoutBorderWidth()
-  return root.isRoot
-    ? [width / 2 + root.left, height / 2 + root.top]
-    : [width + root.left, height / 2 + root.top]
+  let start: PositionPair
+  if (root.isRoot) {
+    start = [width / 2 + root.left, height / 2 + root.top]
+  } else {
+    if (root.shape.shapeName === 'line') {
+      start = [width + root.left, height + root.top]
+    } else {
+      start = [width + root.left, height / 2 + root.top]
+    }
+  }
+  return start
 }
 
 // 全选节点内文本

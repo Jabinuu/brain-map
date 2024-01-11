@@ -4,9 +4,11 @@ import type Node from '../node/Node'
 // 节点形状类
 class Shape {
   node: Node
+  shapeName: string
 
   constructor (node: Node) {
     this.node = node
+    this.shapeName = node.style.getStyle('shape') as string
   }
 
   // 计算不同节点形状所需的padding
@@ -18,8 +20,28 @@ class Shape {
   }
 
   // 创建节点形状
-  createNodeShape (): void {
+  createNodeShape (): Path {
+    let shapeElem = new Path()
 
+    switch (this.shapeName) {
+      case 'rectangle':
+        shapeElem = this.createRect()
+        break
+      case 'line':
+        shapeElem = this.createLine()
+        break
+    }
+    return shapeElem
+  }
+
+  // 创建线性节点形状
+  createLine (): Path {
+    const { height, width } = this.node.getSizeWithoutBorderWidth()
+
+    return new Path().plot([
+      ['M', 0, height],
+      ['H', width]
+    ])
   }
 
   // 创建圆角矩形

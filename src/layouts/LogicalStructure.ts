@@ -151,7 +151,12 @@ class LogicalStructure extends Base {
     const start = getStartPointOfLine(node)
     node.children.forEach((child) => {
       const { height } = child.getSizeWithoutBorderWidth()
-      const end: PositionPair = [child.left, child.top + (height - 0) / 2]
+      let end: PositionPair
+      if (node.shape.shapeName === 'line' || child.shape.shapeName === 'line') {
+        end = [child.left, child.top + height]
+      } else {
+        end = [child.left, child.top + (height - 0) / 2]
+      }
       const pathArray = this.cubicBezierPath(start, end)
       const line = new Path().plot(pathArray)
       node.style.line(line)

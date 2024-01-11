@@ -127,6 +127,8 @@ class Node {
       paddingX: 0,
       paddingY: 0
     }
+    // 节点所处层
+    this.layerIndex = opt.layerIndex
     // 所有后代节点所占的总高度
     this.childrenAreaHeight = 0
 
@@ -135,9 +137,7 @@ class Node {
     this.textChange = false
     // 是否需要在有节点内容组合的情况下重新布局内容
     this.needLayout = false
-    // 节点内边距
-    this.paddingX = 0
-    this.paddingY = 0
+
     // 思维导图实例
     this.brainMap = opt.brainMap
     // 渲染器实例
@@ -149,17 +149,20 @@ class Node {
     // 连线元素
     this.lines = []
 
-    // Shape实例
-    this.shape = new Shape(this)
-    // Style实例
-    this.style = new Style(this)
-    // 节点所处层
-    this.layerIndex = -1
     // 是否通过控制点调整过尺寸
     this.isResized = false
 
+    // Style实例
+    this.style = new Style(this)
+    // Shape实例
+    this.shape = new Shape(this)
+
+    // 节点内边距
+    this.paddingX = this.style.getStyle('paddingX', true) as number
+    this.paddingY = this.style.getStyle('paddingY', true) as number
     // 通过控制点resize的历史记录
     this.resizeLog = []
+
     /* 该节点的内容元素 */
     // 文本元素
     this.textData = null
@@ -169,14 +172,7 @@ class Node {
       this[item] = (nodeCreateContentMethods)[item].bind(this)
     })
 
-    this.handleOpt(opt)
     this.getSize()
-  }
-
-  handleOpt (opt: NodeCreateOption): void {
-    this.paddingX = this.style.getStyle('paddingX', true) as number
-    this.paddingY = this.style.getStyle('paddingY', true) as number
-    this.layerIndex = opt.layerIndex
   }
 
   // 生成该节点下的所有内容元素
@@ -326,7 +322,8 @@ class Node {
     }
 
     // 节点形状
-    this.shapeElem = this.shape.createRect()
+    // console.log(this.style.getStyle('shape'))
+    this.shapeElem = this.shape.createNodeShape()
     this.style.shape(this)
     this.group.add(this.shapeElem)
 
