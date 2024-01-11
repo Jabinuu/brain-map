@@ -23,8 +23,8 @@ function getEditAreaSize (node: Node): { height: number, width: number, div: HTM
 
   if (isEdit && node.isResized && node.textData) {
     // 如果节点已通过控制点重新设置尺寸,则不做处理，直接返回编辑区域的长宽即可
-    height = node.textData.height
     width = node.textData.width
+    height = node.textData.div.scrollHeight
     div = node.textData.div as HTMLDivElement
   } else {
     if (isEdit && node.textData) {

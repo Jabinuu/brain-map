@@ -389,6 +389,9 @@ class Render {
         node.textData.div.style.userSelect = 'text'
         selectAllText(node.textData.div)
         node.lastText = node.getData('text') as string
+
+        // 记录进入此次编辑前的节点尺寸信息，用于添加到历史记录
+        node.recordBeforeSize()
       } else {
         node.textData.div.removeAttribute('contenteditable')
         node.textData.div.style.cursor = 'default'
@@ -407,8 +410,7 @@ class Render {
 
   // 修改节点尺寸
   resizeNode (manipulateNode: Node[]): void {
-    // const [node] = manipulateNode
-    // node.resizeLog.push([node.width, node.height])
+
   }
 
   // 编辑节点时的操作

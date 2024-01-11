@@ -44,20 +44,27 @@ class Base {
       newNode.reset()
 
       // 如果节点数据源有变化，相较于缓存有变化,则要重新创建节点内容
-      const cacheNodeData = JSON.stringify(newNode.getData())
-      const curNodeData = JSON.stringify(data.data)
+      const { isActive, ..._newNode } = newNode.getData() as DataSource
+      const { isActive: _, ..._data } = data.data
+
+      const cacheNodeData = JSON.stringify(_newNode)
+      const curNodeData = JSON.stringify(_data)
       const isDataChange = curNodeData !== cacheNodeData
 
       // 更新节点内容之前,赋新值并且保持了相同引用
       newNode.nodeData = data
 
-      if (this.renderer.resizeRecord && this.renderer.resizeRecord.uid === newNode.uid) {
-        newNode.getSize(true)
+      if (isDataChange && this.renderer.resizeRecord && this.renderer.resizeRecord.uid === newNode.uid) {
+        newNode.getSize(true, true)
         newNode.needLayout = true
         this.renderer.resizeRecord = null
       } else if (isDataChange) {
         newNode.getSize()
         newNode.needLayout = true
+      } else if (this.renderer.resizeRecord && this.renderer.resizeRecord.uid === newNode.uid) {
+        newNode.getSize(true)
+        newNode.needLayout = true
+        this.renderer.resizeRecord = null
       }
 
       // 将节点实例挂载到数据源下

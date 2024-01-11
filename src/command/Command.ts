@@ -28,6 +28,9 @@ export interface ResizeRecod {
   uid: string
   width: number
   height: number
+  divWidth: number
+  foreignObjectWidth: number
+  foreignObjectHeight: number
 }
 
 // 命令类: 将修改数据源的操作通过调用命令来实现，并记录修改历史，从而实现撤销和重做
@@ -80,9 +83,12 @@ class Command {
   // 添加操作历史记录
   addHistory (cmdName: string = '', manipulateNode: Node[] | null = null): void {
     // 进入编辑状态和未修改文本内容 则不触发历史记录
-    if (cmdName === EnumCommandName.SET_NODE_EDIT && manipulateNode &&
-    (manipulateNode[0].getData('isEdit') || !manipulateNode[0].textChange)) {
-      return
+    if (cmdName === EnumCommandName.SET_NODE_EDIT && manipulateNode) {
+      if (manipulateNode[0].getData('isEdit') || !manipulateNode[0].textChange) {
+        return
+      } else {
+        manipulateNode[0].textChange = false
+      }
     }
 
     // 白名单过滤
@@ -123,8 +129,16 @@ class Command {
       if (clone && !Array.isArray(clone)) {
         this.history = this.history.slice(0, this.activeHistoryIndex + 1)
 
-        // todo: 如果是reszie命令，则额外加一个resize的节点uid及其size的信息
-        if (cmdName === EnumCommandName.RESIZE_NODE && manipulateNode) {
+        if ((cmdName === EnumCommandName.RESIZE_NODE || cmdName === EnumCommandName.SET_NODE_EDIT) && manipulateNode) {
+          // 如果是reszie命令，则额外加一个resize的节点uid及其size的信息
+          this.history[this.history.length - 1].resizeRecord = {
+            uid: manipulateNode[0].uid,
+            width: manipulateNode[0].beforWidth,
+            height: manipulateNode[0].beforeHeight,
+            divWidth: manipulateNode[0].beforeDivWidth,
+            foreignObjectWidth: manipulateNode[0].beforeForeignObjectWidth,
+            foreignObjectHeight: manipulateNode[0].beforForeignObjectHeight
+          }
           this.history.push({
             cmdName,
             dataSource: clone,
@@ -133,7 +147,10 @@ class Command {
             resizeRecord: {
               uid: manipulateNode[0].uid,
               width: manipulateNode[0].width,
-              height: manipulateNode[0].height
+              height: manipulateNode[0].height,
+              divWidth: manipulateNode[0].textData?.div.offsetWidth as number,
+              foreignObjectWidth: manipulateNode[0].textData?.foreignObject.width() as number,
+              foreignObjectHeight: manipulateNode[0].textData?.foreignObject.height() as number
             }
           })
         } else {

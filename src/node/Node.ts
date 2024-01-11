@@ -39,6 +39,11 @@ class Node {
   uid: string
   width: number
   height: number
+  beforWidth: number
+  beforeHeight: number
+  beforeDivWidth: number
+  beforeForeignObjectWidth: number
+  beforForeignObjectHeight: number
   minWidth: number
   left: number
   top: number
@@ -49,7 +54,6 @@ class Node {
   children: Node[]
   layerIndex: number
   isResized: boolean
-  // isResizeChange: boolean
   resizeLog: NodeSize[]
   isRoot: boolean
   group: GType | null
@@ -85,6 +89,14 @@ class Node {
     this.width = opt.width ?? 0
     // 节点高度
     this.height = opt.width ?? 0
+    // resize前的宽度
+    this.beforWidth = 0
+    // resize前的高度
+    this.beforeHeight = 0
+    // resize前的编辑div宽度
+    this.beforeDivWidth = 0
+    this.beforeForeignObjectWidth = 0
+    this.beforForeignObjectHeight = 0
     // 节点最小宽度
     this.minWidth = 40
     // 节点相对于画布left
@@ -145,8 +157,7 @@ class Node {
     this.layerIndex = -1
     // 是否通过控制点调整过尺寸
     this.isResized = false
-    // 该节点是否经过resize
-    // this.isResizeChange = false
+
     // 通过控制点resize的历史记录
     this.resizeLog = []
     /* 该节点的内容元素 */
@@ -174,12 +185,24 @@ class Node {
   }
 
   // 获得节点总宽高
-  getSize (isResizeChange: boolean = false): boolean {
+  getSize (isResizeChange: boolean = false, needRegenerate: boolean = false): boolean {
     if (isResizeChange && this.renderer.resizeRecord) {
+      if (needRegenerate) {
+        this.generateContentElem()
+      }
       this.width = this.renderer.resizeRecord.width
       this.height = this.renderer.resizeRecord.height
+      if (this.textData) {
+        this.textData.div.style.width = this.renderer.resizeRecord.divWidth + 'px'
+        this.textData.width = this.renderer.resizeRecord.divWidth
+      }
+      this.textData?.foreignObject.attr({
+        width: this.renderer.resizeRecord.foreignObjectWidth,
+        height: this.renderer.resizeRecord.foreignObjectHeight
+      })
       return true
     }
+
     // todo: 获取节点中所有类型元素的size，当前只有文本节点
     let _width: number = 0; let _height: number = 0
     this.generateContentElem()
@@ -338,12 +361,8 @@ class Node {
       .stroke({ color: 'rgba(88, 90, 90, 0.7)' })
       .move(width + borderWidth / 2 - controlPtRadius - 2, 0)
       .addClass('bm-control-point')
-    let textDataWidth = 0; let textDataHeight = 0
-    if (this.textData) {
-      textDataWidth = this.textData.width
-      textDataHeight = this.textData.height
-    }
-    this.controlPtElem.on('mousedown', this.onMousedownControlPt.bind(this, textDataWidth, textDataHeight))
+
+    this.controlPtElem.on('mousedown', this.onMousedownControlPt.bind(this))
 
     // 创建泛扩展按钮区域
     if (!this.isRoot && this.nodeData?.children && this.nodeData.children.length > 0) {
@@ -563,12 +582,20 @@ class Node {
   }
 
   // 点击下控制点的监听器
-  onMousedownControlPt (textDataWidth: number, textDataHeight: number, e: Event): void {
+  onMousedownControlPt (e: Event): void {
     e.stopPropagation()
+
+    let textDataWidth = 0; let textDataHeight = 0
+    if (this.textData) {
+      textDataWidth = this.textData.width
+      textDataHeight = this.textData.height
+    }
 
     const downX = (e as MouseEvent).clientX
     const foreignObjectWidth = this.textData?.foreignObject.width() as number
     let divWidth = 0; let divHeight = 0
+    this.recordBeforeSize()
+    this.brainMap.execCommand(EnumCommandName.SET_NODE_EDIT, [this], false)
 
     if (this.textData) {
       divWidth = this.textData.div.offsetWidth
@@ -588,7 +615,9 @@ class Node {
         this.textData.height = textDataHeight + (this.textData.div.scrollHeight - divHeight)
       }
       // 执行resize命令
-      this.brainMap.execCommand(EnumCommandName.RESIZE_NODE, [this])
+      if (this.beforWidth !== this.width || this.beforeHeight !== this.height) {
+        this.brainMap.execCommand(EnumCommandName.RESIZE_NODE, [this])
+      }
       this.brainMap.el?.removeEventListener('mouseup', onMouseup)
     }
 
@@ -666,6 +695,15 @@ class Node {
       line.remove()
     })
     this.lines = []
+  }
+
+  // 记录节点尺寸发生变化前的尺寸
+  recordBeforeSize (): void {
+    this.beforWidth = this.width
+    this.beforeHeight = this.height
+    this.beforeDivWidth = this.textData?.div.offsetWidth as number
+    this.beforeForeignObjectWidth = this.textData?.foreignObject.width() as number
+    this.beforForeignObjectHeight = this.textData?.foreignObject.height() as number
   }
 }
 
