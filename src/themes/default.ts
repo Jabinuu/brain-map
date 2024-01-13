@@ -2,7 +2,7 @@
 // 定义节点样式类型
 export interface NodeStyle {
   [prop: string]: any
-  shape: string
+  shape: 'line' | 'rectangle' | 'capsule'
   fillColor: string
   fontFamily: string
   color: string

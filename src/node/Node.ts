@@ -6,7 +6,7 @@ import nodeCreateContentMethods from './nodeCreateContent'
 import { EnumCommandName } from '../constant/constant'
 import type Render from '../render/Render'
 import Style from '../Style/Style'
-import { getDigitCount, getNumberOfAllChildren } from '../utils'
+import { getDigitCount, getNumberOfAllChildren, throttle } from '../utils'
 
 interface NodeCreateOption {
   data: DataSource | null
@@ -490,6 +490,9 @@ class Node {
       cursor: 'pointer'
     })
     const btnRadius = 6
+    const transformY = this.shape.shapeName === 'line'
+      ? (height - btnRadius)
+      : (height - btnRadius * 2) / 2
 
     if (isExpand) {
       g.circle(btnRadius * 2).fill(fillColor).x(5)
@@ -511,7 +514,7 @@ class Node {
         ['A', btnRadius, btnRadius, 0, 0, 1, btnRadius, 0]
       ]).fill(fillColor).x(5)
 
-      g.line(0, btnRadius, btnRadius + 4, btnRadius)
+      g.line(-1, btnRadius - borderWidth / 2, btnRadius + 4, btnRadius - borderWidth / 2)
         .stroke({
           width: this.style.getStyle('lineWidth', true) as number,
           color: fillColor,
@@ -524,7 +527,7 @@ class Node {
         .x(btnRadius + 2)
         .y(0.5)
     }
-    g.translate(width, (height - btnRadius * 2) / 2)
+    g.translate(width, transformY)
 
     return g
   }
@@ -602,7 +605,8 @@ class Node {
     if (this.brainMap.el) {
       this.brainMap.el.style.cursor = 'nesw-resize'
     }
-    const bindFn = this.resize.bind(this, downX, this.width, this.height, foreignObjectWidth, divWidth, divHeight)
+    let bindFn = this.resize.bind(this, downX, this.width, this.height, foreignObjectWidth, divWidth, divHeight)
+    bindFn = throttle(bindFn, 10)
 
     const onMouseup = (e: MouseEvent): void => {
       this.brainMap.el?.removeEventListener('mousemove', bindFn)
@@ -653,6 +657,7 @@ class Node {
       })
     }
     this.width = originWidth + offsetX
+
     this.height = originHeight + offsetY
 
     this.renderer.render()

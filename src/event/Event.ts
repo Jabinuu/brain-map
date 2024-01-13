@@ -1,5 +1,6 @@
 import type BrainMap from '../../index'
 import EventEmitter from 'eventemitter3'
+import { throttle } from '../utils'
 
 interface EventOption {
   brainMap: BrainMap
@@ -25,7 +26,7 @@ class Event extends EventEmitter {
   bindEvent (): void {
     this.brainMap.svg?.on('click', this.onClick.bind(this) as EventListener)
     this.brainMap.svg?.on('mousedown', this.onMousedown.bind(this) as EventListener)
-    this.brainMap.svg?.on('mousemove', this.onMousemove.bind(this) as EventListener)
+    this.brainMap.svg?.on('mousemove', throttle(this.onMousemove.bind(this) as EventListener, 10))
     window.addEventListener('mouseup', this.onMouseup.bind(this))
     this.brainMap.el?.addEventListener('wheel', this.onMousewheel.bind(this))
     window.addEventListener('keydown', this.onKeyDown.bind(this))

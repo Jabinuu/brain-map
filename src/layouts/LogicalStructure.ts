@@ -149,6 +149,7 @@ class LogicalStructure extends Base {
   // 创建曲线
   createCurveLine (node: Node): void {
     const start = getStartPointOfLine(node)
+
     node.children.forEach((child) => {
       const { height } = child.getSizeWithoutBorderWidth()
       let end: PositionPair

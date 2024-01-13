@@ -46,6 +46,7 @@ export function getNodeIndexOfChildrenList (node: Node, childrenList: Node[]): n
 // 获得连线的起点坐标
 export function getStartPointOfLine (root: Node): PositionPair {
   const { height, width } = root.getSizeWithoutBorderWidth()
+
   let start: PositionPair
   if (root.isRoot) {
     start = [width / 2 + root.left, height / 2 + root.top]
@@ -163,4 +164,25 @@ export function getDigitCount (number: number): number {
 // 角度转弧度
 export function degreesToRadians (drgee: number): number {
   return drgee * (Math.PI / 180)
+}
+
+// 节流函数
+export function throttle (fn: (...arg: any[]) => void, delay: number): (...args: any[]) => void {
+  let timer: number
+  let last = 0
+
+  return function (...arg: any[]) {
+    const now = +new Date()
+    if (now - last < delay) {
+      // 防抖思想
+      clearTimeout(timer)
+      timer = setTimeout(() => {
+        last = now
+        fn(...arg)
+      }, delay)
+    } else {
+      last = now
+      fn(...arg)
+    }
+  }
 }
