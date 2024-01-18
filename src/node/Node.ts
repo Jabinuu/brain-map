@@ -23,7 +23,7 @@ interface NodeCreateOption {
   layerIndex: number
 }
 
-type NodeSize = [width:number, height:number]
+type NodeSize = [width: number, height: number]
 
 export interface TextData {
   width: number
@@ -446,6 +446,7 @@ class Node {
     this.brainMap.execCommand(EnumCommandName.CLEAR_ACTIVE_NODE)
     this.renderer.clearEditStatus()
     this.renderer.addNodeToActiveList(this)
+    this.brainMap.emit('node_active', this)
   }
 
   // 更新节点激活状态
@@ -636,14 +637,17 @@ class Node {
     originDivHeight: number,
     e: MouseEvent
   ): void {
+    const offsetX = (e.clientX - downX) / this.brainMap.view.scale
+
     // todo:考虑缩放
-    if (this.width <= this.minWidth && e.clientX < this.left + this.minWidth) {
+    if (this.width < this.minWidth && e.clientX < this.left + this.minWidth) {
       return
     }
+
     this.isResized = true
     this.isResizeChange = true
     this.needLayout = true
-    const offsetX = (e.clientX - downX) / this.brainMap.view.scale
+
     let offsetY = 0; let scrollHeight = 0
     if (this.textData) {
       scrollHeight = this.textData.div.scrollHeight

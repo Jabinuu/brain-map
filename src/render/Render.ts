@@ -164,6 +164,7 @@ class Render {
     })
     this.activeNodesBoundingBox?.remove()
     this.activeNodes.length = 0
+    this.brainMap.emit('clear_active')
   }
 
   // 添加激活节点
