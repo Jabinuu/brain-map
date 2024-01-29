@@ -30,7 +30,7 @@ class Event extends EventEmitter {
     window.addEventListener('mouseup', this.onMouseup.bind(this))
     this.brainMap.el?.addEventListener('wheel', this.onMousewheel.bind(this))
     window.addEventListener('keydown', this.onKeyDown.bind(this))
-    window.addEventListener('contextmenu', this.onContextMenu.bind(this))
+    this.brainMap.svg?.on('contextmenu', this.onContextMenu.bind(this) as EventListener)
   }
 
   onKeyDown (e: KeyboardEvent): void {
@@ -78,13 +78,12 @@ class Event extends EventEmitter {
   }
 
   onContextMenu (e: MouseEvent): void {
-    // e.preventDefault()
+    e.preventDefault()
     if (this.brainMap.view.isDragging) {
-      e.preventDefault()
-    } else {
-      // 自定义上下文菜单
+      this.brainMap.view.isDragging = false
+      return
     }
-    // mouseup事件在contextmenu之前
+    this.emit('_contextmenu', e)
     this.brainMap.view.isDragging = false
   }
 

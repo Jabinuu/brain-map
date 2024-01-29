@@ -109,7 +109,8 @@ export enum EnumCommandName {
   CLEAR_ACTIVE_NODE = 'CLEAR_ACTIVE_NODE',
   RESIZE_NODE = 'RESIZE_NODE',
   UNDO = 'UNDO',
-  REDO = 'REDO'
+  REDO = 'REDO',
+  SET_NODE_STYLE = 'SET_NODE_STYLE'
 }
 
 export const cssConstant = `

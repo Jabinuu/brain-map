@@ -124,6 +124,7 @@ class Base {
   cubicBezierPath (start: PositionPair, end: PositionPair): PathArray {
     const ctrl1 = [start[0] + (end[0] - start[0]) / 2, start[1]]
     const ctrl2 = [ctrl1[0], end[1]]
+
     return new PathArray([
       ['M', start[0], start[1]],
       ['C', ctrl1[0], ctrl1[1], ctrl2[0], ctrl2[1], end[0], end[1]]

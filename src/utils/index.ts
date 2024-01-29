@@ -186,3 +186,11 @@ export function throttle (fn: (...arg: any[]) => void, delay: number): (...args:
     }
   }
 }
+
+// 获取节点在兄弟节点的index
+export function getIndexOfSibling (node: Node): number {
+  if (!node.parent) return -1
+  return node.parent?.children.findIndex((item) => {
+    return item.uid === node.uid
+  })
+}

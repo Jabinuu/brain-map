@@ -1,4 +1,4 @@
-import { type Path } from '@svgdotjs/svg.js'
+import { type Polyline, type Path } from '@svgdotjs/svg.js'
 import type BrainMap from '../..'
 import type Node from '../node/Node'
 import { type NodeStyle, type ThemeConfig } from '../themes/default'
@@ -40,12 +40,23 @@ class Style {
 
   // 获取某个样式值
   getStyle (prop: string, isBasicProp: boolean = false): unknown {
-    return this.useStyle(prop, isBasicProp)
+    let val = this.useStyle(prop, isBasicProp)
+    if (val === undefined) {
+      val = this.useStyle(prop, true)
+    }
+    return val
   }
 
   // 获取node的某个独立样式值
   getSelfStyle (prop: string): unknown {
     return this.node.getData(prop)
+  }
+
+  // 设置基本样式
+  setBasicStyle (prop: string, val: string): void {
+    if (this.brainMap.themeConfig) {
+      this.brainMap.themeConfig[prop] = val
+    }
   }
 
   // 给节点的形状设置样式
@@ -71,11 +82,18 @@ class Style {
   }
 
   // 给连线设置样式
-  line (node: Path): void {
+  line (node: Path | Polyline): void {
+    const lineColor = this.useStyle('lineColor', true) as string
+    const lineWidth = this.useStyle('lineWidth', true) as number
     node.fill('none').stroke({
-      color: this.useStyle('lineColor', true) as string,
-      width: this.useStyle('lineWidth', true) as number
+      color: lineColor,
+      width: lineWidth
     })
+    // const idx = getIndexOfSibling(this.node)
+    // this.node.parent?.lines[idx].fill('none').stroke({
+    //   color: lineColor,
+    //   width: lineWidth
+    // })
   }
 }
 

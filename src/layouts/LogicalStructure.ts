@@ -33,13 +33,13 @@ class LogicalStructure extends Base {
         null,
         (cur: DataSource, parent: DataSource | null, isRoot: boolean, layerIndex: number) => {
           const newNode = this.createNode(cur, parent, isRoot, layerIndex)
-
           if (newNode.isRoot) {
             newNode.left = 300
             newNode.top = 250
           } else {
             if (parent?.node != null) {
-              newNode.left = parent.node.left + this.getMarginX() + parent.node.width
+              const { width } = parent.node.getSizeWithoutBorderWidth()
+              newNode.left = parent.node.left + this.getMarginX() + width
             }
           }
           return !cur.data.isExpand
@@ -50,7 +50,8 @@ class LogicalStructure extends Base {
             if (cur.data.isExpand && cur.children.length > 0) {
               const len = cur.node.children.length
               cur.node.childrenAreaHeight = cur.node.children.reduce((preVal: number, node: Node) => {
-                return preVal + node.height
+                const { height } = node.getSizeWithoutBorderWidth()
+                return preVal + height
               }, 0) + (len - 1) * this.getMarginY()
             }
           }
@@ -69,11 +70,13 @@ class LogicalStructure extends Base {
         (cur) => {
           const curNode = cur.node
           if (curNode?.getData('isExpand')) {
-            const start = curNode.top + curNode.height / 2 - curNode.childrenAreaHeight / 2
+            const { height } = curNode.getSizeWithoutBorderWidth()
+            const start = curNode.top + height / 2 - curNode.childrenAreaHeight / 2
             let tempTop = 0
             curNode.children.forEach((child: Node) => {
               child.top = start + tempTop
-              tempTop += child.height + this.getMarginY()
+              const { height } = child.getSizeWithoutBorderWidth()
+              tempTop += height + this.getMarginY()
             })
           }
           return !cur.node?.getData('isExpand')
@@ -93,7 +96,8 @@ class LogicalStructure extends Base {
             if (!cur.node.getData('isExpand')) {
               return true
             }
-            const diffierence = cur.node.childrenAreaHeight - cur.node.height
+            const { height } = cur.node.getSizeWithoutBorderWidth()
+            const diffierence = cur.node.childrenAreaHeight - height
 
             if (diffierence > 0) {
               // 调整兄弟节点
@@ -136,7 +140,6 @@ class LogicalStructure extends Base {
   // 渲染连线
   renderLine (node: Node): void {
     const lineShape = node.style.getStyle('lineStyle', true)
-
     if (lineShape === EnumLineShape.CURVE) {
       this.createCurveLine(node)
     } else if (lineShape === EnumLineShape.STRAIGHT) {
@@ -167,14 +170,16 @@ class LogicalStructure extends Base {
 
   // 创建直角折线
   createStraightLine (node: Node): void {
-    const start: PositionPair = [node.width + node.left, node.height / 2 + node.top]
+    const { width, height } = node.getSizeWithoutBorderWidth()
+    const start: PositionPair = [width + node.left, height / 2 + node.top]
     node.children.forEach((child) => {
       const { height } = child.getSizeWithoutBorderWidth()
       const line = new Polyline()
       const end: PositionPair = [child.left, child.top + height / 2]
       const mid1: PositionPair = [(start[0] + end[0]) / 2, end[1]]
-      const mid2: PositionPair = [mid1[0], mid1[1] - ((node.height - height) / 2 + child.top - node.top)]
-      line.plot([start, mid2, mid1, end]).stroke({ width: 2, color: '#f06' }).fill('none')
+      const mid2: PositionPair = [mid1[0], start[1]]
+      line.plot([start, mid2, mid1, end])
+      node.style.line(line)
       node.lines.push(line)
     })
   }

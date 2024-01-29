@@ -84,6 +84,7 @@ class Render {
     this.brainMap.registerCommand(EnumCommandName.SET_NODE_TEXT, this.setNodeText.bind(this))
     this.brainMap.registerCommand(EnumCommandName.CLEAR_ACTIVE_NODE, this.clearActiveNodesList.bind(this))
     this.brainMap.registerCommand(EnumCommandName.RESIZE_NODE, this.resizeNode.bind(this))
+    this.brainMap.registerCommand(EnumCommandName.SET_NODE_STYLE, this.setNodeStyle.bind(this))
   }
 
   // 绑定快捷键
@@ -635,6 +636,19 @@ class Render {
       .stroke({ color: '#0984e3', width: 1 })
       .fill({ color: 'transparent' })
       .back()
+  }
+
+  // 设置节点样式命令
+  setNodeStyle (manipulateNode: Node[], prop: string, val: string): void {
+    if (prop === 'lineStyle') {
+      manipulateNode[0].style.setBasicStyle(prop, val)
+    } else {
+      manipulateNode.forEach((node) => {
+        node.setData(prop, val)
+      })
+    }
+    // 重新渲染
+    this.render()
   }
 }
 

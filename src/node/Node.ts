@@ -218,6 +218,11 @@ class Node {
     return isSizeChange
   }
 
+  // 获取节点样式
+  getStyle (prop: string): string {
+    return this.style.getStyle(prop) as string
+  }
+
   // 获取去除边框宽度的节点总宽高
   getSizeWithoutBorderWidth (): { width: number, height: number } {
     const borderWidth = this.style.getStyle('borderWidth') as number
@@ -234,30 +239,37 @@ class Node {
     // 鼠标按下事件
     this.group?.on('mousedown', (e: Event) => {
       e.stopPropagation()
+      this.brainMap.emit('node_mousedown')
+
+      if (this.getData('isEdit')) return
       const isActive = this.getData('isActive')
-
-      if (!this.getData('isEdit')) {
+      // if (!this.getData('isEdit')) {
+      if ((e as MouseEvent).ctrlKey) {
         // ctrl键多选激活节点
-        if ((e as MouseEvent).ctrlKey) {
-          let activeNum = this.renderer.activeNodes.length
+        let activeNum = this.renderer.activeNodes.length
 
-          if (isActive) {
-            this.renderer.removeNodeFromActiveList(this)
-          } else {
-            this.renderer.addNodeToActiveList(this)
-          }
-          this.renderer.activeNodes[activeNum - 1].hideExpandBtn()
-          this.renderer.activeNodes[activeNum - 1].hideControlPoint()
-
-          if (++activeNum > 1) {
-            this.renderer.createActiveNodesBoundingBox()
-            this.renderer.activeNodes[activeNum - 1].hideControlPoint()
-          }
-        } else if (!this.renderer.activeNodes.includes(this)) {
-          // 仅单击则只激活这一个节点
-          this.active()
+        if (isActive) {
+          this.renderer.removeNodeFromActiveList(this)
+        } else {
+          this.renderer.addNodeToActiveList(this)
         }
+        this.renderer.activeNodes[activeNum - 1].hideExpandBtn()
+        this.renderer.activeNodes[activeNum - 1].hideControlPoint()
+
+        if (++activeNum > 1) {
+          this.renderer.createActiveNodesBoundingBox()
+          this.renderer.activeNodes[activeNum - 1].hideControlPoint()
+        }
+      } else if (!this.renderer.activeNodes.includes(this)) {
+        // 仅单击则只激活这一个节点
+        this.active()
       }
+      // }
+    })
+
+    this.group?.on('contextmenu', (e: Event) => {
+      e.stopPropagation()
+      this.brainMap.event.onContextMenu(e as MouseEvent)
     })
 
     // 单击事件
@@ -446,7 +458,7 @@ class Node {
     this.brainMap.execCommand(EnumCommandName.CLEAR_ACTIVE_NODE)
     this.renderer.clearEditStatus()
     this.renderer.addNodeToActiveList(this)
-    this.brainMap.emit('node_active', this)
+    this.brainMap.emit('node_active', this.renderer.activeNodes)
   }
 
   // 更新节点激活状态
@@ -710,6 +722,12 @@ class Node {
     this.beforeDivWidth = this.textData?.div.offsetWidth as number
     this.beforeForeignObjectWidth = this.textData?.foreignObject.width() as number
     this.beforForeignObjectHeight = this.textData?.foreignObject.height() as number
+  }
+
+  // 设置样式
+  setStyle (prop: string, val: string): void {
+    this.needLayout = true
+    this.brainMap.execCommand(EnumCommandName.SET_NODE_STYLE, this.renderer.activeNodes, prop, val)
   }
 }
 

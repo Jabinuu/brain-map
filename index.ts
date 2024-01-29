@@ -98,7 +98,7 @@ class BrainMap {
   // 已注册的插件列表
   static pluginList: any[] = []
   // 注册插件
-  static async usePlugin (plugin: string): Promise<typeof BrainMap> {
+  static async usePlugin (plugin: string, brainMap: BrainMap): Promise<typeof BrainMap> {
     if (BrainMap.hasPlugin(plugin)) {
       return this
     }
@@ -107,6 +107,11 @@ class BrainMap {
 
     // tip:类静态成员的this指向的类本身而不是实例
     this.pluginList.push(pluginModule)
+    const instanceName = pluginModule.default.name.toLocaleLowerCase()
+    const Constructor = pluginModule.default
+    brainMap[instanceName] = new Constructor({
+      brainMap
+    })
     return this
   }
 
@@ -181,7 +186,7 @@ class BrainMap {
       brainMap: this
     })
 
-    this.initPlugins()
+    // this.initPlugins()
 
     // 初次渲染
     this.renderer.render()
@@ -222,15 +227,15 @@ class BrainMap {
   }
 
   // 初始化插件
-  initPlugins (): void {
-    BrainMap.pluginList.forEach((plugin) => {
-      const instanceName = plugin.default.name.toLocaleLowerCase()
-      const Constructor = plugin.default
-      this[instanceName] = new Constructor({
-        brainMap: this
-      })
-    })
-  }
+  // initPlugins (): void {
+  //   BrainMap.pluginList.forEach((plugin) => {
+  //     const instanceName = plugin.default.name.toLocaleLowerCase()
+  //     const Constructor = plugin.default
+  //     this[instanceName] = new Constructor({
+  //       brainMap: this
+  //     })
+  //   })
+  // }
 
   // 初始化主题
   initTheme (opt: BrainMapOption): void {
@@ -269,6 +274,7 @@ class BrainMap {
   EnumCommandName.DELETE_NODE |
   EnumCommandName.INSERT_SIBLING_NODE |
   EnumCommandName.RESIZE_NODE, task: (arg1: Node[]) => void): void
+  registerCommand (cmdName: EnumCommandName.SET_NODE_STYLE, task: (arg1: Node[], arg2: string, arg3: string) => void): void
 
   // 函数实现
   registerCommand (cmdName: string, task: (...args: any) => void): void {
@@ -293,6 +299,7 @@ class BrainMap {
   EnumCommandName.INSERT_SIBLING_NODE |
   EnumCommandName.RESIZE_NODE, arg1: Node[]): void
   execCommand (cmdName: EnumCommandName.DELETE_NODE, arg1: Node[]): void
+  execCommand (cmdName: EnumCommandName.SET_NODE_STYLE, arg1: Node[], arg2: string, arg3: string): void
 
   // 函数实现
   execCommand (cmdName: keyof typeof EnumCommandName, ...args: any[]): void {

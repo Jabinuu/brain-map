@@ -66,19 +66,23 @@ class View {
 
   // 拖动思维导图过程中
   onDragDrawingMousemove (e: MouseEvent, event: Event): void {
-    if (event.isRightMouseDown) {
-      // 减少触发浏览器重绘
-      if (!this.isDragging) {
-        (e.target as HTMLElement).style.cursor = 'grabbing'
-      }
-      this.isDragging = true
-      const dx = e.clientX - this.dragPosition.x
-      const dy = e.clientY - this.dragPosition.y
-      this.curOffset.x = this.startOffset.x + dx
-      this.curOffset.y = this.startOffset.y + dy
+    if (!event.isRightMouseDown) return
+    const dx = e.clientX - this.dragPosition.x
+    const dy = e.clientY - this.dragPosition.y
+    if (!this.isDragging && Math.abs(dx) <= 10 && Math.abs(dy) <= 10) return
 
-      this.transform()
+    // if (event.isRightMouseDown) {
+    // 减少触发浏览器重绘
+    if (!this.isDragging) {
+      (e.target as HTMLElement).style.cursor = 'grabbing'
     }
+    this.isDragging = true
+
+    this.curOffset.x = this.startOffset.x + dx
+    this.curOffset.y = this.startOffset.y + dy
+
+    this.transform()
+    // }
   }
 
   // 拖动思维导图结束后抬起鼠标
