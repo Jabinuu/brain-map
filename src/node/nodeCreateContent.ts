@@ -3,7 +3,7 @@ import type Node from './Node'
 
 export interface NodeCreateContentMethods {
   [prop: string]: any
-  createTextElem: (arg0: Node) => void
+  createTextElem: (arg1: boolean) => void
 }
 
 function getEditAreaSize (node: Node): { height: number, width: number, div: HTMLElement } {
@@ -21,16 +21,34 @@ function getEditAreaSize (node: Node): { height: number, width: number, div: HTM
   let height = wrapElem.offsetHeight
   document.body.removeChild(wrapElem)
 
-  if (isEdit && node.isResized && node.textData) {
+  if (node.styleChange && node.textData) {
+    if (!node.isResized) {
+      const _width = node.textData.width
+      node.style.text(node.textData.div)
+      const { clientWidth } = node.textData.div
+      if (_width !== clientWidth - 0.5) {
+        width = clientWidth
+      }
+      div = node.textData.div as HTMLDivElement
+      div.style.width = width + 'px'
+    } else {
+      node.style.text(node.textData.div)
+      width = node.textData.width
+      height = node.textData.div.scrollHeight
+      div = node.textData.div as HTMLDivElement
+    }
+  } else if (isEdit && node.isResized && node.textData) {
     // 如果节点已通过控制点重新设置尺寸,则不做处理，直接返回编辑区域的长宽即可
     width = node.textData.width
     height = node.textData.div.scrollHeight
     div = node.textData.div as HTMLDivElement
+    node.style.text(div)
   } else {
     if (isEdit && node.textData) {
       div = node.textData.div as HTMLDivElement
       node.textData.div.style.width = `${width}px`
       node.textData.div.style.height = `${height}px`
+      node.style.text(div)
     } else {
       div.appendChild(text)
       node.style.text(div)

@@ -68,6 +68,7 @@ class Node {
     paddingY: number
   }
 
+  styleChange: boolean
   lastText: string
   textChange: boolean
   needLayout: boolean
@@ -162,7 +163,7 @@ class Node {
     this.paddingY = this.style.getStyle('paddingY', true) as number
     // 通过控制点resize的历史记录
     this.resizeLog = []
-
+    this.styleChange = false
     /* 该节点的内容元素 */
     // 文本元素
     this.textData = null
@@ -728,6 +729,7 @@ class Node {
   setStyle (prop: string, val: string): void {
     this.needLayout = true
     this.brainMap.execCommand(EnumCommandName.SET_NODE_STYLE, this.renderer.activeNodes, prop, val)
+    this.styleChange = false
   }
 }
 

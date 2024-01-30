@@ -12,7 +12,7 @@ interface RenderOption {
 }
 
 type Layout = LogicalStructure
- type RenderNodeCache = Record<string, Node>
+type RenderNodeCache = Record<string, Node>
 
 const layouts = {
   [CONSTANT.LAYOUTS.LOGICAL_STRUCTURE]: LogicalStructure
@@ -646,6 +646,11 @@ class Render {
       manipulateNode.forEach((node) => {
         node.setData(prop, val)
       })
+    }
+
+    if (['textDecoration', 'fontWeight', 'fontSize', 'fontStyle', 'color', 'textAlign'].includes(prop)) {
+      manipulateNode[0].styleChange = true
+      manipulateNode[0].getSize(false, false)
     }
     // 重新渲染
     this.render()
