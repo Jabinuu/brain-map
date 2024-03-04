@@ -1,7 +1,7 @@
 {
   "name": "brain-map",
   "type": "module",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "\"\"实现思维导图的类库",
   "author": "jiabin",
   "license": "ISC",

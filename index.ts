@@ -98,29 +98,29 @@ class BrainMap {
   // 已注册的插件列表
   static pluginList: any[] = []
   // 注册插件
-  static async usePlugin (plugin: string, brainMap: BrainMap): Promise<typeof BrainMap> {
-    if (BrainMap.hasPlugin(plugin)) {
-      return this
-    }
+  // static async usePlugin (plugin: string, brainMap: BrainMap): Promise<typeof BrainMap> {
+  //   if (BrainMap.hasPlugin(plugin)) {
+  //     return this
+  //   }
 
-    const pluginModule = await import(`./src/plugins/${plugin}.ts`)
+  //   const pluginModule = await import(`./src/plugins/${plugin}.ts`)
 
-    // tip:类静态成员的this指向的类本身而不是实例
-    this.pluginList.push(pluginModule)
-    const instanceName = pluginModule.default.name.toLocaleLowerCase()
-    const Constructor = pluginModule.default
-    brainMap[instanceName] = new Constructor({
-      brainMap
-    })
-    return this
-  }
+  //   // tip:类静态成员的this指向的类本身而不是实例
+  //   this.pluginList.push(pluginModule)
+  //   const instanceName = pluginModule.default.name.toLocaleLowerCase()
+  //   const Constructor = pluginModule.default
+  //   brainMap[instanceName] = new Constructor({
+  //     brainMap
+  //   })
+  //   return this
+  // }
 
-  // 检查插件是否已被注册过
-  static hasPlugin (plugin: string): boolean {
-    return !!BrainMap.pluginList.find((item) => {
-      return item.name === plugin
-    })
-  }
+  // // 检查插件是否已被注册过
+  // static hasPlugin (plugin: string): boolean {
+  //   return !!BrainMap.pluginList.find((item) => {
+  //     return item.name === plugin
+  //   })
+  // }
 
   constructor (opt: BrainMapOption) {
     // 画布容器
