@@ -41,9 +41,14 @@ class LruCache {
 
   // 获取缓冲池中的节点
   get (uid: string): Node | undefined {
-    if (this.has(uid)) {
-      return this.pool.get(uid)
+    // if (this.has(uid)) {
+    //   return this.pool.get(uid)
+    // }
+    const val = this.pool.get(uid)
+    if (val) {
+      this.add(uid, val)
     }
+    return val
   }
 }
 

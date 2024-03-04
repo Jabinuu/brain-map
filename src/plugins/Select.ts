@@ -86,7 +86,9 @@ class Select {
     this.movePt.y = 0
 
     if (this.renderer.isSelecting) {
-    // 由于mouseup触发在click之前，需要将这个操作延时一下
+      this.brainMap.emit('node_active', this.renderer.activeNodes)
+
+      // 由于mouseup触发在click之前，需要将这个操作延时一下
       requestAnimationFrame(() => {
         this.renderer.isSelecting = false
       })

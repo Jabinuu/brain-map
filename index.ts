@@ -223,6 +223,7 @@ class BrainMap {
       this.lineDrawing.addClass('bm-line-drawing')
       this.nodeDrawing = this.drawing.group()
       this.nodeDrawing.addClass('bm-node-drawing')
+      this.el.style.overflow = 'hidden'
     }
   }
 
